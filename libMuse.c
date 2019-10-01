@@ -1,7 +1,7 @@
 #include "cliente.c"
 
-int SOCKET;
-int ID ;
+int SOCKET, ID;
+int ERROR = -1;
 
 int muse_init(int id, char* ip, int puerto){
 
@@ -10,7 +10,7 @@ int muse_init(int id, char* ip, int puerto){
 
 	int socketCli = crear_conexion(ip, puertoChar);
 
-	if(socketCli == -1)
+	if(socketCli == ERROR)
 		return socketCli; //si falla tiene que retornar -1
 
 
