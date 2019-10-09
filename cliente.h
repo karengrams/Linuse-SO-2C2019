@@ -55,4 +55,9 @@ int crear_conexion(char *ip, char* puerto);
 void* serializar_paquete(t_paquete* paquete, int bytes);
 t_paquete* armar_paquete();
 
+
+void* recibir_buffer(int*, int);
+t_list* recibir_paquete(int);
+int recibir_operacion(int);
+
 #endif /* CLIENTE_H_ */
