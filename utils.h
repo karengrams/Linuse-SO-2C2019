@@ -1,6 +1,7 @@
 #ifndef UTILS_H_
 #define UTILS_H_
 
+#include <string.h>
 #include <commons/collections/list.h>
 #include <commons/bitarray.h>
 
@@ -19,7 +20,7 @@ typedef struct{
 	segment_type tipo;
 	void* baseLogica;
 	int tamanio;
-	t_list* tablaDePaginas
+	t_list* tablaDePaginas;
 } t_segmento;
 
 
