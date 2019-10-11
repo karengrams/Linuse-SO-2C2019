@@ -32,3 +32,22 @@ t_bitarray* crear_bitmap(t_list* listaDeMarcos){
 
 	return bitarray_create_with_mode(punteroABits, bytes, LSB_FIRST);
 }
+
+t_proceso* crear_proceso(int id, char* ip){
+	t_proceso* proceso = malloc(sizeof(t_proceso));
+	proceso->id = id;
+	proceso->ip = malloc(sizeof(char)*16);
+	strcpy(proceso->ip, ip);
+	proceso->tablaDeSegmentos = list_create();
+	return proceso;
+}
+
+t_segmento* crear_segmento(int type, void* baseLogica, int tamanio){
+	t_segmento* segmento = malloc(sizeof(t_segmento));
+	segmento->baseLogica = baseLogica;
+	segmento->tamanio = tamanio;
+	segmento->tipo = type;
+	segmento->tablaDePaginas = list_create();
+	return segmento;
+}
+
