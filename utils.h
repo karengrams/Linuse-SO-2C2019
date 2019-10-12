@@ -18,7 +18,7 @@ typedef struct{
 
 typedef struct{
 	segment_type tipo;
-	void* baseLogica;
+	void* baseLogica; //void* o uint32_t ???
 	int tamanio;
 	t_list* tablaDePaginas;
 } t_segmento;
@@ -38,10 +38,16 @@ t_bitarray* crear_bitmap(t_list* listaDeMarcos);
 
 /*
  * Reserva memoria e inicializa los structs para luego agregarlos
- * a sus listas
+ * a sus listas/tablas
  */
 t_segmento* crear_segmento(int type, void* baseLogica, int tamanio);
 t_proceso* crear_proceso(int id, char* ip);
+
+/*
+ * Busca al proceso que nos esta solicitando algo en la tabla de procesos de Muse
+ * Si se encuentra retorna su direccion en memoria, sino retorna NULL
+ */
+t_proceso* buscar_proceso(t_list* paqueteRecibido, t_list* tablaDeProcesos, char* ipCliente);
 
 
 #endif /* UTILS_H_ */

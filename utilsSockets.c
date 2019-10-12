@@ -1,11 +1,11 @@
 #include "utilsSockets.h"
+#include "utils.c"
 
 
 void ipCliente(int socketCli, char* ipCli){
 		struct sockaddr_in addr;
 		socklen_t addr_size = sizeof(struct sockaddr_in);
 		getpeername(socketCli, (struct sockaddr *)&addr, &addr_size);
-
 		strcpy(ipCli,inet_ntoa(addr.sin_addr)) ; //Me guardo la ip del cliente que estoy trantando en este momento
 }
 
@@ -145,7 +145,7 @@ void admitirNuevoCliente(fd_set *master, int* fdmax, int socketEs){
 void atenderCliente(fd_set* master, int socketCli){
 
 	t_paquete* paquete_respuesta;
-	int cod_error = 120;
+	int cod_error;
 	int id_cliente, cantidad_de_bytes, flags;
 	char* buffer = malloc(30);
 	uint32_t direccion_pedida, direccion;
@@ -156,6 +156,10 @@ void atenderCliente(fd_set* master, int socketCli){
 	int cod_op = recibir_operacion(socketCli);
 	lista = recibir_paquete(socketCli);
 
+	//t_proceso* cliente_a_atender = buscar_proceso(lista, tabla_de_procesos, ipCli); //lo pongo comentado porque
+	//falta la tabladeprocesos.//
+
+
 		switch(cod_op)
 			{
 			case DESCONEXION:
@@ -165,23 +169,21 @@ void atenderCliente(fd_set* master, int socketCli){
 				break;
 
 			case MUSE_INIT:
-				id_cliente = *((int*)list_get(lista, 0));
 
-				printf("MUSE_INIT, se inician estructuras administrativas "
-				"del proceso %d de la ip %s \n", id_cliente, ipCli);
-
-				//MAGIA DE MUSE
+				//if(cliente_a_atender != NULL){
+						//cod_error = -1; YA EXISTE EN NUESTRA TABLA ERROR
+						//} else {
+				//list_add(tabla_de_procesos, cliente_a_atender); Si no existe lo agregamos
+				//cod_error = 0; }
 
 				send(socketCli, &cod_error, sizeof(int), 0);
 				break;
 
 			case MUSE_CLOSE:
-				id_cliente = *((int*)list_get(lista, 0));
 
-				printf("MUSE_CLOSE, se liberan "
-				"estructuras administrativas del proceso %d "
-				"de la ip %s \n", id_cliente, ipCli);
-				//cerrar conexion, borrar tablas de este proceso.
+				// borrar tablas de este proceso.
+				//
+				close(socketCli);
 				break;
 
 			case MUSE_ALLOC:

@@ -1,6 +1,5 @@
-#include "utils.h"
 #include <stdlib.h>
-
+#include "utils.h"
 
 t_list* dividir_memoria(void* memoria, int tamanioPagina, int tamanioMemoria){
 
@@ -51,3 +50,14 @@ t_segmento* crear_segmento(int type, void* baseLogica, int tamanio){
 	return segmento;
 }
 
+t_proceso* buscar_proceso(t_list* paqueteRecibido, t_list* tablaDeProcesos, char* ipCliente){
+	int id = *((int*)list_get(paqueteRecibido, 0));
+
+	bool mismoipid(void* arg){
+		t_proceso* cliente = (t_proceso*)arg;
+		return ((cliente->id) == id && !(strcmp(ipCliente, cliente->ip)));
+	}
+
+	return list_find(tablaDeProcesos, mismoipid);
+
+}
