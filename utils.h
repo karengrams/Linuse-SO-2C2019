@@ -49,5 +49,11 @@ t_proceso* crear_proceso(int id, char* ip);
  */
 t_proceso* buscar_proceso(t_list* paqueteRecibido, t_list* tablaDeProcesos, char* ipCliente);
 
+/*
+ * Dado un proceso devuelve su posicion en la lista_de_procesos
+ * Si el elemento esta repedito devuelve la primera posicion donde aparece (no deberia)
+ * Si el elemento no existe devuelve -1
+ */
+int posicion_en_lista_proceso(t_proceso* proceso, t_list* lista);
 
 #endif /* UTILS_H_ */

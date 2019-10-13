@@ -61,3 +61,13 @@ t_proceso* buscar_proceso(t_list* paqueteRecibido, t_list* tablaDeProcesos, char
 	return list_find(tablaDeProcesos, mismoipid);
 
 }
+
+
+int posicion_en_lista_proceso(t_proceso* elemento, t_list* lista){
+	for(int index = 0 ; index < lista->elements_count; index++){
+		t_proceso* comparador = list_get(lista, index);
+		if (memcmp(elemento, comparador, sizeof(t_proceso)) == 0)
+			return index;
+	}
+	return -1;
+}
