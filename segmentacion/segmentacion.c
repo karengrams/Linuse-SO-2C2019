@@ -1,11 +1,15 @@
 #include "segmentacion.h"
 
-t_segmento* crear_segmento(int type, void* baseLogica, int tamanio){
+t_segmento* crear_segmento(int type, uint32_t baseLogica, int tamanio, t_list* listaPaginas){ 
+
+//En lugar de mandarle la lista de paginas ya creada se le podria pasar la cantidad de paginas,
+//o el tamanio que deberia tener el segmento y crearle las paginas aca adentro, meh.
+
 	t_segmento* segmento = malloc(sizeof(t_segmento));
 	segmento->baseLogica = baseLogica;
 	segmento->tamanio = tamanio;
 	segmento->tipo = type;
-	segmento->tablaDePaginas = list_create();
+	segmento->tablaDePaginas = listaPaginas;
 	return segmento;
 }
 
@@ -69,3 +73,27 @@ bool segmento_puede_agrandarse(t_segmento* segmento, t_list* listaDeSegmentos, i
 	free(siguiente);
 	return false;
 }
+
+bool tiene_espacio(void* punteroAMemoria, int valorPedido){
+	t_metadata* metadata = malloc(sizeof(t_metadata));
+	int desplazamiento = 0;
+
+	memcpy(metadata, punteroAMemoria, sizeof(t_metadata));
+
+	while(metadata->bytes != -1){ //En el fin de segmento mapeado le agrego una metadata con bytes = -1
+
+		if(!(metadata->ocupado)){ //si no esta ocupado pregunto si cabe el valor pedido
+			if(metadata->bytes >= valorPedido)
+				return true;
+		}
+
+		desplazamiento += sizeof(t_metadata);
+		desplazamiento += metadata->bytes; //Nos movemos a la siguiente metadata
+		memcpy(metadata, punteroAMemoria + desplazamiento, sizeof(t_metadata));
+
+	}
+		free(metadata);
+		return false;
+}
+
+

@@ -53,25 +53,20 @@ void liberar_proceso(t_proceso* proceso, t_list* tablaProcesos){
 	free(proceso);
 }
 
-bool tiene_espacio(void* punteroAMemoria, int valorPedido){
-	t_metadata* metadata = malloc(sizeof(t_metadata));
-	int desplazamiento = 0;
+muse_malloc(t_proceso* procesoAAtender, t_list* paquete){
+	uint32_t tamanioPedido = list_get(paquete,1);
 
-	memcpy(metadata, punteroAMemoria, sizeof(t_metadata));
-
-	while(metadata->bytes != -1){ //En el fin de segmento mapeado le agrego una metadata con bytes = -1
-
-		if(!(metadata->ocupado)){ //si no esta ocupado pregunto si cabe el valor pedido
-			if(metadata->bytes >= valorPedido)
-				return true;
-		}
-
-		desplazamiento += sizeof(t_metadata);
-		desplazamiento += metadata->bytes; //Nos movemos a la siguiente metadata
-		memcpy(metadata, punteroAMemoria + desplazamiento, sizeof(t_metadata));
-
+	if((procesoAAtender->tablaDeSegmentos->elements_count) == 0){//Si no tiene ningun segmento le creamos uno
+		uint32_t tamanioSegmento = paginas_necesarias(tamanioPedido)*tamanio_paginas();
+		t_list* listaPaginas = crear_lista_paginas(paginas_necesarias(tamanioPedido));
+		t_segmento* segmentoNuevo = crear_segmento(HEAP, 0, tamanioSegmento, listaPaginas);
+		list_add((procesoAAtender->tablaDeSegmentos), segmentoNuevo);
 	}
-		free(metadata);
-		return false;
-}
+	//chequear si hay espacio en algun segmento heap
+	//si no hay,
+	//chequear si se puede extender algun segmento heap
+	//si no se puede,
+	//crear un nuevo segmento heap
 
+
+}

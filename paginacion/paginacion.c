@@ -38,3 +38,21 @@ int paginas_necesarias(int valorPedido){
 					return aux.quot + 1;
 				}
 }
+
+t_pagina* crear_pagina(){
+	t_pagina* pagina = malloc(sizeof(t_pagina));
+	pagina->bit_presencia = 0;
+	pagina->numero_frame = -1;
+	return pagina;
+}
+
+t_list* crear_lista_paginas(int cantidadDePaginas){
+	t_list* lista = malloc(sizeof(t_list));
+	t_pagina* pagina;
+
+	for(int i = 0; i<cantidadDePaginas; i++){
+		pagina = crear_pagina();
+		list_add(lista, pagina);
+	}
+	return lista;
+}

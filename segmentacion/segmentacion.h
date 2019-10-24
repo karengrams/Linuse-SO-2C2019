@@ -31,7 +31,7 @@ typedef struct{
 	* 							   proceso
 	* 			int tamanio — tamaño del segmento a crear
 **/
-t_segmento* crear_segmento(int type, void* baseLogica, int tamanio);
+t_segmento* crear_segmento(segment_type type, uint32_t baseLogica, int tamanio, t_list* listaPaginas);
 
 /**
 	* @NAME: posicion_en_lista_segmento
