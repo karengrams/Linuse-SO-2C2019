@@ -14,10 +14,13 @@
 #include <commons/collections/list.h>
 #include <commons/bitarray.h>
 
+t_list* PAGES_TABLE = list_create();
+
+
 typedef struct{
 	bool bit_presencia;
 	int numero_frame;
-}t_pagina;
+}page;
 
 
 

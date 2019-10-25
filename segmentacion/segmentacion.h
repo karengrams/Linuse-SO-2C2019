@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-t_list* SEGMENT_TABLE= list_create();
 
 typedef enum{
 	HEAP,
@@ -17,7 +16,6 @@ typedef enum{
 
 typedef struct{
 	segment_type tipo;
-	uint32_t baseLogica; //void* o uint32_t ???
 	int tamanio; //list_size(tablaDePaginas) * tamanioPagina
 	t_list* tablaDePaginas;
 } segment;
@@ -35,13 +33,13 @@ typedef struct{
 segment* crear_segmento(segment_type type, uint32_t baseLogica, int tamanio, t_list* listaPaginas);
 
 /**
-	* @NAME: posicion_en_tabla_de_segmentos
+	* @NAME: posicion_en_lista_segmento
 	* @DESC: segun el segmento, devuelve la posicion que se encuentra en la tabla de segmentos, es decir, su base logica.
 	* @PARAMS:
 	* 			t_segmento* elemento — elemento a buscar en la tabla de segmentos.
 	* 			t_list* lista — puntero a tabla de segmentos del proceso
 **/
-int posicion_en_tabla_de_segmentos(segment* elemento);
+int posicion_en_lista_segmento(segment* elemento, t_list* tabla_de_segmentos);
 
 /**
 	* @NAME: segmento_puede_agrandarse

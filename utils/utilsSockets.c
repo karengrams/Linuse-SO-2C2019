@@ -34,14 +34,14 @@ int crear_conexion(char *ip, char* puerto)
 
 void crear_buffer(t_paquete* paquete)
 {
-	paquete->buffer = malloc(sizeof(t_buffer));
+	paquete->buffer = (t_buffer*)malloc(sizeof(t_buffer));
 	paquete->buffer->size = 0;
 	paquete->buffer->stream = NULL;
 }
 
 t_paquete* crear_paquete(op_code codigo)
 {
-	t_paquete* paquete = malloc(sizeof(t_paquete));
+	t_paquete* paquete = (t_paquete*)malloc(sizeof(t_paquete));
 	paquete->codigo_operacion = codigo;
 	crear_buffer(paquete);
 	return paquete;
@@ -319,11 +319,10 @@ t_list* recibir_paquete(int socket_cliente)
 	int tamanio;
 
 	buffer = recibir_buffer(&size, socket_cliente);
-	while(desplazamiento < size)
-	{
+	while(desplazamiento < size){
 		memcpy(&tamanio, buffer + desplazamiento, sizeof(int));
 		desplazamiento+=sizeof(int);
-		char* valor = malloc(tamanio);
+		char* valor = (char*)malloc(tamanio);
 		memcpy(valor, buffer+desplazamiento, tamanio);
 		desplazamiento+=tamanio;
 		list_add(valores, valor);

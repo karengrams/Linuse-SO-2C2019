@@ -1,20 +1,3 @@
-
-
-t_bitarray* crear_bitmap(t_list* listaDeMarcos){
-	int bytes;
-	int cantidadDeMarcos = list_size(listaDeMarcos);
-	div_t aux = div(cantidadDeMarcos, 8);
-
-		if (aux.rem == 0){
-			bytes = aux.quot;
-		} else {
-			bytes = aux.quot + 1;
-		}
-	char* punteroABits = (char*)malloc(bytes);
-
-	return bitarray_create_with_mode(punteroABits, bytes, LSB_FIRST);
-}
-
 int paginas_necesarias(int valorPedido){
 	div_t aux = div((valorPedido+10), tamanio_paginas()); //Creo que va 10 porque irian dos metadatas (una al principio y otra al final) not sure tho
 				if (aux.rem == 0){
@@ -24,8 +7,8 @@ int paginas_necesarias(int valorPedido){
 				}
 }
 
-t_pagina* crear_pagina(){
-	t_pagina* pagina = malloc(sizeof(t_pagina));
+page* crear_pagina(){
+	page* pagina = malloc(sizeof(page));
 	pagina->bit_presencia = 0;
 	pagina->numero_frame = -1;
 	return pagina;
@@ -33,7 +16,7 @@ t_pagina* crear_pagina(){
 
 t_list* crear_lista_paginas(int cantidadDePaginas){
 	t_list* lista = malloc(sizeof(t_list));
-	t_pagina* pagina;
+	page* pagina;
 
 	for(int i = 0; i<cantidadDePaginas; i++){
 		pagina = crear_pagina();
