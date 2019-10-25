@@ -19,15 +19,7 @@ typedef struct{
 	int numero_frame;
 }t_pagina;
 
-/**
-	* @NAME: crear_segmento
-	* @DESC: Divide la memoria en marcos y devuelve una lista con punteros al inicio de cada marco
-	* @PARAMS:
-	* 		void* memoria - puntero a memoria
-	* 		int tamanioPagina - tam. de pagina a particionar memoria
-	* 		int tamanioMemoria - tam. total de memoria
- */
-t_list* dividir_memoria(void* memoria, int tamanioPagina, int tamanioMemoria);
+
 
 /**
 	* @NAME: crear_bitmap
@@ -42,8 +34,7 @@ t_bitarray* crear_bitmap(t_list* listaDeMarcos);
 	* @DESC: segun un pedido define cuantas paginas seran necesarias designar
 	* @PARAMS:
 	* 		int valorPedido
- */
-
+**/
 int paginas_necesarias(int valorPedido);
 
 #endif /* PAGINACION_H_ */

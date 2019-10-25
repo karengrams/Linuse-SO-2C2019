@@ -10,7 +10,9 @@ void leer_config(void){
 }
 
 int memoria_del_disco(){
-    return atoi(config_get_string_value(archivo_config, "MEMORY_SIZE"))*8;
+	int mem = atoi(config_get_string_value(archivo_config, "MEMORY_SIZE"))*8;
+	free(archivo_config);
+    return mem;
 }
 
 int main(void){
@@ -18,7 +20,7 @@ int main(void){
     printf("Empecemos leyendo el .config..\n");
     leer_config();
     printf("Hagamos el malloc del disco para segmentacion..\n");
-    uint32_t *memoria = (uint32_t*) malloc(memoria_del_disco());
+    void *memoria = (uint32_t*) malloc(memoria_del_disco());
     printf("Ahora si, empezamos con la segmentacion y paginacion..\n");
     comenzar_segmentacion_paginada();
     printf("El tamanio de memoria es de: %d bits \n",memoria_del_disco());

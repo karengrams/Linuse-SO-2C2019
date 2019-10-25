@@ -1,19 +1,4 @@
 
-t_list* dividir_memoria(void* memoria, int tamanioPagina, int tamanioMemoria){
-
-	t_list* listaDeMarcos = list_create();
-	int desplazamiento = 0;
-	void* aux;
-
-	while(desplazamiento < tamanioMemoria){
-		aux = memoria+desplazamiento;
-		list_add(listaDeMarcos, aux);
-		desplazamiento += tamanioPagina;
-	}
-
-	return listaDeMarcos;
-
-}
 
 t_bitarray* crear_bitmap(t_list* listaDeMarcos){
 	int bytes;

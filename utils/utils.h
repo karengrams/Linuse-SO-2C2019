@@ -10,12 +10,7 @@ typedef struct{
 	int id;
 	char* ip;
 	t_list* tablaDeSegmentos;
-} t_proceso;s
-
-typedef struct{
-	bool ocupado;
-	int bytes;
-} t_metadata;
+} t_proceso;
 
 /*
  * Crea el bitmap de los marcos de la memoria

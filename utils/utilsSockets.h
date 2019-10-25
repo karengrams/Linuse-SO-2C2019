@@ -13,7 +13,6 @@
 #include <commons/collections/list.h>
 #include <string.h>
 
-
 typedef enum {
 	DESCONEXION = 0,
 	MUSE_INIT = 10,
@@ -26,8 +25,6 @@ typedef enum {
 	MUSE_UNMAP = 17,
 	MUSE_CLOSE = 18,
 } op_code;
-
-
 
 typedef struct
 {
@@ -55,11 +52,5 @@ void atenderCliente(fd_set* master, int socketCli);
 void* recibir_buffer(int*, int);
 t_list* recibir_paquete(int);
 int recibir_operacion(int);
-
-
-
-
-
-
 
 #endif /* UTILSSOCKETS_H_ */

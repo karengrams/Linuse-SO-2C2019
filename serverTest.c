@@ -1,7 +1,5 @@
 /*ip y puerto random*/
 
-#include "servidor.c"
-
 int main(){
 	fd_set master;   // conjunto maestro de descriptores de fichero
 	fd_set read_fds; // conjunto temporal para lectura de descriptores de fichero para select()
@@ -16,7 +14,7 @@ int main(){
 
 while(1){
        read_fds = master;
-       select(fdmax+1, &read_fds, NULL, NULL, NULL);
+       select(fdmax+1, &read_fds, NULL, NULL, NULL); // @suppress("Symbol is not resolved")
      for(int i = 0; i <= fdmax; i++) { // explorar conexiones existentes en busca de datos que leer
          if (FD_ISSET(i, &read_fds)) { //Hay datos que leer...
            if (i == socketEs) { //si se recibe en el socket escucha hay nuevas conexiones que aceptar

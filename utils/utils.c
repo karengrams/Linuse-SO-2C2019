@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "utils.h"
 
+int ERROR = -1;
 
 t_proceso* crear_proceso(int id, char* ip){
 	t_proceso* proceso = malloc(sizeof(t_proceso));
@@ -37,7 +38,7 @@ int posicion_en_lista_proceso(t_proceso* elemento, t_list* lista){
 	return -1; //Si no esta devuelve -1
 }
 
-void iniciar_proceso(t_list* tablaProcesos, t_proceso* proceso, t_list* paquete, char* ip){
+int iniciar_proceso(t_list* tablaProcesos, t_proceso* proceso, t_list* paquete, char* ip){
 
 			if(proceso != NULL)
            	   	return -1; //YA EXISTE EN NUESTRA TABLA: ERROR
@@ -53,20 +54,20 @@ void liberar_proceso(t_proceso* proceso, t_list* tablaProcesos){
 	free(proceso);
 }
 
-muse_malloc(t_proceso* procesoAAtender, t_list* paquete){
-	uint32_t tamanioPedido = list_get(paquete,1);
-
-	if((procesoAAtender->tablaDeSegmentos->elements_count) == 0){//Si no tiene ningun segmento le creamos uno
-		uint32_t tamanioSegmento = paginas_necesarias(tamanioPedido)*tamanio_paginas();
-		t_list* listaPaginas = crear_lista_paginas(paginas_necesarias(tamanioPedido));
-		t_segmento* segmentoNuevo = crear_segmento(HEAP, 0, tamanioSegmento, listaPaginas);
-		list_add((procesoAAtender->tablaDeSegmentos), segmentoNuevo);
-	}
-	//chequear si hay espacio en algun segmento heap
-	//si no hay,
-	//chequear si se puede extender algun segmento heap
-	//si no se puede,
-	//crear un nuevo segmento heap
-
-
-}
+//muse_malloc(t_proceso* procesoAAtender, t_list* paquete){
+//	uint32_t tamanioPedido = list_get(paquete,1);
+//
+//	if((procesoAAtender->tablaDeSegmentos->elements_count) == 0){//Si no tiene ningun segmento le creamos uno
+//		uint32_t tamanioSegmento = paginas_necesarias(tamanioPedido)*tamanio_paginas();
+//		t_list* listaPaginas = crear_lista_paginas(paginas_necesarias(tamanioPedido));
+//		t_segmento* segmentoNuevo = crear_segmento(HEAP, 0, tamanioSegmento, listaPaginas);
+//		list_add((procesoAAtender->tablaDeSegmentos), segmentoNuevo);
+//	}
+//	//chequear si hay espacio en algun segmento heap
+//	//si no hay,
+//	//chequear si se puede extender algun segmento heap
+//	//si no se puede,
+//	//crear un nuevo segmento heap
+//
+//
+//}

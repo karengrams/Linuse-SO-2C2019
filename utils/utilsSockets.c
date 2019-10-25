@@ -1,15 +1,12 @@
 #include "utilsSockets.h"
 #include "utils.c"
 
-
 void ipCliente(int socketCli, char* ipCli){
 		struct sockaddr_in addr;
 		socklen_t addr_size = sizeof(struct sockaddr_in);
 		getpeername(socketCli, (struct sockaddr *)&addr, &addr_size);
 		strcpy(ipCli,inet_ntoa(addr.sin_addr)) ; //Me guardo la ip del cliente que estoy trantando en este momento
 }
-
-
 
 int crear_conexion(char *ip, char* puerto)
 {
@@ -34,7 +31,6 @@ int crear_conexion(char *ip, char* puerto)
 
 	return socket_cliente;
 }
-
 
 void crear_buffer(t_paquete* paquete)
 {
@@ -62,7 +58,6 @@ void agregar_a_paquete(t_paquete* paquete, void* valor, int tamanio)
 	paquete->buffer->size += tamanio + sizeof(int);
 }
 
-
 void* serializar_paquete(t_paquete* paquete, int bytes)
 {
 	void * magic = malloc(bytes);
@@ -78,7 +73,6 @@ void* serializar_paquete(t_paquete* paquete, int bytes)
 	return magic;
 }
 
-
 void enviar_paquete(t_paquete* paquete, int socket_cliente)
 {
 	int bytes = paquete->buffer->size + 2*sizeof(int);
@@ -90,16 +84,13 @@ void enviar_paquete(t_paquete* paquete, int socket_cliente)
 }
 
 void eliminar_paquete(t_paquete* paquete)
-
 {
 	free(paquete->buffer->stream);
 	free(paquete->buffer);
 	free(paquete);
 }
 
-
 int iniciar_socket_escucha(char* ip, char* puerto)
-
 {
 	int socket_servidor;
 
@@ -298,7 +289,6 @@ void atenderCliente(fd_set* master, int socketCli){
 
 }
 
-
 int recibir_operacion(int socket_cliente)
 {
 	int cod_op;
@@ -319,7 +309,6 @@ void* recibir_buffer(int* size, int socket_cliente)
 	recv(socket_cliente, buffer, *size, MSG_WAITALL);
 	return buffer;
 }
-
 
 t_list* recibir_paquete(int socket_cliente)
 {

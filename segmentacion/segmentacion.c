@@ -1,27 +1,36 @@
 #include "segmentacion.h"
+#include "../paginacion/paginacion.h"
+#include "../paginacion/paginacion.c"
+#include "../paginacion/frames.h"
 
-t_segmento* crear_segmento(int type, uint32_t baseLogica, int tamanio, t_list* listaPaginas){ 
+
+segment* crear_segmento(segment_type tipo, uint32_t baseLogica, int tamanio, t_list* listaPaginas){
 
 //En lugar de mandarle la lista de paginas ya creada se le podria pasar la cantidad de paginas,
 //o el tamanio que deberia tener el segmento y crearle las paginas aca adentro, meh.
 
-	t_segmento* segmento = malloc(sizeof(t_segmento));
+	segment* segmento = (segment*)malloc(sizeof(segment));
 	segmento->baseLogica = baseLogica;
 	segmento->tamanio = tamanio;
-	segmento->tipo = type;
+	segmento->tipo = tipo;
 	segmento->tablaDePaginas = listaPaginas;
 	return segmento;
 }
 
-int posicion_en_lista_segmento(t_segmento* elemento, t_list* lista){
-	t_segmento* comparador = malloc(sizeof(t_segmento));
-	for(int index = 0 ; index < lista->elements_count; index++){
-		comparador = list_get(lista, index);
-		if (memcmp(elemento, comparador, sizeof(t_segmento)) == 0) {//Si son iguales devuelve 0
+int posicion_en_tabla_de_segmentos(segment* elemento){
+
+	segment* comparador = (segment*)malloc(sizeof(segment));
+
+	for(int index = 0 ; index < SEGMENT_TABLE->elements_count; index++){
+		comparador = list_get(SEGMENT_TABLE, index);
+		if (memcmp(elemento, comparador, sizeof(segment)) == 0) {//Si son iguales devuelve 0
 			free(comparador);
-			return index; }
+			return index;
+		}
 	}
+
 	free(comparador);
+
 	return -1; //Si no esta devuelve -1
 }
 
@@ -30,17 +39,17 @@ void liberar_segmentos(t_list* segmentos){
 	//Heap o mmap (creo)
 }
 
-bool segmento_tiene_espacio(t_segmento* segmento, int tamanio, t_list* listaDeMarcos){
-	void* segmentoMappeado = malloc((segmento->tamanio)+sizeof(t_metadata));
+bool segmento_tiene_espacio(segment* segmento, int tamanio, t_list* listaDeMarcos){
+	void* segmentoMappeado = (void*)malloc((segmento->tamanio)+sizeof(metadata));
 	mappear_segmento(segmento, segmentoMappeado, listaDeMarcos);
 	bool respuesta = tiene_espacio(segmentoMappeado, tamanio);
 	free(segmentoMappeado);
 	return respuesta;
 }
 
-void mappear_segmento(t_segmento* segmento, void* segmentoMappeado, t_list* listaDeMarcos){
+void mappear_segmento(segment* segmento, void* segmentoMappeado, t_list* listaDeMarcos){
 	int numeroDePagina = 0;
-	t_metadata* finDeSegmento = malloc(sizeof(t_metadata));
+	metadata* finDeSegmento = (metadata*)malloc(sizeof(metadata));
 	finDeSegmento->bytes = -1;
 	finDeSegmento->ocupado = false; //metadata que agrego para saber donde termina el segmento
 	int desplazamiento = 0;
@@ -53,32 +62,32 @@ void mappear_segmento(t_segmento* segmento, void* segmentoMappeado, t_list* list
 		numeroDePagina ++;
 	}
 
-	memcpy(segmentoMappeado + desplazamiento, finDeSegmento, sizeof(t_metadata));
+	memcpy(segmentoMappeado + desplazamiento, finDeSegmento, sizeof(metadata));
 	free(pagina);
 	free(finDeSegmento);
 }
 
-bool segmento_puede_agrandarse(t_segmento* segmento, t_list* listaDeSegmentos, int valorPedido){
-	t_segmento* siguiente = malloc(sizeof(t_segmento));
+bool segmento_puede_agrandarse(segment* segmento, t_list* listaDeSegmentos, int valorPedido){
+	segment* siguiente = (segment*)malloc(sizeof(segment));
 	bool respuesta;
 	int paginasNecesarias = paginas_necesarias(valorPedido);
 	int posicion = posicion_en_lista_segmento(segmento, listaDeSegmentos);
 	siguiente = list_get(listaDeSegmentos, (posicion+1));
 
 	if(((siguiente->baseLogica)-(segmento->baseLogica)-(segmento->tamanio))>=(paginasNecesarias * tamanio_paginas())){
-
 		free(siguiente);
-		return true;}
+		return true;
+	}
 
 	free(siguiente);
 	return false;
 }
 
 bool tiene_espacio(void* punteroAMemoria, int valorPedido){
-	t_metadata* metadata = malloc(sizeof(t_metadata));
+	metadata* metadata = malloc(sizeof(metadata)); // Deberia ser:( metadata*)malloc(sizeof(metadata))
 	int desplazamiento = 0;
 
-	memcpy(metadata, punteroAMemoria, sizeof(t_metadata));
+	memcpy(metadata, punteroAMemoria, sizeof(metadata));
 
 	while(metadata->bytes != -1){ //En el fin de segmento mapeado le agrego una metadata con bytes = -1
 
@@ -87,9 +96,9 @@ bool tiene_espacio(void* punteroAMemoria, int valorPedido){
 				return true;
 		}
 
-		desplazamiento += sizeof(t_metadata);
+		desplazamiento += sizeof(metadata);
 		desplazamiento += metadata->bytes; //Nos movemos a la siguiente metadata
-		memcpy(metadata, punteroAMemoria + desplazamiento, sizeof(t_metadata));
+		memcpy(metadata, punteroAMemoria + desplazamiento, sizeof(metadata));
 
 	}
 		free(metadata);

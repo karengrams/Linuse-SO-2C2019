@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+t_list* SEGMENT_TABLE= list_create();
 
 typedef enum{
 	HEAP,
@@ -19,7 +20,7 @@ typedef struct{
 	uint32_t baseLogica; //void* o uint32_t ???
 	int tamanio; //list_size(tablaDePaginas) * tamanioPagina
 	t_list* tablaDePaginas;
-} t_segmento;
+} segment;
 
 
 /**
@@ -31,16 +32,16 @@ typedef struct{
 	* 							   proceso
 	* 			int tamanio — tamaño del segmento a crear
 **/
-t_segmento* crear_segmento(segment_type type, uint32_t baseLogica, int tamanio, t_list* listaPaginas);
+segment* crear_segmento(segment_type type, uint32_t baseLogica, int tamanio, t_list* listaPaginas);
 
 /**
-	* @NAME: posicion_en_lista_segmento
+	* @NAME: posicion_en_tabla_de_segmentos
 	* @DESC: segun el segmento, devuelve la posicion que se encuentra en la tabla de segmentos, es decir, su base logica.
 	* @PARAMS:
 	* 			t_segmento* elemento — elemento a buscar en la tabla de segmentos.
 	* 			t_list* lista — puntero a tabla de segmentos del proceso
 **/
-int posicion_en_lista_segmento(t_segmento* elemento, t_list* lista);
+int posicion_en_tabla_de_segmentos(segment* elemento);
 
 /**
 	* @NAME: segmento_puede_agrandarse
@@ -50,7 +51,7 @@ int posicion_en_lista_segmento(t_segmento* elemento, t_list* lista);
 	* 			int tamanio — tam. a agrandar
 	* 			t_list* listaDeMarcos
 **/
-bool segmento_puede_agrandarse(t_segmento* segmento, int tamanio, t_list* listaDeMarcos);
+bool segmento_puede_agrandarse(segment* segmento, int tamanio, t_list* listaDeMarcos);
 
 /**
 	* @NAME: segmento_puede_agrandarse
@@ -60,7 +61,7 @@ bool segmento_puede_agrandarse(t_segmento* segmento, int tamanio, t_list* listaD
 	* 			void* segmentoMappeado — segmento donde vamos a guardar la copia
 	* 			t_list* listaDeMarcos
  */
-void mappear_segmento(t_segmento* segmento, void* segmentoMappeado, t_list* listaDeMarcos);
+void mappear_segmento(segment* segmento, void* segmentoMappeado, t_list* listaDeMarcos);
 
 /**
 	* @NAME: posicion_en_lista_segmento
@@ -70,7 +71,7 @@ void mappear_segmento(t_segmento* segmento, void* segmentoMappeado, t_list* list
 	* 		   int tamanio — tam. a disponer
 	* 		   t_list* listaDeMarcos
  */
-bool segmento_tiene_espacio(t_segmento* segmento, int tamanio, t_list* listaDeMarcos);
+bool segmento_tiene_espacio(segment* segmento, int tamanio, t_list* listaDeMarcos);
 
 /**
 	* @NAME: liberar_segmentos
