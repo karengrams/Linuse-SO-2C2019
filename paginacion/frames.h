@@ -9,8 +9,8 @@
 #define PAGINACION_FRAMES_H_
 
 
-t_list* FRAMES_TABLE = list_create();
-
+t_list *FRAMES_TABLE = list_create();
+t_bitarray *BIT_ARRAY_FRAMES;
 
 /**
  	*  Un frame siempre tiene un metadata que sera el espacio libre del mismo. Siempre se inicializara
@@ -34,6 +34,7 @@ typedef struct{
 	* 		int tamanioPagina - tam. de pagina a particionar memoria
 	* 		int tamanioMemoria - tam. total de memoria
  */
-void dividir_memoria(void* memoria, int tamanioPagina, int tamanioMemoria);
+void dividir_memoria_en_frames(void* memoria, int tamanioPagina, int tamanioMemoria);
 
+void crear_bitmap();
 #endif /* PAGINACION_FRAMES_H_ */

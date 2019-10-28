@@ -14,15 +14,15 @@
 #include <commons/collections/list.h>
 #include <commons/bitarray.h>
 
-t_list* PAGES_TABLE = list_create();
+int NO_FRAME = -1;
 
 
 typedef struct{
 	bool bit_presencia;
-	int numero_frame;
+	int numero_frame = NO_FRAME;
 }page;
 
-
+t_list* crear_lista_paginas(int cantidadDePaginas);
 
 /**
 	* @NAME: crear_bitmap
@@ -39,5 +39,21 @@ t_bitarray* crear_bitmap(t_list* listaDeMarcos);
 	* 		int valorPedido
 **/
 int paginas_necesarias(int valorPedido);
+
+/**
+	* @NAME: dividir_tabla_de_pags
+	* @DESC: divide la tabla de paginas en una cantidad N que respeta el tamanio establecido.
+	* @PARAMS:
+	* 		int cantidadDePaginas - cantidad de paginas a dividir la tabla
+**/
+void dividir_tabla_de_pags(int cantidadDePaginas, t_list *tabla_de_pags);
+
+/**
+	* @NAME: crear_pagina
+	* @DESC: crea una pagina inicializando el bit array y su nro de frame.
+	* @PARAMS:
+	* 		N/A
+**/
+page* crear_pagina();
 
 #endif /* PAGINACION_H_ */

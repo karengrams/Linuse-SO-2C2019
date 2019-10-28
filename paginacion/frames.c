@@ -7,19 +7,20 @@
 #include <stdbool.h>
 #include "frames.h"
 
-void dividir_memoria(void* memoria, int tamPag, int tamanioMemoria){
+void dividir_memoria_en_frames(void* memoria, int tamPag, int tamanioMemoria){
 	int desplazamiento = 0;
-	metadata* aux;
+	metadata *aux;
 
 	while(desplazamiento < tamanioMemoria){
-		aux = (metadata*)malloc(sizeof(metadata));
+		aux = malloc(sizeof(metadata));
 		aux->bytes = tamPag;
 		aux->ocupado=false;
 		list_add(FRAMES_TABLE, aux);
 		desplazamiento += tamPag;
 	}
+}
 
-t_bitarray* crear_bitmap(){
+void crear_bitmap(){
 		int bytes;
 		int cantidadDeMarcos = list_size(FRAMES_TABLE);
 		div_t aux = div(cantidadDeMarcos, 8);
@@ -29,10 +30,10 @@ t_bitarray* crear_bitmap(){
 			} else {
 				bytes = aux.quot + 1;
 			}
-		char* punteroABits = (char*)malloc(bytes);
+		char *punteroABits = malloc(bytes);
 
-		return bitarray_create_with_mode(punteroABits, bytes, LSB_FIRST);
-	}
+		BIT_ARRAY_FRAMES = bitarray_create_with_mode(punteroABits, bytes, LSB_FIRST);
 }
+
 
 

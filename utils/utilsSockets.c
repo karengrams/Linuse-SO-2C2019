@@ -185,7 +185,7 @@ void atenderCliente(fd_set* master, int socketCli){
 				"%d bytes de memoria \n", id_cliente,
 				ipCli, cantidad_de_bytes);
 
-				//Magia de MUSE
+				//TODO: Magia de SEGMENTACION PAGINADA
 
 				direccion = &cantidad_de_bytes; //direccion super random para pruebas
 				printf("Se le asigna la posicion %x\n", direccion);
@@ -195,6 +195,8 @@ void atenderCliente(fd_set* master, int socketCli){
 			case MUSE_FREE:
 				id_cliente = *((int*)list_get(lista, 0));
 				direccion_pedida = *((uint32_t*)list_get(lista, 1));
+
+				//TODO: Magia de SEGMENTACION PAGINADA
 
 				printf("MUSE_FREE, el proceso %d de la ip %s nos esta pidiendo que "
 				"liberemos la memoria de la direccion %x \n", id_cliente,
@@ -212,7 +214,7 @@ void atenderCliente(fd_set* master, int socketCli){
 						ipCli, cantidad_de_bytes, direccion_pedida);
 				printf("Le mandamos %s\n", buffer);
 
-				//magia de MUSE
+				//TODO: Magia de SEGMENTACION PAGINADA
 
 				if (cod_error == -1)
 					send(socketCli, &cod_error, sizeof(int), 0);

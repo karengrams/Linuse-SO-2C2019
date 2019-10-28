@@ -16,7 +16,8 @@ typedef enum{
 
 typedef struct{
 	segment_type tipo;
-	int tamanio; //list_size(tablaDePaginas) * tamanioPagina
+	uint32_t baseLogica;
+	int tamanio; //  tam. ocupado
 	t_list* tablaDePaginas;
 } segment;
 
@@ -39,7 +40,7 @@ segment* crear_segmento(segment_type type, uint32_t baseLogica, int tamanio, t_l
 	* 			t_segmento* elemento — elemento a buscar en la tabla de segmentos.
 	* 			t_list* lista — puntero a tabla de segmentos del proceso
 **/
-int posicion_en_lista_segmento(segment* elemento, t_list* tabla_de_segmentos);
+int posicion_en_tabla_segmento(segment* elemento, t_list* tabla_de_segmentos);
 
 /**
 	* @NAME: segmento_puede_agrandarse

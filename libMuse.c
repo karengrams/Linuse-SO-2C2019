@@ -1,11 +1,11 @@
-#include "cliente.c"
+
 
 int SOCKET;
-int ID ;
+int ID;
 
 int muse_init(int id, char* ip, int puerto){
 	int error;
-	char* puertoChar = (char*)malloc(sizeof(char)*8);
+	char* puertoChar = malloc(sizeof(char)*8);
 	sprintf(puertoChar, "%d", puerto); //Pasa el puerto a char* para la func crear_conexion
 
 	int socketCli = crear_conexion(ip, puertoChar);
