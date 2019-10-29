@@ -197,7 +197,7 @@ void atenderCliente(fd_set* master, int socketCli){
 
 			case MUSE_GET:
 
-				buffer = magia_muse_get(cliente_a_atender, list_get(paqueteRecibido, 1), list_get(paqueteRecibido, 2));
+				buffer = magia_muse_get(cliente_a_atender, paqueteRecibido);
 
 				if (buffer == NULL){
 					cod_error = -1;
@@ -214,17 +214,12 @@ void atenderCliente(fd_set* master, int socketCli){
 				break;
 
 			case MUSE_CPY:
-				id_cliente = *((int*)list_get(lista, 0));
-				cantidad_de_bytes = *((int*)list_get(lista, 1));
-				memcpy(buffer, list_get(lista,2), cantidad_de_bytes);
-				direccion_pedida = *((uint32_t*)list_get(lista, 3));
+				//id_cliente = *((int*)list_get(lista, 0));
+				//cantidad_de_bytes = *((int*)list_get(lista, 1));
+				//memcpy(buffer, list_get(lista,2), cantidad_de_bytes);
+				//direccion_pedida = *((uint32_t*)list_get(lista, 3));
 
-				printf("MUSE_CPY, el proceso %d de la ip %s quiere "
-				"copiar %d bytes en la direccion de memoria %x\n", id_cliente, ipCli,
-				cantidad_de_bytes, direccion_pedida);
-				printf("Lo que quiere copiar en formato texto es: \n %s \n", (char*)buffer);
-
-				//Magia de MUSE
+				cod_error = magia_muse_cpy(cliente_a_atender, paqueteRecibido);
 
 				send(socketCli, &cod_error, sizeof(int), 0);
 				break;

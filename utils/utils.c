@@ -82,7 +82,10 @@ void liberar_proceso(t_proceso* proceso, t_list* tablaProcesos){
 
 
 
-void* magia_muse_get(t_proceso* proceso, int cantidadDeBytes, uint32_t direccion){
+void* magia_muse_get(t_proceso* proceso, t_list* paqueteRecibido){
+	int cantidadDeBytes = *((int*)list_get(paqueteRecibido, 1));
+	uint32_t direccion = *((uint32_t*)list_get(paqueteRecibido, 2));
+
 	segment* segmento = buscar_segmento_dada_una_direccion(proceso->tablaDeSegmentos, direccion);
 	void* buffer = malloc(cantidadDeBytes);
 	void* marco;
@@ -141,3 +144,5 @@ int magia_muse_init(t_proceso* cliente_a_atender){
 			return 0;
 			}
 }
+
+
