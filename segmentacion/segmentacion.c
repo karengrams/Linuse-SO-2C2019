@@ -47,7 +47,7 @@ bool segmento_tiene_espacio(segment* segmento, int tamanio, uint32_t* direccionC
 	return respuesta;
 }
 
-void mappear_segmento(segment* segmento, void* segmentoMappeado, t_list* listaDeMarcos){
+void mappear_segmento(segment* segmento, void* segmentoMappeado){
 	int numeroDePagina = 0;
 	metadata *finDeSegmento = malloc(sizeof(metadata));
 	finDeSegmento->bytes = -1;

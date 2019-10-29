@@ -215,13 +215,7 @@ void atenderCliente(fd_set* master, int socketCli){
 				break;
 
 			case MUSE_CPY:
-				//id_cliente = *((int*)list_get(lista, 0));
-				//cantidad_de_bytes = *((int*)list_get(lista, 1));
-				//memcpy(buffer, list_get(lista,2), cantidad_de_bytes);
-				//direccion_pedida = *((uint32_t*)list_get(lista, 3));
-
 				cod_error = magia_muse_cpy(cliente_a_atender, paqueteRecibido);
-
 				send(socketCli, &cod_error, sizeof(int), 0);
 				break;
 

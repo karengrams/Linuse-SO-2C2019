@@ -113,7 +113,7 @@ void* magia_muse_get(t_proceso* proceso, t_list* paqueteRecibido){
 
 				pagina = list_get(segmento->tablaDePaginas, numeroPagina+auxiliar);
 				tamanioACopiar = min(cantidadDeBytes, (tamanio_paginas() - desplazamientoEnPagina));
-				marco = list_get(FRAMES_TABLE, (pagina->numero_frame)); //ahora me marca la lista de marcos, pero la vamos a hacer globar so doesn't matter
+				marco = list_get(FRAMES_TABLE, (pagina->numero_frame));
 
 				memcpy(buffer+desplazamientoEnBuffer, marco+desplazamientoEnPagina , tamanioACopiar);
 
@@ -161,11 +161,75 @@ int magia_muse_cpy(t_proceso* proceso, t_list* paqueteRecibido){
 			}
 
 	int desplazamientoEnSegmento = direccion_pedida - segmento->baseLogica;
-
 	void *segmentoMappeado = malloc(((segmento->tablaDePaginas->elements_count)*tamanio_paginas())+sizeof(metadata));
 	mappear_segmento(segmento, segmentoMappeado);
 
+	bool puedeEscribirse = segmento_puede_escribirse(segmentoMappeado, desplazamientoEnSegmento, cantidad_de_bytes);
+
+	if(!puedeEscribirse){
+		free(buffer);
+		free(segmentoMappeado);
+		return -1; //Quiere escribir sobre una metadata.
+	}
+
+	escribir_segmento(segmento, direccion_pedida, cantidad_de_bytes, buffer);
 	free(buffer);
+	free(segmentoMappeado);
 	return 0;
 }
 
+bool segmento_puede_escribirse(void* segmentoMappeado, int desplazamientoEnSegmento, int cantidad_de_bytes){
+	metadata* metadataAux = malloc(sizeof(metadata));
+	int desplazamiento = 0;
+
+	memcpy(metadataAux, segmentoMappeado+desplazamiento, sizeof(metadata));
+
+	while(metadataAux->bytes != -1){
+
+		desplazamiento += sizeof(metadata); //Limite inferior del lugar disponible
+		int bytesDisponibles = metadataAux->bytes + desplazamiento; //Limite superior del lugar Disponible
+
+			if(desplazamientoEnSegmento<desplazamiento) //ya nos pasamos (puede ser que haya pedido la direccion 0 del segmento por ejemplo
+				return false;
+
+			if((desplazamientoEnSegmento+cantidad_de_bytes)<=bytesDisponibles)
+				return true;
+
+		desplazamiento = bytesDisponibles;
+		memcpy(metadataAux, segmentoMappeado+desplazamiento, sizeof(metadata));
+	}
+
+	free(metadataAux);
+	return false; //por si me olvide de algun caso medio borde
+}
+
+
+
+escribir_segmento(segment* segmento, uint32_t direccion_pedida, int cantidad_de_bytes, void* buffer){
+	div_t aux = numero_pagina(segmento, direccion_pedida);
+	int numeroPagina = aux.quot; //pagina correspondiente a la direccion
+	int desplazamientoEnPagina = aux.rem; //desde que posicion de esa pagina vamos a empezar a copiar
+
+	page* pagina = malloc(sizeof(page));
+	void* marco;
+
+	int auxiliar = 0;
+	int tamanioACopiar;
+	int desplazamientoEnBuffer = 0;
+
+	while(cantidad_de_bytes>0){
+
+			pagina = list_get(segmento->tablaDePaginas, numeroPagina+auxiliar);
+			tamanioACopiar = min(cantidad_de_bytes, (tamanio_paginas() - desplazamientoEnPagina));
+			marco = list_get(FRAMES_TABLE, (pagina->numero_frame));
+
+			memcpy(marco+desplazamientoEnPagina, buffer+desplazamientoEnBuffer, tamanioACopiar);
+
+			cantidad_de_bytes -= tamanioACopiar;
+			auxiliar++; //siguiente pagina
+			desplazamientoEnBuffer += tamanioACopiar;
+			desplazamientoEnPagina = 0; //Solo era valido para la primera pagina
+			}
+
+	free(pagina);
+}
