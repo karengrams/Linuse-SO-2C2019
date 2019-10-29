@@ -54,7 +54,8 @@ bool segmento_puede_agrandarse(segment* segmento, int tamanio, t_list* listaDeMa
 
 /**
 	* @NAME: segmento_puede_agrandarse
-	* @DESC: Hace una copia de un segmento de forma continua
+	* @DESC: Hace una copiade todas las paginas de un segmento de forma continua, finaliza
+	* 		 con una metadata con los campos "ocupado" = false y "bytes" = -1 como flag.
 	* @PARAMS:
 	* 			t_segmento* segmento — segmento a realizar copia
 	* 			void* segmentoMappeado — segmento donde vamos a guardar la copia
@@ -65,12 +66,16 @@ void mappear_segmento(segment* segmento, void* segmentoMappeado, t_list* listaDe
 /**
 	* @NAME: posicion_en_lista_segmento
 	* @DESC: dado un segmento devuelve si tiene cierta cantidad de espacio pedida disponible
+	* 		 y guarda la direccion en el puntero que se pasa por parametro. (direccion de la
+	* 		 metadata que referencia al espacio libre necesitado).
 	* @PARAMS:
 	* 		   t_segmento* segmento — segmento a analizar
 	* 		   int tamanio — tam. a disponer
 	* 		   t_list* listaDeMarcos
+	* 		   uint32_t* direccionEncontrada puntero donde se guardara la direccion del espacio
+	* 		   libre en caso de encontrarse (direccion dentro de el segmento que se esta tratando)
  */
-bool segmento_tiene_espacio(segment* segmento, int tamanio, t_list* listaDeMarcos);
+bool segmento_tiene_espacio(segment* segmento, int tamanio, t_list* listaDeMarcos, uint32_t* direccionEncontrada);
 
 /**
 	* @NAME: liberar_segmentos

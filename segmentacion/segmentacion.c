@@ -39,10 +39,10 @@ void liberar_segmentos(t_list* segmentos){
 	//Heap o mmap (creo)
 }
 
-bool segmento_tiene_espacio(segment* segmento, int tamanio, t_list* listaDeMarcos){
+bool segmento_tiene_espacio(segment* segmento, int tamanio, t_list* listaDeMarcos, uint32_t* direccionConEspacioLibre){
 	void *segmentoMappeado = malloc((segmento->tamanio)+sizeof(metadata));
 	mappear_segmento(segmento, segmentoMappeado, listaDeMarcos);
-	bool respuesta = tiene_espacio(segmentoMappeado, tamanio);
+	bool respuesta = tiene_espacio(segmentoMappeado, tamanio, direccionConEspacioLibre);
 	free(segmentoMappeado);
 	return respuesta;
 }
@@ -67,7 +67,6 @@ void mappear_segmento(segment* segmento, void* segmentoMappeado, t_list* listaDe
 	free(finDeSegmento);
 }
 
-
 bool segmento_puede_agrandarse(segment* segmento, t_list* listaDeSegmentos, int valorPedido){
 	segment *siguiente = malloc(sizeof(segment));
 	bool respuesta;
@@ -84,25 +83,28 @@ bool segmento_puede_agrandarse(segment* segmento, t_list* listaDeSegmentos, int 
 	return false;
 }
 
-bool tiene_espacio(void* punteroAMemoria, int valorPedido){
-	metadata *metadata = malloc(sizeof(metadata)); // Deberia ser:( metadata*)malloc(sizeof(metadata))
-	int desplazamiento = 0;
+bool tiene_espacio(void* punteroAMemoria, int valorPedido, uint32_t* direccion){
+	metadata *metadat = malloc(sizeof(metadata)); // Deberia ser:( metadata*)malloc(sizeof(metadata))
+	bool desplazamiento = 0;
 
-	memcpy(metadata, punteroAMemoria, sizeof(metadata));
+	memcpy(metadat, punteroAMemoria, sizeof(metadata));
 
-	while(metadata->bytes != -1){ //En el fin de segmento mapeado le agrego una metadata con bytes = -1
+	while(metadat->bytes != -1){ //En el fin de segmento mapeado le agrego una metadata con bytes = -1
 
-		if(!(metadata->ocupado)){ //si no esta ocupado pregunto si cabe el valor pedido
-			if(metadata->bytes >= valorPedido)
+		if(!(metadat->ocupado)){ //si no esta ocupado pregunto si cabe el valor pedido
+			if((metadat->bytes == valorPedido) || (metadat->bytes >= (valorPedido+5)))
+				//Si el espacio libre es exactamente igual al valor pedido o si es mayorIgual al
+				//valor pedido mas el valor de la metadata que iria luego...
+				*direccion = desplazamiento; //Guardamos en el puntero la direccion al inicio de la metadata
 				return true;
 		}
 
 		desplazamiento += sizeof(metadata);
-		desplazamiento += metadata->bytes; //Nos movemos a la siguiente metadata
-		memcpy(metadata, punteroAMemoria + desplazamiento, sizeof(metadata));
+		desplazamiento += metadat->bytes; //Nos movemos a la siguiente metadata
+		memcpy(metadat, punteroAMemoria + desplazamiento, sizeof(metadata));
 
 	}
-		free(metadata);
+		free(metadat);
 		return false;
 }
 
