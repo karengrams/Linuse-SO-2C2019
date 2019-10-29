@@ -12,14 +12,6 @@
 t_list *FRAMES_TABLE = list_create();
 t_bitarray *BIT_ARRAY_FRAMES;
 
-/**
- 	*  Un frame siempre tiene un metadata que sera el espacio libre del mismo. Siempre se inicializara
- 	* uno libre con el tam. de una pagina
-**/
-typedef struct{
-	struct metadata metadata;
-} frame;
-
 typedef struct{
 	bool ocupado;
 	int bytes;

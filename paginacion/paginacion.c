@@ -34,3 +34,6 @@ void dividir_tabla_de_pags(int cantidadDePaginas, t_list *tabla_de_pags){
 		list_add(tabla_de_pags, pagina);
 	}
 }
+
+
+

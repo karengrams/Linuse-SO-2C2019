@@ -138,17 +138,16 @@ void atenderCliente(fd_set* master, int socketCli){
 	t_paquete* paquete_respuesta;
 	int cod_error;
 	int id_cliente, cantidad_de_bytes, flags;
-	char* buffer = malloc(30);
+	void* buffer;
 	uint32_t direccion_pedida, direccion;
-	t_list* lista;
+	t_list* paqueteRecibido;
 	char* ipCli = (char*)malloc(sizeof(char)*20);
 	ipCliente(socketCli, ipCli);
 
 	int cod_op = recibir_operacion(socketCli);
-	lista = recibir_paquete(socketCli);
+	paqueteRecibido = recibir_paquete(socketCli);
 
-	//t_proceso* cliente_a_atender = buscar_proceso(lista, tabla_de_procesos, ipCli); //lo pongo comentado porque
-	//falta la tabladeprocesos.//
+	t_proceso* cliente_a_atender = buscar_proceso(paqueteRecibido, ipCli);
 
 
 		switch(cod_op)
@@ -160,20 +159,13 @@ void atenderCliente(fd_set* master, int socketCli){
 				break;
 
 			case MUSE_INIT:
-
-				//if(cliente_a_atender != NULL){
-						//cod_error = -1; YA EXISTE EN NUESTRA TABLA ERROR
-						//} else {
-				//list_add(tabla_de_procesos, cliente_a_atender); Si no existe lo agregamos
-				//cod_error = 0; }
-
+				cod_error = magia_muse_init(cliente_a_atender);
 				send(socketCli, &cod_error, sizeof(int), 0);
 				break;
 
 			case MUSE_CLOSE:
 
-				// borrar tablas de este proceso.
-				//
+				liberar_proceso(cliente_a_atender);
 				close(socketCli);
 				break;
 
@@ -193,8 +185,8 @@ void atenderCliente(fd_set* master, int socketCli){
 				break;
 
 			case MUSE_FREE:
-				id_cliente = *((int*)list_get(lista, 0));
-				direccion_pedida = *((uint32_t*)list_get(lista, 1));
+				id_cliente = *((int*)list_get(paqueteRecibido, 0));
+				direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
 
 				//TODO: Magia de SEGMENTACION PAGINADA
 
@@ -204,27 +196,21 @@ void atenderCliente(fd_set* master, int socketCli){
 				break;
 
 			case MUSE_GET:
-				id_cliente = *((int*)list_get(lista, 0));
-				cantidad_de_bytes = *((int*)list_get(lista, 1));
-				direccion_pedida = *((uint32_t*)list_get(lista, 2));
-				strcpy(buffer, "putita seras vos"); //respuesta random para probar
-				//notese que buffer es void*
-				printf("MUSE_GET, el proceso %d de la ip %s nos esta pidiendo"
-						" %d bytes de la posicion %x de memoria \n", id_cliente,
-						ipCli, cantidad_de_bytes, direccion_pedida);
-				printf("Le mandamos %s\n", buffer);
 
-				//TODO: Magia de SEGMENTACION PAGINADA
+				buffer = magia_muse_get(cliente_a_atender, list_get(paqueteRecibido, 1), list_get(paqueteRecibido, 2));
 
-				if (cod_error == -1)
+				if (buffer == NULL){
+					cod_error = -1;
 					send(socketCli, &cod_error, sizeof(int), 0);
 
-				paquete_respuesta = crear_paquete(cod_error);
+				} else {
+
+				paquete_respuesta = crear_paquete(0);
 				agregar_a_paquete(paquete_respuesta, buffer, cantidad_de_bytes);
-				//literalmente habra que agregar la direccion pedida en el agregar_paquete (despues de
-				//chequear que este todo en orden para pasar lo contenido en esa direccion
 				enviar_paquete(paquete_respuesta, socketCli);
 				eliminar_paquete(paquete_respuesta);
+
+				}
 				break;
 
 			case MUSE_CPY:

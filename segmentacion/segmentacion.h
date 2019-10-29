@@ -1,7 +1,7 @@
 #ifndef SEGMENTACION_H
 #define SEGMENTACION_H
 
-#include <commons/list.h>
+#include <commons/collections/list.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -79,6 +79,38 @@ bool segmento_tiene_espacio(segment* segmento, int tamanio, t_list* listaDeMarco
 	* 		  t_list* segmentos — puntero a tabla de segmentos
  */
 void liberar_segmentos(t_list* segmentos);
+
+/**
+	* @NAME: tamanio_segmento
+	* @DESC: tamanio total del segmento, independientemente si esta ocupado o libre
+	* @PARAMS:
+	* 		  segment* segmento
+ */
+
+int tamanio_segmento(segment* segmento);
+
+/**
+	* @NAME: limite_segmento
+	* @DESC: direccion logica del final del segmento, independientemente si esta ocupado o libre
+	* @PARAMS:
+	* 		  segment* segmento
+ */
+uint32_t limite_segmento(segment* segmento);
+
+/**
+	* @NAME: numero_pagina
+	* @DESC: Retorna el numero de la pagina (div_t.quot) que corresponde a una direccion dada
+	* Y el desplazamiento dentro de la misma pagina  (div_t.rem)
+	* @PARAMS:
+	* 		  segment* segmento, uint32_t direccion
+ */
+
+div_t numero_pagina(segment* segmento, uint32_t direccion);
+
+segment* buscar_segmento_dada_una_direccion(t_list* tablaSegmentos, uint32_t direccion);
+
+
+
 
 
 #endif /* muse-segmentacion_h */

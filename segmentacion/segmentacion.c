@@ -107,3 +107,37 @@ bool tiene_espacio(void* punteroAMemoria, int valorPedido){
 }
 
 
+
+uint32_t limite_segmento(segment* segmento){
+	return ((segmento->baseLogica)+list_size(segmento->tablaDePaginas))*tamanio_paginas();
+}
+
+div_t numero_pagina(segment* segmento, uint32_t direccion){
+	int desplazamientoEnSegmento = direccion - segmento->baseLogica;
+	return div(desplazamientoEnSegmento, tamanio_paginas());
+}
+
+int tamanio_segmento(segment* segmento){
+	return ((list_size(segmento->tablaDePaginas))*(tamanio_paginas()));
+}
+
+
+segment* buscar_segmento_dada_una_direccion(t_list* tablaSegmentos, uint32_t direccion){
+	segment* segmentoEncontrado = malloc(sizeof(segment));
+
+	for(int i = 0; i<(tablaSegmentos->elements_count); i++){
+		segmentoEncontrado = list_get(tablaSegmentos, i);
+
+			if((segmentoEncontrado->baseLogica>direccion) || (segmentoEncontrado == NULL)){ //si ya nos pasamos devolvemos error (baselogica = -1)
+				return NULL;
+				}
+
+			if((limite_segmento(segmentoEncontrado))>direccion){
+				return segmentoEncontrado;
+			}
+
+	}
+	return NULL; //Por las dudas de que me este olvidando de algun caso
+}
+
+
