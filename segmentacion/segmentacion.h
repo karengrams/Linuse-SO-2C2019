@@ -71,11 +71,10 @@ void mappear_segmento(segment* segmento, void* segmentoMappeado, t_list* listaDe
 	* @PARAMS:
 	* 		   t_segmento* segmento — segmento a analizar
 	* 		   int tamanio — tam. a disponer
-	* 		   t_list* listaDeMarcos
 	* 		   uint32_t* direccionEncontrada puntero donde se guardara la direccion del espacio
 	* 		   libre en caso de encontrarse (direccion dentro de el segmento que se esta tratando)
  */
-bool segmento_tiene_espacio(segment* segmento, int tamanio, t_list* listaDeMarcos, uint32_t* direccionEncontrada);
+bool segmento_tiene_espacio(segment* segmento, int tamanio, uint32_t* direccionEncontrada);
 
 /**
 	* @NAME: liberar_segmentos

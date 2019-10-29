@@ -39,9 +39,9 @@ void liberar_segmentos(t_list* segmentos){
 	//Heap o mmap (creo)
 }
 
-bool segmento_tiene_espacio(segment* segmento, int tamanio, t_list* listaDeMarcos, uint32_t* direccionConEspacioLibre){
-	void *segmentoMappeado = malloc((segmento->tamanio)+sizeof(metadata));
-	mappear_segmento(segmento, segmentoMappeado, listaDeMarcos);
+bool segmento_tiene_espacio(segment* segmento, int tamanio, uint32_t* direccionConEspacioLibre){
+	void *segmentoMappeado = malloc(((segmento->tablaDePaginas->elements_count)*tamanio_paginas())+sizeof(metadata));
+	mappear_segmento(segmento, segmentoMappeado);
 	bool respuesta = tiene_espacio(segmentoMappeado, tamanio, direccionConEspacioLibre);
 	free(segmentoMappeado);
 	return respuesta;
@@ -57,7 +57,7 @@ void mappear_segmento(segment* segmento, void* segmentoMappeado, t_list* listaDe
 	while(numeroDePagina < list_size((segmento->tablaDePaginas))){ //Copio todos los marcos en el mappeo
 
 		pagina = (page*)list_get((segmento->tablaDePaginas), numeroDePagina);
-		memcpy(segmentoMappeado + desplazamiento, (list_get(listaDeMarcos, (pagina->numero_frame))), tamanio_paginas());
+		memcpy(segmentoMappeado + desplazamiento, (list_get(FRAMES_TABLE, (pagina->numero_frame))), tamanio_paginas());
 		desplazamiento += tamanio_paginas();
 		numeroDePagina ++;
 	}

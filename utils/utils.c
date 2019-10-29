@@ -45,14 +45,7 @@ int posicion_en_lista_proceso(t_proceso* elemento, t_list* lista){
 	return -1; //Si no esta devuelve -1
 }
 
-int iniciar_proceso(t_list* tablaProcesos, t_proceso* proceso, t_list* paquete, char* ip){
 
-			if(proceso != NULL)
-           	   	return -1; //YA EXISTE EN NUESTRA TABLA: ERROR
-			proceso = crear_proceso(*((int*)paquete->head->data), ip);
-           	list_add(tablaProcesos, proceso);// Si no existe lo agregamos
-           	return 0;
-}
 
 void liberar_proceso(t_proceso* proceso, t_list* tablaProcesos){
 	list_remove(tablaProcesos, posicion_en_lista_proceso(proceso, tablaProcesos));
@@ -134,15 +127,45 @@ void* magia_muse_get(t_proceso* proceso, t_list* paqueteRecibido){
 		return(buffer);
 }
 
-int magia_muse_init(t_proceso* cliente_a_atender){
+int magia_muse_init(t_proceso* cliente_a_atender, char* ipCliente, int id){
 
 		if(cliente_a_atender != NULL){
 			return ERROR; //YA EXISTE EN NUESTRA TABLA ERROR
 
 			} else {
-			list_add(PROCESS_TABLE, cliente_a_atender); //Si no existe lo agregamos
+			t_proceso* procesoNuevo = crear_proceso(id, ipCliente);
+			list_add(PROCESS_TABLE, procesoNuevo); //Si no existe lo creamos y agregamos
 			return 0;
 			}
 }
 
+int magia_muse_cpy(t_proceso* proceso, t_list* paqueteRecibido){
+
+	int cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1));
+	uint32_t direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 3));
+
+	void* buffer = malloc(cantidad_de_bytes);
+
+	memcpy(buffer, list_get(paqueteRecibido,2), cantidad_de_bytes);
+
+	segment* segmento = buscar_segmento_dada_una_direccion(proceso->tablaDeSegmentos, direccion_pedida);
+
+		if(segmento == NULL){
+				free(buffer);
+				return -1; //ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO.
+			}
+
+		if((direccion_pedida+cantidad_de_bytes)>limite_segmento(segmento)){
+				free(buffer);
+				return -1; // SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
+			}
+
+	int desplazamientoEnSegmento = direccion_pedida - segmento->baseLogica;
+
+	void *segmentoMappeado = malloc(((segmento->tablaDePaginas->elements_count)*tamanio_paginas())+sizeof(metadata));
+	mappear_segmento(segmento, segmentoMappeado);
+
+	free(buffer);
+	return 0;
+}
 

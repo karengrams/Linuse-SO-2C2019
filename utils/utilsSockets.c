@@ -159,7 +159,8 @@ void atenderCliente(fd_set* master, int socketCli){
 				break;
 
 			case MUSE_INIT:
-				cod_error = magia_muse_init(cliente_a_atender);
+				id_cliente = *((int*)list_get(paqueteRecibido, 0));
+				cod_error = magia_muse_init(cliente_a_atender, ipCli, id_cliente);
 				send(socketCli, &cod_error, sizeof(int), 0);
 				break;
 
@@ -269,6 +270,7 @@ void atenderCliente(fd_set* master, int socketCli){
 
 		free(ipCli);
 		free(buffer);
+		eliminar_paquete(paqueteRecibido);
 
 }
 
