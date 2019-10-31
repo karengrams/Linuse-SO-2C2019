@@ -10,7 +10,7 @@
 
 
 void dividir_memoria_en_frames(void* memoria, int tamPag, int tamanioMemoria){
-	t_list* listaDeMarcos = list_create();
+
 	int desplazamiento = 0;
 	void* aux;
 
@@ -25,6 +25,7 @@ void dividir_memoria_en_frames(void* memoria, int tamPag, int tamanioMemoria){
 		list_add(FRAMES_TABLE, aux);
 		desplazamiento += tamPag;
 	}
+	free(metadataInicial);
 }
 
 
