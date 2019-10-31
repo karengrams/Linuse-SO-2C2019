@@ -7,18 +7,27 @@
 #include <stdbool.h>
 #include "frames.h"
 
+
+
 void dividir_memoria_en_frames(void* memoria, int tamPag, int tamanioMemoria){
+	t_list* listaDeMarcos = list_create();
 	int desplazamiento = 0;
-	metadata *aux;
+	void* aux;
+
+	metadata* metadataInicial = malloc(sizeof(metadata));
+	metadataInicial->bytes = tamPag;
+	metadataInicial->ocupado = false;
+
 
 	while(desplazamiento < tamanioMemoria){
-		aux = malloc(sizeof(metadata));
-		aux->bytes = tamPag;
-		aux->ocupado=false;
+		aux = memoria+desplazamiento;
+		memcpy(memoria+desplazamiento,metadataInicial,sizeof(metadata));
 		list_add(FRAMES_TABLE, aux);
 		desplazamiento += tamPag;
 	}
 }
+
+
 
 void crear_bitmap(){
 		int bytes;
