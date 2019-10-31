@@ -8,11 +8,12 @@ t_list* crear_lista_paginas(int cantidadDePaginas){
 		pagina = crear_pagina();
 		list_add(lista, pagina);
 	}
+	free(pagina);
 	return lista;
 }
 
 int paginas_necesarias(int valorPedido){
-	div_t aux = div((valorPedido+10), tamanio_paginas()); //Creo que va 10 porque irian dos metadatas (una al principio y otra al final) not sure tho
+	div_t aux = div(valorPedido, tamanio_paginas()); //Creo que va 10 porque irian dos metadatas (una al principio y otra al final) not sure tho
 				if (aux.rem == 0){
 					return aux.quot;
 				} else {
