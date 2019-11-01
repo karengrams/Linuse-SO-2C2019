@@ -80,11 +80,14 @@ uint32_t magia_muse_alloc(t_proceso* proceso, int tam){
 	else{
 		// No hay ningun segmento de tipo HEAP que estamos buscando
 		int cantidad_de_paginas= paginas_necesarias(tam);
-		segment segmento = crear_segmento(HEAP,0,tam,NULL); // TODO: implementar de forma correcta la base
+		uint32_t baseLogica = proceso->tablaDeSegmentos->elements_count*cantidad_de_paginas;
+		segment segmento = crear_segmento(HEAP,baseLogica,tam,NULL); // TODO: implementar de forma correcta la base
 		list_add(proceso->tablaDeSegmentos,segmento); // Se agrega el segmento creado a nuestra tabla de segmentos
 		segmento.tablaDePaginas=crear_lista_paginas(cantidad_de_paginas);
 		asignar_marcos(segmento.tablaDePaginas);
-		return segmento.baseLogica; // Pongo la base logica solamente para que no chille eclipse
+		return segmento.baseLogica+sizeof(metadata); /*Devuelve la base logica + 5 de la metadata.
+		Como no hay ningun segmento que se pueda extender, o no exista ningun segmento
+		se devuelve 'automaticamente' 5. TODO: fijarse si funciona correctamente */
 	}
 
 }

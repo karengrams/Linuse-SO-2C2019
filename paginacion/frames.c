@@ -8,7 +8,6 @@
 #include "frames.h"
 
 void dividir_memoria_en_frames(void* memoria, int tamPag, int tamanioMemoria){
-
 	int desplazamiento = 0;
 	void* aux;
 
@@ -16,13 +15,13 @@ void dividir_memoria_en_frames(void* memoria, int tamPag, int tamanioMemoria){
 	metadataInicial->bytes = tamPag;
 	metadataInicial->ocupado = false;
 
-
 	while(desplazamiento < tamanioMemoria){
 		aux = memoria+desplazamiento;
 		memcpy(memoria+desplazamiento,metadataInicial,sizeof(metadata));
 		list_add(FRAMES_TABLE, aux);
 		desplazamiento += tamPag;
 	}
+
 	free(metadataInicial);
 }
 

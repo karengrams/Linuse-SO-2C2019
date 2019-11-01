@@ -14,8 +14,7 @@ t_bitarray *BIT_ARRAY_FRAMES;
 typedef struct{
 	bool ocupado;
 	int bytes;
-
-} metadata;
+}metadata;
 
 /**
 	* @NAME: dividir_memoria
