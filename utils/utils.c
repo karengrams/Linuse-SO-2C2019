@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "utils.h"
+#include "../segmentacion/segmentacion.h"
 
 int ERROR = -1;
 
@@ -72,8 +73,33 @@ void liberar_proceso(t_proceso* proceso, t_list* tablaProcesos){
 //
 //}
 
+uint32_t magia_muse_alloc(t_proceso* proceso, int tam){
+	if(tiene_segmento_heap_para_extender(proceso->tablaDeSegmentos)){
+		//Situacion nro 2. (o de expansion)
+	}
+	else{
+		// No hay ningun segmento de tipo HEAP que estamos buscando
+		int cantidad_de_paginas= paginas_necesarias(tam);
+		segment segmento = crear_segmento(HEAP,0,tam,NULL); // TODO: implementar de forma correcta la base
+		list_add(proceso->tablaDeSegmentos,segmento); // Se agrega el segmento creado a nuestra tabla de segmentos
+		segmento.tablaDePaginas=crear_lista_paginas(cantidad_de_paginas);
+		asignar_marcos(segmento.tablaDePaginas);
+		return segmento.baseLogica; // Pongo la base logica solamente para que no chille eclipse
+	}
 
+}
 
+bool tiene_segmento_heap_para_extender(t_list* tabla){
+	if(tabla->elements_count==0)
+		return false; // Si la tabla se encuentra vacia, entonces no hay segmentos
+	else{
+			return list_find(tabla->head,(void*)es_segmento_de_tipo_HEAP); //Busca si hay un segmento del tipo heap
+	}
+}
+
+bool es_segmento_de_tipo_HEAP(void* data){
+	return data->tipo == HEAP;
+}
 
 void* magia_muse_get(t_proceso* proceso, t_list* paqueteRecibido){
 	int cantidadDeBytes = *((int*)list_get(paqueteRecibido, 1));
@@ -202,8 +228,6 @@ bool segmento_puede_escribirse(void* segmentoMappeado, int desplazamientoEnSegme
 	free(metadataAux);
 	return false; //por si me olvide de algun caso medio borde
 }
-
-
 
 escribir_segmento(segment* segmento, uint32_t direccion_pedida, int cantidad_de_bytes, void* buffer){
 	div_t aux = numero_pagina(segmento, direccion_pedida);

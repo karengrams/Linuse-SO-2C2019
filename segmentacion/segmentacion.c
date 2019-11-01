@@ -5,7 +5,6 @@
 
 
 segment* crear_segmento(segment_type tipo, uint32_t baseLogica, int tamanio, t_list* listaPaginas){
-
 //En lugar de mandarle la lista de paginas ya creada se le podria pasar la cantidad de paginas,
 //o el tamanio que deberia tener el segmento y crearle las paginas aca adentro, meh.
 
@@ -141,10 +140,6 @@ segment* buscar_segmento_dada_una_direccion(t_list* tablaSegmentos, uint32_t dir
 	}
 	return NULL; //Por las dudas de que me este olvidando de algun caso
 }
-
-
-
-
 
 void desmappear_segmento(segment* segmento, void* segmentoMappeado){
 	int numeroDePagina = 0;

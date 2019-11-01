@@ -8,13 +8,13 @@
 #ifndef PAGINACION_FRAMES_H_
 #define PAGINACION_FRAMES_H_
 
-
 t_list *FRAMES_TABLE = list_create();
 t_bitarray *BIT_ARRAY_FRAMES;
 
 typedef struct{
 	bool ocupado;
 	int bytes;
+
 } metadata;
 
 /**

@@ -124,8 +124,4 @@ div_t numero_pagina(segment* segmento, uint32_t direccion);
 
 segment* buscar_segmento_dada_una_direccion(t_list* tablaSegmentos, uint32_t direccion);
 
-
-
-
-
 #endif /* muse-segmentacion_h */

@@ -8,14 +8,13 @@
 #ifndef PAGINACION_H_
 #define PAGINACION_H_
 
-#include "segmentacion.h"
+#include "../segmentacion/segmentacion.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include <commons/collections/list.h>
 #include <commons/bitarray.h>
 
 int NO_FRAME = -1;
-
 
 typedef struct{
 	bool bit_presencia;
