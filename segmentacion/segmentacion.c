@@ -74,7 +74,7 @@ bool segmento_puede_agrandarse(segment* segmento, t_list* listaDeSegmentos, int 
 	int posicion = posicion_en_lista_segmento(segmento, listaDeSegmentos);
 	siguiente = list_get(listaDeSegmentos, (posicion+1));
 
-	if(((siguiente->baseLogica)-(segmento->baseLogica)-(segmento->tamanio))>=(paginasNecesarias * tamanio_paginas())){
+	if(((siguiente->baseLogica)-(limite_segmento(segmento)))>=(paginasNecesarias * tamanio_paginas())){
 		free(siguiente);
 		return true;
 	}
@@ -85,7 +85,7 @@ bool segmento_puede_agrandarse(segment* segmento, t_list* listaDeSegmentos, int 
 
 bool tiene_espacio(void* punteroAMemoria, int valorPedido, uint32_t* direccion){
 	metadata *metadat = malloc(sizeof(metadata)); // Deberia ser:( metadata*)malloc(sizeof(metadata))
-	bool desplazamiento = 0;
+	uint32_t desplazamiento = 0;
 
 	memcpy(metadat, punteroAMemoria, sizeof(metadata));
 
@@ -143,3 +143,52 @@ segment* buscar_segmento_dada_una_direccion(t_list* tablaSegmentos, uint32_t dir
 }
 
 
+
+
+
+void desmappear_segmento(segment* segmento, void* segmentoMappeado){
+	int numeroDePagina = 0;
+	int desplazamiento = 0;
+	page *pagina = malloc(sizeof(page));
+
+	while(numeroDePagina < list_size((segmento->tablaDePaginas))){ //Copio todos los marcos en el mappeo
+
+		pagina = (page*)list_get((segmento->tablaDePaginas), numeroDePagina);
+		memcpy((list_get(FRAMES_TABLE, (pagina->numero_frame))), segmentoMappeado + desplazamiento, tamanio_paginas());
+		desplazamiento += tamanio_paginas();
+		numeroDePagina ++;
+	}
+
+	free(pagina);
+
+}
+
+
+void reservar_memoria(int bytesPedidos, uint32_t desplazamiento, segment* segmento){ //Segmento con lugar, desplazamiento en donde tiene ese lugar
+
+	void *segmentoMappeado = malloc(((segmento->tablaDePaginas->elements_count)*tamanio_paginas())+sizeof(metadata));
+	mappear_segmento(segmento, segmentoMappeado);
+	metadata* metadataAux = malloc(sizeof(metadata));
+
+	//trabajo con el segmento mappeado y luego lo vuelco en los marcos
+	memcpy(metadataAux, segmentoMappeado+desplazamiento, sizeof(metadata));
+
+	if(metadataAux->bytes == bytesPedidos){ //Si es igual lo que hay libre y lo que pidio, solamente lo ponemos ocupado
+		metadataAux->ocupado = true;
+		memcpy(segmentoMappeado+desplazamiento, metadataAux, sizeof(metadata));
+
+	} else { //Deberia tener lo pedido y sobrarle al menos 5 bytes para la siguiente metadata...
+		int nuevosBytesLibres = metadataAux->bytes-bytesPedidos-sizeof(metadata);
+		metadataAux->ocupado = true;
+		metadataAux->bytes = bytesPedidos;
+		memcpy(segmentoMappeado+desplazamiento, metadataAux, sizeof(metadata));
+		//Le cargo los valores de la metadata que va despues del espacio reservado
+		metadataAux->ocupado = false;
+		metadataAux->bytes = nuevosBytesLibres;
+		memcpy(segmentoMappeado+desplazamiento+sizeof(metadata)+bytesPedidos, metadataAux, sizeof(metadata));
+	}
+
+	desmappear_segmento(segmento, segmentoMappeado);
+	free(metadataAux);
+	free(segmentoMappeado);
+}

@@ -43,6 +43,8 @@ int paginas_necesarias(int valorPedido);
 /**
 	* @NAME: dividir_tabla_de_pags
 	* @DESC: divide la tabla de paginas en una cantidad N que respeta el tamanio establecido.
+	* 		 Para el valor pedido tener en cuenta el tamanio de las metadatas y sumarselo cuando se llama a esta funcion
+	*		 (dependiendo el caso a veces no se agregan metadatas, otras veces una y otras veces dos metadatas...)
 	* @PARAMS:
 	* 		int cantidadDePaginas - cantidad de paginas a dividir la tabla
 **/

@@ -171,8 +171,8 @@ void atenderCliente(fd_set* master, int socketCli){
 				break;
 
 			case MUSE_ALLOC:
-				id_cliente = *((int*)list_get(lista, 0));
-				cantidad_de_bytes = *((int*)list_get(lista, 1));
+				//id_cliente = *((int*)list_get(lista, 0));
+				//cantidad_de_bytes = *((int*)list_get(lista, 1));
 
 				printf("MUSE_ALLOC, el proceso %d, de la ip %s nos esta pidiendo "
 				"%d bytes de memoria \n", id_cliente,

@@ -46,4 +46,19 @@ void crear_bitmap(){
 }
 
 
+int numero_marco_libre(){
+	int j = -1; //Si no hay ningun marco libre devuelve -1
+	for(int i = (bitarray_get_max_bit(BIT_ARRAY_FRAMES)-1); i>=0; i--){
+		if(!bitarray_test_bit(BIT_ARRAY_FRAMES, i)) //Si esta vacio lo asignamos a j y lo devolvemos
+			j=i;
+	}
+	return j;
+}
+
+
+void asignar_marco_a_pagina(page* pagina, int index){
+	bitarray_set_bit(BIT_ARRAY_FRAMES, index);
+	pagina->numero_frame = index;
+}
+
 

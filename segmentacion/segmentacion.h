@@ -50,7 +50,7 @@ int posicion_en_tabla_segmento(segment* elemento, t_list* tabla_de_segmentos);
 	* 			int tamanio — tam. a agrandar
 	* 			t_list* listaDeMarcos
 **/
-bool segmento_puede_agrandarse(segment* segmento, int tamanio, t_list* listaDeMarcos);
+bool segmento_puede_agrandarse(segment* segmento, int tamanio);
 
 /**
 	* @NAME: segmento_puede_agrandarse
@@ -61,7 +61,7 @@ bool segmento_puede_agrandarse(segment* segmento, int tamanio, t_list* listaDeMa
 	* 			void* segmentoMappeado — segmento donde vamos a guardar la copia
 	* 			t_list* listaDeMarcos
  */
-void mappear_segmento(segment* segmento, void* segmentoMappeado, t_list* listaDeMarcos);
+void mappear_segmento(segment* segmento, void* segmentoMappeado);
 
 /**
 	* @NAME: posicion_en_lista_segmento
@@ -75,6 +75,17 @@ void mappear_segmento(segment* segmento, void* segmentoMappeado, t_list* listaDe
 	* 		   libre en caso de encontrarse (direccion dentro de el segmento que se esta tratando)
  */
 bool segmento_tiene_espacio(segment* segmento, int tamanio, uint32_t* direccionEncontrada);
+
+
+/**
+	* @NAME: reservar_memoria
+	* @DESC: Dados una cantidad de bytes, un segmento y una direccion/desplazamiento
+	* 		 dentro del segmento crea y modifica las metadatas necesarias para reservar la memoria
+	* @PARAMS:
+	* 		  int bytesPedidos, uint32_t desplazamiento, segment* segmento
+ */
+
+void reservar_memoria(int bytesPedidos, uint32_t desplazamiento, segment* segmento);
 
 /**
 	* @NAME: liberar_segmentos
