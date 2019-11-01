@@ -54,7 +54,7 @@ bool segmento_puede_agrandarse(segment* segmento, int tamanio);
 
 /**
 	* @NAME: segmento_puede_agrandarse
-	* @DESC: Hace una copiade todas las paginas de un segmento de forma continua, finaliza
+	* @DESC: Hace una copia de todas las paginas de un segmento de forma continua, finaliza
 	* 		 con una metadata con los campos "ocupado" = false y "bytes" = -1 como flag.
 	* @PARAMS:
 	* 			t_segmento* segmento — segmento a realizar copia

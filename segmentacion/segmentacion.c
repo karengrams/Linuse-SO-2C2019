@@ -4,15 +4,12 @@
 #include "../paginacion/frames.h"
 
 
-segment* crear_segmento(segment_type tipo, uint32_t baseLogica, int tamanio, t_list* listaPaginas){
-//En lugar de mandarle la lista de paginas ya creada se le podria pasar la cantidad de paginas,
-//o el tamanio que deberia tener el segmento y crearle las paginas aca adentro, meh.
-
+segment* crear_segmento(segment_type tipo, uint32_t baseLogica, int tamanio){
 	segment *segmento = malloc(sizeof(segment));
 	segmento->baseLogica = baseLogica;
 	segmento->tamanio = tamanio;
 	segmento->tipo = tipo;
-	segmento->tablaDePaginas = listaPaginas;
+	segmento->tablaDePaginas = NULL;
 	return segmento;
 }
 

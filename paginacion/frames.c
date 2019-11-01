@@ -54,9 +54,10 @@ void asignar_marco_a_pagina(page* pagina, int index){
 	pagina->numero_frame = index;
 }
 
-void asignar_marcos(t_list* paginas_a_asignar){
-	int paginas = paginas_a_asignar->elements_count;
-	for(int i=0;i<=paginas;i++){
-		asignar_marco_a_pagina(paginas_a_asignar->head->data+i,i);
+void asignar_marcos(t_list* tabla_de_pags){
+	int total_de_paginas = (*tabla_de_pags).elements_count;
+	for(int i=0;i<=total_de_paginas;i++){
+		(*tabla_de_pags).head;
+		asignar_marco_a_pagina((*tabla_de_pags).head+i,numero_marco_libre());
 	}
 }

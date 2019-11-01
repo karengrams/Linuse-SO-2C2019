@@ -33,7 +33,7 @@ int main(void){
     int cantidad_de_pags = tam_mem/tam_pag;
     dividir_memoria_en_frames(memoria, tam_pag, tam_mem);
     crear_bitmap();
-
+    /*
     //Arranca a atender clientes
 
 	fd_set master;   // conjunto maestro de descriptores de fichero
@@ -58,7 +58,9 @@ int main(void){
            	   	  }
          	 }
      	 }
-	}
+	}*/
+
+
     return 0;
 }
 

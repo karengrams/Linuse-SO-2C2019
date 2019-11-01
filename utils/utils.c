@@ -20,7 +20,6 @@ t_proceso* crear_proceso(int id, char* ip){
 	return proceso;
 }
 
-
 t_proceso* buscar_proceso(t_list* paqueteRecibido, char* ipCliente){
 	int id = *((int*)list_get(paqueteRecibido, 0));
 
@@ -45,8 +44,6 @@ int posicion_en_lista_proceso(t_proceso* elemento, t_list* lista){
 	free(comparador);
 	return -1; //Si no esta devuelve -1
 }
-
-
 
 void liberar_proceso(t_proceso* proceso, t_list* tablaProcesos){
 	list_remove(tablaProcesos, posicion_en_lista_proceso(proceso, tablaProcesos));
@@ -78,14 +75,15 @@ uint32_t magia_muse_alloc(t_proceso* proceso, int tam){
 		//Situacion nro 2. (o de expansion)
 	}
 	else{
+		//Situacion nro 1. (o de creacion de segmento)
 		// No hay ningun segmento de tipo HEAP que estamos buscando
 		int cantidad_de_paginas= paginas_necesarias(tam);
 		uint32_t baseLogica = proceso->tablaDeSegmentos->elements_count*cantidad_de_paginas;
-		segment segmento = crear_segmento(HEAP,baseLogica,tam,NULL); // TODO: implementar de forma correcta la base
+		segment *segmento = crear_segmento(HEAP,baseLogica,tam); // TODO: implementar de forma correcta la base
 		list_add(proceso->tablaDeSegmentos,segmento); // Se agrega el segmento creado a nuestra tabla de segmentos
-		segmento.tablaDePaginas=crear_lista_paginas(cantidad_de_paginas);
-		asignar_marcos(segmento.tablaDePaginas);
-		return segmento.baseLogica+sizeof(metadata); /*Devuelve la base logica + 5 de la metadata.
+		(*segmento).tablaDePaginas=crear_lista_paginas(cantidad_de_paginas);
+		asignar_marcos((*segmento).tablaDePaginas->head);
+		return (*segmento).baseLogica+sizeof(metadata); /*Devuelve la base logica + 5 de la metadata.
 		Como no hay ningun segmento que se pueda extender, o no exista ningun segmento
 		se devuelve 'automaticamente' 5. TODO: fijarse si funciona correctamente */
 	}
@@ -94,14 +92,14 @@ uint32_t magia_muse_alloc(t_proceso* proceso, int tam){
 
 bool tiene_segmento_heap_para_extender(t_list* tabla){
 	if(tabla->elements_count==0)
-		return false; // Si la tabla se encuentra vacia, entonces no hay segmentos
+		return false; // Si la tabla se encuentra vacia, entonces no hay segmentos => nuevo seg heap
 	else{
-			return list_find(tabla->head,(void*)es_segmento_de_tipo_HEAP); //Busca si hay un segmento del tipo heap
+
 	}
 }
 
-bool es_segmento_de_tipo_HEAP(void* data){
-	return data->tipo == HEAP;
+bool es_segmento_de_tipo_HEAP(segment segmento){
+	return segmento->tipo == HEAP;
 }
 
 void* magia_muse_get(t_proceso* proceso, t_list* paqueteRecibido){
