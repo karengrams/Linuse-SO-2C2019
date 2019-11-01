@@ -16,6 +16,12 @@
 
 int NO_FRAME = -1;
 
+struct nodo_pag{
+	struct page pag;
+	struct nodo_pag *next;
+};
+typedef struct nodo_pag tabla_pags;
+
 typedef struct{
 	bool bit_presencia;
 	int numero_frame = NO_FRAME;

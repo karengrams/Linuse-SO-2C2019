@@ -51,13 +51,17 @@ int numero_marco_libre(){
 
 void asignar_marco_a_pagina(page* pagina, int index){
 	bitarray_set_bit(BIT_ARRAY_FRAMES, index);
+	pagina->bit_presencia=1;
 	pagina->numero_frame = index;
 }
 
 void asignar_marcos(t_list* tabla_de_pags){
+	t_list  *ptr_auxiliar= tabla_de_pags;
 	int total_de_paginas = (*tabla_de_pags).elements_count;
-	for(int i=0;i<=total_de_paginas;i++){
-		(*tabla_de_pags).head;
-		asignar_marco_a_pagina((*tabla_de_pags).head+i,numero_marco_libre());
+	int i =0;
+	while(i<total_de_paginas){
+			asignar_marco_a_pagina(ptr_auxiliar->head->data,numero_marco_libre());
+			ptr_auxiliar= ptr_auxiliar->head->next;
+			i++;
 	}
 }
