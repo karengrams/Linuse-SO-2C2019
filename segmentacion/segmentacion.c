@@ -1,22 +1,27 @@
 #include "segmentacion.h"
 #include "../paginacion/paginacion.h"
-#include "../paginacion/paginacion.c"
-#include "../paginacion/frames.h"
+//#include "../paginacion/frames.h"
 
+// rompe por alguna razon
 
-segment* crear_segmento(segment_type tipo, uint32_t baseLogica, int tamanio){
-	segment *segmento = malloc(sizeof(segment));
-	segmento->baseLogica = baseLogica;
-	segmento->tamanio = tamanio;
-	segmento->tipo = tipo;
-	segmento->tablaDePaginas = NULL;
-	return segmento;
+uint32_t limite_segmento(segment* segmento){
+	if(segmento->tablaDePaginas!=NULL)
+	return (segmento->baseLogica)+(segmento->tablaDePaginas->elements_count)*TAM_PAG;
+	else
+		return (segmento->baseLogica);
 }
 
-int posicion_en_tabla_de_segmentos(segment* elemento, t_list* tabla_de_segmentos){
+segment* crear_segmento(segment_type tipo, uint32_t baseLogica,int tam){
+	segment *segmento_ptr = (segment*)malloc(sizeof(segment));
+	(*segmento_ptr).baseLogica = baseLogica;
+	(*segmento_ptr).tamanio = tam;
+	(*segmento_ptr).tipo = tipo;
+	(*segmento_ptr).tablaDePaginas = NULL;
+	return segmento_ptr;
+}
 
-	segment *comparador = malloc(sizeof(segment));
-
+int posicion_en_tabla_segmento(segment* elemento, t_list* tabla_de_segmentos){
+	segment *comparador = (segment*)malloc(sizeof(segment));
 	for(int index = 0 ; index < tabla_de_segmentos->elements_count; index++){
 		comparador = list_get(tabla_de_segmentos, index);
 		if (memcmp(elemento, comparador, sizeof(segment)) == 0) {//Si son iguales devuelve 0
@@ -24,16 +29,24 @@ int posicion_en_tabla_de_segmentos(segment* elemento, t_list* tabla_de_segmentos
 			return index;
 		}
 	}
-
 	free(comparador);
-
-	return -1; //Si no esta devuelve -1
+	return -1;
 }
 
-void liberar_segmentos(t_list* segmentos){
-	//Ver aca que onda... como destruir esta lista va a cambiar dependiendo si es
-	//Heap o mmap (creo)
+// te quedaste aca loca
+
+
+bool segmento_puede_agrandarse(segment* segmento, t_list* tabla_de_segmentos, int valorPedido){
+	int pos_seg=posicion_en_tabla_segmento(segmento,tabla_de_segmentos);
+	segment *siguiente=(segment*)list_get(tabla_de_segmentos, (pos_seg+1));
+	int paginasNecesarias = paginas_necesarias(valorPedido);
+	bool respuesta;
+	if(siguiente->baseLogica-limite_segmento(segmento) >= (paginasNecesarias * TAM_PAG))
+		return true;
+	free(siguiente);
+	return false;
 }
+
 
 bool segmento_tiene_espacio(segment* segmento, int tamanio, uint32_t* direccionConEspacioLibre){
 	void *segmentoMappeado = malloc(((segmento->tablaDePaginas->elements_count)*tamanio_paginas())+sizeof(metadata));
@@ -63,21 +76,7 @@ void mappear_segmento(segment* segmento, void* segmentoMappeado){
 	free(finDeSegmento);
 }
 
-bool segmento_puede_agrandarse(segment* segmento, t_list* listaDeSegmentos, int valorPedido){
-	segment *siguiente = malloc(sizeof(segment));
-	bool respuesta;
-	int paginasNecesarias = paginas_necesarias(valorPedido);
-	int posicion = posicion_en_lista_segmento(segmento, listaDeSegmentos);
-	siguiente = list_get(listaDeSegmentos, (posicion+1));
 
-	if(((siguiente->baseLogica)-(limite_segmento(segmento)))>=(paginasNecesarias * tamanio_paginas())){
-		free(siguiente);
-		return true;
-	}
-
-	free(siguiente);
-	return false;
-}
 
 bool tiene_espacio(void* punteroAMemoria, int valorPedido, uint32_t* direccion){
 	metadata *metadat = malloc(sizeof(metadata)); // Deberia ser:( metadata*)malloc(sizeof(metadata))
@@ -102,12 +101,6 @@ bool tiene_espacio(void* punteroAMemoria, int valorPedido, uint32_t* direccion){
 	}
 		free(metadat);
 		return false;
-}
-
-
-
-uint32_t limite_segmento(segment* segmento){
-	return ((segmento->baseLogica)+list_size(segmento->tablaDePaginas))*tamanio_paginas();
 }
 
 div_t numero_pagina(segment* segmento, uint32_t direccion){
@@ -184,3 +177,4 @@ void reservar_memoria(int bytesPedidos, uint32_t desplazamiento, segment* segmen
 	free(metadataAux);
 	free(segmentoMappeado);
 }
+

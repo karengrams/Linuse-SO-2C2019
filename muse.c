@@ -1,14 +1,16 @@
 #include <commons/config.h>
 #include <stdio.h>
+#include <commons/collections/list.h>
+#include <commons/collections/node.h>
+#include "segmentacion/segmentacion.c"
+#include "paginacion/paginacion.c"
+#include "paginacion/frames.c"
+
+
 #include <stdlib.h>
 #include <string.h>
-#include "../segmentacion/segmentacion.c"
-#include "../paginacion/paginacion.c"
-#include "../paginacion/frames.c"
-#include "../utils/utils.c"
-#include "../utils/utilsSockets.c"
 
-t_list* PROCESS_TABLE = list_create();
+t_list* PROCESS_TABLE;
 t_config* archivo_config;
 
 void leer_config(void){
@@ -20,20 +22,18 @@ int leer_del_config(char* valor){
 }
 
 int main(void){
-	// printf("Wenas perri.\n");
-	//printf("Empecemos leyendo el .config..\n");
     leer_config();
-    //printf("Hagamos el malloc del disco para segmentacion..\n");
-    //printf("El tamanio de memoria es de: %d bytes \n",leer_del_config("MEMORY_SIZE"));
-    //printf("El tamanio de la pagina es de: %d bytes \n",leer_del_config("PAGE_SIZE"));
     void *memoria =  malloc(leer_del_config("MEMORY_SIZE"));
     int tam_mem = leer_del_config("MEMORY_SIZE");
-    int tam_pag = leer_del_config("PAGE_SIZE");
-    char* puerto = config_get_string_value("LISTEN_PORT");
-    int cantidad_de_pags = tam_mem/tam_pag;
-    dividir_memoria_en_frames(memoria, tam_pag, tam_mem);
+    TAM_PAG = leer_del_config("PAGE_SIZE");
+    char* puerto = config_get_string_value(archivo_config,"LISTEN_PORT");
+    int cantidad_de_pags = tam_mem/TAM_PAG;
+    printf("El tamanio de memoria es de: %d bytes \n",leer_del_config("MEMORY_SIZE"));
+    printf("El tamanio de la pagina es de: %d bytes \n",leer_del_config("PAGE_SIZE"));
+    dividir_memoria_en_frames(memoria,TAM_PAG,tam_mem);
     crear_bitmap();
-    /*
+
+
     //Arranca a atender clientes
 
 	fd_set master;   // conjunto maestro de descriptores de fichero
@@ -58,7 +58,7 @@ int main(void){
            	   	  }
          	 }
      	 }
-	}*/
+	}
 
 
     return 0;
