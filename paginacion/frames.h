@@ -17,8 +17,6 @@ typedef struct{
 }metadata;
 
 void dividir_memoria_en_frames(void*, int, int);
-/*
-void dividir_memoria_en_frames(void* memoria, int tamanioPagina, int tamanioMemoria);
 void crear_bitmap();
-*/
+
 #endif /* PAGINACION_FRAMES_H_ */

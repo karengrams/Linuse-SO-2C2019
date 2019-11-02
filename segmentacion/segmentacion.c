@@ -1,8 +1,14 @@
 #include "segmentacion.h"
 #include "../paginacion/paginacion.h"
-//#include "../paginacion/frames.h"
+#include "../paginacion/frames.h"
+#include "../utils/utils.h"
 
-// rompe por alguna razon
+int minimo(int a, int b){
+	if(a<b)
+		return a;
+	 else
+		return b;
+}
 
 uint32_t limite_segmento(segment* segmento){
 	if(segmento->tablaDePaginas!=NULL)
@@ -20,11 +26,12 @@ segment* crear_segmento(segment_type tipo, uint32_t baseLogica,int tam){
 	return segmento_ptr;
 }
 
+// TODO: Cuando se tratan de dos segmentos de igual tam. los toma como iguales. Ver de hacer de otra forma
 int posicion_en_tabla_segmento(segment* elemento, t_list* tabla_de_segmentos){
 	segment *comparador = (segment*)malloc(sizeof(segment));
 	for(int index = 0 ; index < tabla_de_segmentos->elements_count; index++){
 		comparador = list_get(tabla_de_segmentos, index);
-		if (memcmp(elemento, comparador, sizeof(segment)) == 0) {//Si son iguales devuelve 0
+		if (!memcmp(elemento, comparador, sizeof(segment))) {//Si son iguales devuelve 0
 			free(comparador);
 			return index;
 		}
@@ -33,61 +40,67 @@ int posicion_en_tabla_segmento(segment* elemento, t_list* tabla_de_segmentos){
 	return -1;
 }
 
-// te quedaste aca loca
-
-
+// TODO:Habria que probar si funciona cuando haya un MMAP adelante
 bool segmento_puede_agrandarse(segment* segmento, t_list* tabla_de_segmentos, int valorPedido){
 	int pos_seg=posicion_en_tabla_segmento(segmento,tabla_de_segmentos);
 	segment *siguiente=(segment*)list_get(tabla_de_segmentos, (pos_seg+1));
 	int paginasNecesarias = paginas_necesarias(valorPedido);
 	bool respuesta;
-	if(siguiente->baseLogica-limite_segmento(segmento) >= (paginasNecesarias * TAM_PAG))
+	if(siguiente->baseLogica-limite_segmento(segmento) >= (paginasNecesarias * TAM_PAG)){
+		free(siguiente);
 		return true;
+	}
 	free(siguiente);
 	return false;
 }
 
+div_t numero_pagina(segment* segmento, uint32_t direccion){
+	int desplazamientoEnSegmento = direccion - segmento->baseLogica;
+	return div(desplazamientoEnSegmento, TAM_PAG);
+}
 
-bool segmento_tiene_espacio(segment* segmento, int tamanio, uint32_t* direccionConEspacioLibre){
-	void *segmentoMappeado = malloc(((segmento->tablaDePaginas->elements_count)*tamanio_paginas())+sizeof(metadata));
+//TODO: ver caso de error
+int tamanio_segmento(segment* segmento){
+	return ((list_size(segmento->tablaDePaginas))*(TAM_PAG));
+}
+
+bool segmento_tiene_espacio_disponible(segment* segmento, int tamanio,uint32_t* direccionConEspacioLibre){
+	void *segmentoMappeado = (void*)malloc(((segmento->tablaDePaginas->elements_count)*TAM_PAG)+sizeof(metadata));
 	mappear_segmento(segmento, segmentoMappeado);
-	bool respuesta = tiene_espacio(segmentoMappeado, tamanio, direccionConEspacioLibre);
+	bool respuesta = tiene_espacio(segmentoMappeado,tamanio,direccionConEspacioLibre);
 	free(segmentoMappeado);
 	return respuesta;
 }
 
-void mappear_segmento(segment* segmento, void* segmentoMappeado){
+void mappear_segmento(segment* segmento, void* mem){
 	int numeroDePagina = 0;
-	metadata *finDeSegmento = malloc(sizeof(metadata));
-	finDeSegmento->bytes = -1;
-	finDeSegmento->ocupado = false; //metadata que agrego para saber donde termina el segmento
+	metadata *fin_seg_metadata = (metadata*)malloc(sizeof(metadata));
+	(*fin_seg_metadata).bytes = -1;
+	(*fin_seg_metadata).ocupado = false; //metadata que agrego para saber donde tera el segmento
 	int desplazamiento = 0;
-	page *pagina = malloc(sizeof(page));
+	page *pagina;
 	while(numeroDePagina < list_size((segmento->tablaDePaginas))){ //Copio todos los marcos en el mappeo
-
 		pagina = (page*)list_get((segmento->tablaDePaginas), numeroDePagina);
-		memcpy(segmentoMappeado + desplazamiento, (list_get(FRAMES_TABLE, (pagina->numero_frame))), tamanio_paginas());
-		desplazamiento += tamanio_paginas();
+		void *frame= (void*)list_get(FRAMES_TABLE, (pagina->numero_frame));
+		memcpy(mem + desplazamiento,frame, TAM_PAG);
+		desplazamiento += TAM_PAG;
 		numeroDePagina ++;
 	}
-
-	memcpy(segmentoMappeado + desplazamiento, finDeSegmento, sizeof(metadata));
+	memcpy(mem + desplazamiento, fin_seg_metadata, sizeof(metadata));
 	free(pagina);
-	free(finDeSegmento);
+	free(fin_seg_metadata);
 }
 
-
-
 bool tiene_espacio(void* punteroAMemoria, int valorPedido, uint32_t* direccion){
-	metadata *metadat = malloc(sizeof(metadata)); // Deberia ser:( metadata*)malloc(sizeof(metadata))
+	metadata *ptr_metadata = (metadata*)malloc(sizeof(metadata)); // Deberia ser:( metadata*)malloc(sizeof(metadata))
 	uint32_t desplazamiento = 0;
 
-	memcpy(metadat, punteroAMemoria, sizeof(metadata));
+	memcpy(ptr_metadata, punteroAMemoria, sizeof(metadata));
 
-	while(metadat->bytes != -1){ //En el fin de segmento mapeado le agrego una metadata con bytes = -1
+	while(ptr_metadata->bytes != -1){ //En el fin de segmento mapeado le agrego una metadata con bytes = -1
 
-		if(!(metadat->ocupado)){ //si no esta ocupado pregunto si cabe el valor pedido
-			if((metadat->bytes == valorPedido) || (metadat->bytes >= (valorPedido+5)))
+		if(!(ptr_metadata->ocupado)){ //si no esta ocupado pregunto si cabe el valor pedido
+			if((ptr_metadata->bytes == valorPedido) || (ptr_metadata->bytes >= (valorPedido+5)))
 				//Si el espacio libre es exactamente igual al valor pedido o si es mayorIgual al
 				//valor pedido mas el valor de la metadata que iria luego...
 				*direccion = desplazamiento; //Guardamos en el puntero la direccion al inicio de la metadata
@@ -95,23 +108,30 @@ bool tiene_espacio(void* punteroAMemoria, int valorPedido, uint32_t* direccion){
 		}
 
 		desplazamiento += sizeof(metadata);
-		desplazamiento += metadat->bytes; //Nos movemos a la siguiente metadata
-		memcpy(metadat, punteroAMemoria + desplazamiento, sizeof(metadata));
+		desplazamiento += ptr_metadata->bytes; //Nos movemos a la siguiente metadata
+		memcpy(ptr_metadata, punteroAMemoria + desplazamiento, sizeof(metadata));
 
 	}
-		free(metadat);
+		free(ptr_metadata);
 		return false;
 }
 
-div_t numero_pagina(segment* segmento, uint32_t direccion){
-	int desplazamientoEnSegmento = direccion - segmento->baseLogica;
-	return div(desplazamientoEnSegmento, tamanio_paginas());
-}
+void desmappear_segmento(segment* segmento, void* segmentoMappeado){
+	int numeroDePagina = 0;
+	int desplazamiento = 0;
+	page *pagina = malloc(sizeof(page));
 
-int tamanio_segmento(segment* segmento){
-	return ((list_size(segmento->tablaDePaginas))*(tamanio_paginas()));
-}
+	while(numeroDePagina < list_size((segmento->tablaDePaginas))){ //Copio todos los marcos en el mappeo
 
+		pagina = (page*)list_get((segmento->tablaDePaginas), numeroDePagina);
+		memcpy((list_get(FRAMES_TABLE, (pagina->numero_frame))), segmentoMappeado + desplazamiento, TAM_PAG);
+		desplazamiento += TAM_PAG;
+		numeroDePagina ++;
+	}
+
+	free(pagina);
+
+}
 
 segment* buscar_segmento_dada_una_direccion(t_list* tablaSegmentos, uint32_t direccion){
 	segment* segmentoEncontrado = malloc(sizeof(segment));
@@ -131,29 +151,11 @@ segment* buscar_segmento_dada_una_direccion(t_list* tablaSegmentos, uint32_t dir
 	return NULL; //Por las dudas de que me este olvidando de algun caso
 }
 
-void desmappear_segmento(segment* segmento, void* segmentoMappeado){
-	int numeroDePagina = 0;
-	int desplazamiento = 0;
-	page *pagina = malloc(sizeof(page));
-
-	while(numeroDePagina < list_size((segmento->tablaDePaginas))){ //Copio todos los marcos en el mappeo
-
-		pagina = (page*)list_get((segmento->tablaDePaginas), numeroDePagina);
-		memcpy((list_get(FRAMES_TABLE, (pagina->numero_frame))), segmentoMappeado + desplazamiento, tamanio_paginas());
-		desplazamiento += tamanio_paginas();
-		numeroDePagina ++;
-	}
-
-	free(pagina);
-
-}
-
-
 void reservar_memoria(int bytesPedidos, uint32_t desplazamiento, segment* segmento){ //Segmento con lugar, desplazamiento en donde tiene ese lugar
 
-	void *segmentoMappeado = malloc(((segmento->tablaDePaginas->elements_count)*tamanio_paginas())+sizeof(metadata));
+	void *segmentoMappeado = (void*)malloc(((segmento->tablaDePaginas->elements_count)*TAM_PAG)+sizeof(metadata));
 	mappear_segmento(segmento, segmentoMappeado);
-	metadata* metadataAux = malloc(sizeof(metadata));
+	metadata* metadataAux = (metadata*)malloc(sizeof(metadata));
 
 	//trabajo con el segmento mappeado y luego lo vuelco en los marcos
 	memcpy(metadataAux, segmentoMappeado+desplazamiento, sizeof(metadata));
@@ -177,4 +179,60 @@ void reservar_memoria(int bytesPedidos, uint32_t desplazamiento, segment* segmen
 	free(metadataAux);
 	free(segmentoMappeado);
 }
+
+void escribir_segmento(segment* segmento, uint32_t direccion_pedida, int cantidad_de_bytes, void* buffer){
+	div_t aux = numero_pagina(segmento, direccion_pedida);
+	int numeroPagina = aux.quot; //pagina correspondiente a la direccion
+	int desplazamientoEnPagina = aux.rem; //desde que posicion de esa pagina vamos a empezar a copiar
+
+	page* pagina = malloc(sizeof(page));
+	void* marco;
+
+	int auxiliar = 0;
+	int tamanioACopiar;
+	int desplazamientoEnBuffer = 0;
+
+	while(cantidad_de_bytes>0){
+
+			pagina = list_get(segmento->tablaDePaginas, numeroPagina+auxiliar);
+			int nro = TAM_PAG - desplazamientoEnPagina;
+			tamanioACopiar = minimo(cantidad_de_bytes, nro);
+			marco = list_get(FRAMES_TABLE, (pagina->numero_frame));
+
+			memcpy(marco+desplazamientoEnPagina, buffer+desplazamientoEnBuffer, tamanioACopiar);
+
+			cantidad_de_bytes -= tamanioACopiar;
+			auxiliar++; //siguiente pagina
+			desplazamientoEnBuffer += tamanioACopiar;
+			desplazamientoEnPagina = 0; //Solo era valido para la primera pagina
+			}
+
+	free(pagina);
+}
+
+bool segmento_puede_escribirse(void* segmentoMappeado, int desplazamientoEnSegmento, int cantidad_de_bytes){
+	metadata* metadataAux = malloc(sizeof(metadata));
+	int desplazamiento = 0;
+
+	memcpy(metadataAux, segmentoMappeado+desplazamiento, sizeof(metadata));
+
+	while(metadataAux->bytes != -1){
+
+		desplazamiento += sizeof(metadata); //Limite inferior del lugar disponible
+		int bytesDisponibles = metadataAux->bytes + desplazamiento; //Limite superior del lugar Disponible
+
+			if(desplazamientoEnSegmento<desplazamiento) //ya nos pasamos (puede ser que haya pedido la direccion 0 del segmento por ejemplo
+				return false;
+
+			if((desplazamientoEnSegmento+cantidad_de_bytes)<=bytesDisponibles)
+				return true;
+
+		desplazamiento = bytesDisponibles;
+		memcpy(metadataAux, segmentoMappeado+desplazamiento, sizeof(metadata));
+	}
+
+	free(metadataAux);
+	return false; //por si me olvide de algun caso medio borde
+}
+
 

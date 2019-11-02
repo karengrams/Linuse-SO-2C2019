@@ -5,6 +5,9 @@
 #include <stdbool.h>
 #include <commons/collections/list.h>
 #include <commons/bitarray.h>
+#include "../paginacion/paginacion.h"
+#include "../paginacion/frames.h"
+#include "../segmentacion/segmentacion.h"
 
 typedef struct{
 	int id;
@@ -12,11 +15,7 @@ typedef struct{
 	t_list* tablaDeSegmentos;
 } t_proceso;
 
-/*
- * Crea el bitmap de los marcos de la memoria
- * a partir de la lista de marcos
- */
-t_bitarray* crear_bitmap(t_list* listaDeMarcos);
+//int minimo(int, int);
 
 t_proceso* crear_proceso(int id, char* ip);
 

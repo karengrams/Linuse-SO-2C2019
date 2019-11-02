@@ -10,15 +10,16 @@
 void dividir_memoria_en_frames(void* memoria, int pagetam, int memtam){
 	int offset = 0;
 	metadata *metadata_ptr;
+	void* frame_ptr = memoria;
 	FRAMES_TABLE=list_create();
 	while(offset<memtam){
 		metadata_ptr = malloc(sizeof(metadata));
-		(*metadata_ptr).bytes=pagetam;
+		(*metadata_ptr).bytes=pagetam-sizeof(metadata);
 		(*metadata_ptr).ocupado=false;
-		list_add(FRAMES_TABLE,metadata_ptr);
+		list_add(FRAMES_TABLE,frame_ptr+offset);
 		offset+=pagetam;
+		free(metadata_ptr);
 	}
-	free(metadata_ptr);
 }
 
 void crear_bitmap(){

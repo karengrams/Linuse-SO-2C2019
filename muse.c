@@ -27,15 +27,9 @@ int main(void){
     int tam_mem = leer_del_config("MEMORY_SIZE");
     TAM_PAG = leer_del_config("PAGE_SIZE");
     char* puerto = config_get_string_value(archivo_config,"LISTEN_PORT");
-    int cantidad_de_pags = tam_mem/TAM_PAG;
-    printf("El tamanio de memoria es de: %d bytes \n",leer_del_config("MEMORY_SIZE"));
-    printf("El tamanio de la pagina es de: %d bytes \n",leer_del_config("PAGE_SIZE"));
     dividir_memoria_en_frames(memoria,TAM_PAG,tam_mem);
     crear_bitmap();
-
-
     //Arranca a atender clientes
-
 	fd_set master;   // conjunto maestro de descriptores de fichero
 	fd_set read_fds; // conjunto temporal para lectura de descriptores de fichero para select()
 	int fdmax;        // Ultimo socket recibido
@@ -59,8 +53,6 @@ int main(void){
          	 }
      	 }
 	}
-
-
     return 0;
 }
 
