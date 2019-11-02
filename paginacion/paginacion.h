@@ -21,6 +21,7 @@ typedef struct page_t{
 	int numero_frame;
 }page;
 
+t_list* crear_lista_paginas(int);
 void agregar_paginas(t_list*,int);
 int paginas_necesarias(int);
 page* crear_pagina();

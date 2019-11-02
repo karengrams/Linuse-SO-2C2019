@@ -35,4 +35,5 @@ bool segmento_puede_escribirse(void* , int , int );
 void reservar_memoria(int , uint32_t , segment* );
 bool es_segmento_de_tipo_HEAP(segment*);
 
+
 #endif /* muse-segmentacion_h */

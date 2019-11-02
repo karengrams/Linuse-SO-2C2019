@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-t_list* PROCESS_TABLE;
 t_config* archivo_config;
 
 void leer_config(void){

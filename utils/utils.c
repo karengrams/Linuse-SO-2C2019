@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "utils.h"
 
+
 int ERROR = -1;
 /*
 int minimo(int a, int b){
@@ -31,11 +32,11 @@ t_proceso* buscar_proceso(t_list* paqueteRecibido, char* ipCliente){
 
 }
 
-int posicion_en_lista_proceso(t_proceso* elemento, t_list* lista){
+int posicion_en_lista_proceso(t_proceso* elemento){
 	t_proceso* comparador = malloc(sizeof(t_proceso));
 
-	for(int index = 0 ; index < lista->elements_count; index++){
-		comparador = list_get(lista, index);
+	for(int index = 0 ; index < PROCESS_TABLE->elements_count; index++){
+		comparador = list_get(PROCESS_TABLE, index);
 		if (memcmp(elemento, comparador, sizeof(t_proceso)) == 0) {//Si son iguales devuelve 0
 			free(comparador);
 			return index; }
@@ -44,9 +45,9 @@ int posicion_en_lista_proceso(t_proceso* elemento, t_list* lista){
 	return -1; //Si no esta devuelve -1
 }
 
-void liberar_proceso(t_proceso* proceso, t_list* tablaProcesos){
-	list_remove(tablaProcesos, posicion_en_lista_proceso(proceso, tablaProcesos));
-	liberar_segmentos(proceso->tablaDeSegmentos);
+void liberar_proceso(t_proceso* proceso){
+	list_remove(PROCESS_TABLE, posicion_en_lista_proceso(proceso));
+	//liberar_segmentos(proceso->tablaDeSegmentos);
 	free(proceso->ip);
 	free(proceso);
 }
@@ -67,7 +68,7 @@ uint32_t magia_muse_alloc(t_proceso* proceso, int tam){
 		if(segmento_puede_agrandarse(segmento,proceso->tablaDeSegmentos,tam)){
 			condicion=true;
 		}
-			list_remove(ptr_aux,posicion_de_segmento(segmento,ptr_aux));
+			list_remove(ptr_aux,posicion_en_tabla_segmento(segmento,ptr_aux));
 		}
 	}
 	else{
@@ -108,7 +109,7 @@ void* magia_muse_get(t_proceso* proceso, t_list* paqueteRecibido){
 		int numeroPagina = aux.quot; //pagina correspondiente a la direccion
 		int desplazamientoEnPagina = aux.rem; //desde que posicion de esa pagina vamos a empezar a copiar
 
-		//int sobrante = cantidadDeBytes - (tamanio_paginas() - desplazamientoEnPagina);
+		//int sobrante = cantidadDeBytes - (TAM_PAG - desplazamientoEnPagina);
 		//int cantidadDePaginasAMappear = 1; //minimo vamos a mappear la pagina que tiene el dato
 		//
 		//		if(sobrante>0){
@@ -122,7 +123,7 @@ void* magia_muse_get(t_proceso* proceso, t_list* paqueteRecibido){
 		while(cantidadDeBytes>0){
 
 				pagina = list_get(segmento->tablaDePaginas, numeroPagina+auxiliar);
-				tamanioACopiar = min(cantidadDeBytes, (tamanio_paginas() - desplazamientoEnPagina));
+				tamanioACopiar = minimo(cantidadDeBytes, (TAM_PAG - desplazamientoEnPagina));
 				marco = list_get(FRAMES_TABLE, (pagina->numero_frame));
 
 				memcpy(buffer+desplazamientoEnBuffer, marco+desplazamientoEnPagina , tamanioACopiar);
@@ -138,7 +139,6 @@ void* magia_muse_get(t_proceso* proceso, t_list* paqueteRecibido){
 }
 
 int magia_muse_init(t_proceso* cliente_a_atender, char* ipCliente, int id){
-	PROCESS_TABLE=list_create();
 		if(cliente_a_atender != NULL){
 			return ERROR; //YA EXISTE EN NUESTRA TABLA ERROR
 
@@ -171,7 +171,7 @@ int magia_muse_cpy(t_proceso* proceso, t_list* paqueteRecibido){
 			}
 
 	int desplazamientoEnSegmento = direccion_pedida - segmento->baseLogica;
-	void *segmentoMappeado = malloc(((segmento->tablaDePaginas->elements_count)*tamanio_paginas())+sizeof(metadata));
+	void *segmentoMappeado = malloc(((segmento->tablaDePaginas->elements_count)*TAM_PAG)+sizeof(metadata));
 	mappear_segmento(segmento, segmentoMappeado);
 
 	bool puedeEscribirse = segmento_puede_escribirse(segmentoMappeado, desplazamientoEnSegmento, cantidad_de_bytes);

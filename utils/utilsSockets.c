@@ -171,8 +171,8 @@ void atenderCliente(fd_set* master, int socketCli){
 				break;
 
 			case MUSE_ALLOC:
-				//id_cliente = *((int*)list_get(lista, 0));
-				//cantidad_de_bytes = *((int*)list_get(lista, 1));
+				//id_cliente = *((int*)list_get(paqueteRecibido, 0));
+				//cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1));
 
 				printf("MUSE_ALLOC, el proceso %d, de la ip %s nos esta pidiendo "
 				"%d bytes de memoria \n", id_cliente,
@@ -220,10 +220,10 @@ void atenderCliente(fd_set* master, int socketCli){
 				break;
 
 			case MUSE_MAP:
-				id_cliente = *((int*)list_get(lista, 0));
-				strcpy(buffer, (char*)list_get(lista,1));
-				cantidad_de_bytes = *((int*)list_get(lista, 2)); //este seria el length a mappear
-				flags = *((int*)list_get(lista, 3));
+				id_cliente = *((int*)list_get(paqueteRecibido, 0));
+				strcpy(buffer, (char*)list_get(paqueteRecibido,1));
+				cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 2)); //este seria el length a mappear
+				flags = *((int*)list_get(paqueteRecibido, 3));
 
 				printf("MUSE_MAP, el proceso %d de la ip %s quiere mappear %d bytes del archivo del path \n %s \n",
 						id_cliente, ipCli, cantidad_de_bytes, (char*)buffer);
@@ -236,9 +236,9 @@ void atenderCliente(fd_set* master, int socketCli){
 				break;
 
 			case MUSE_SYNC:
-				 id_cliente = *((int*)list_get(lista, 0));
-				 cantidad_de_bytes = *((int*)list_get(lista, 1)); //cantidad de bytes a guardar en el archivo
-				 direccion_pedida = *((uint32_t*)list_get(lista, 2)); //direccion a partir de la cual hacer el sync
+				 id_cliente = *((int*)list_get(paqueteRecibido, 0));
+				 cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1)); //cantidad de bytes a guardar en el archivo
+				 direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 2)); //direccion a partir de la cual hacer el sync
 
 				 printf("MUSE_SYNC, el proceso %d de la ip %s quiere sincronizar %d bytes de la direccion %x \n",
 				 		id_cliente, ipCli, cantidad_de_bytes, direccion_pedida);
@@ -249,8 +249,8 @@ void atenderCliente(fd_set* master, int socketCli){
 				break;
 
 			 case MUSE_UNMAP:
-				id_cliente = *((int*)list_get(lista, 0));
-				direccion_pedida = *((uint32_t*)list_get(lista, 1));
+				id_cliente = *((int*)list_get(paqueteRecibido, 0));
+				direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
 
 				printf("MUSE_UNMAP, el proceso %d de la ip %s quiere unmappear la direccion %x de memoria \n",
 						id_cliente, ipCli, direccion_pedida);
@@ -264,7 +264,7 @@ void atenderCliente(fd_set* master, int socketCli){
 
 		free(ipCli);
 		free(buffer);
-		eliminar_paquete(paqueteRecibido);
+		free(paqueteRecibido); //TODO:fijarse como eliminar la lista de las commons
 
 }
 

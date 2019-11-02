@@ -1,5 +1,17 @@
 #include "paginacion.h"
 
+t_list* crear_lista_paginas(int cantidadDePaginas){
+	t_list *lista = malloc(sizeof(t_list));
+	page *pagina;
+
+	for(int i = 0; i<cantidadDePaginas; i++){
+		pagina = crear_pagina();
+		list_add(lista, pagina);
+	}
+	free(pagina);
+	return lista;
+}
+
 void agregar_paginas(t_list* tabla_de_paginas,int cantidadDePaginas){
 	page *pagina;
 

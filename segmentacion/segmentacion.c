@@ -240,16 +240,3 @@ bool segmento_puede_escribirse(void* segmentoMappeado, int desplazamientoEnSegme
 	return false; //por si me olvide de algun caso medio borde
 }
 
-int posicion_de_segmento(segment* segmento, t_list* tabla_de_segmentos){
-	int i;
-	bool encontrado = false;
-	segment* ptr_aux_seg;
-	for(i=0;i<tabla_de_segmentos->elements_count;i++){
-		ptr_aux_seg=(segment*) list_get(tabla_de_segmentos,i);
-		if(segmento->baseLogica==ptr_aux_seg->baseLogica){
-			free(ptr_aux_seg);
-			return i;
-		}
-	}
-	return -1;
-}
