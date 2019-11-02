@@ -51,54 +51,38 @@ void liberar_proceso(t_proceso* proceso, t_list* tablaProcesos){
 	free(proceso);
 }
 
-//muse_malloc(t_proceso* procesoAAtender, t_list* paquete){
-//	uint32_t tamanioPedido = list_get(paquete,1);
-//
-//	if((procesoAAtender->tablaDeSegmentos->elements_count) == 0){//Si no tiene ningun segmento le creamos uno
-//		uint32_t tamanioSegmento = paginas_necesarias(tamanioPedido)*tamanio_paginas();
-//		t_list* listaPaginas = crear_lista_paginas(paginas_necesarias(tamanioPedido));
-//		t_segmento* segmentoNuevo = crear_segmento(HEAP, 0, tamanioSegmento, listaPaginas);
-//		list_add((procesoAAtender->tablaDeSegmentos), segmentoNuevo);
-//	}
-//	//chequear si hay espacio en algun segmento heap
-//	//si no hay,
-//	//chequear si se puede extender algun segmento heap
-//	//si no se puede,
-//	//crear un nuevo segmento heap
-//
-//
-//}
-
 uint32_t magia_muse_alloc(t_proceso* proceso, int tam){
-	if(tiene_segmento_heap_para_extender(proceso->tablaDeSegmentos)){
+	uint32_t offset;
+	t_list *ptr_aux = list_duplicate(proceso->tablaDeSegmentos);
+	bool condicion = false;
+	if(proceso->tablaDeSegmentos!=NULL){
 		//Situacion nro 2. (o de expansion)
+		while(ptr_aux->head!=NULL){
+		segment* segmento = (segment*)list_find(ptr_aux,(void*)es_segmento_de_tipo_HEAP);
+		if(segmento_tiene_espacio_disponible(segmento,tam,&offset)){
+			condicion=true;
+			(*segmento).tamanio=(*segmento).tamanio+tam;
+			reservar_memoria(tam,offset,segmento);
+		}
+		if(segmento_puede_agrandarse(segmento,proceso->tablaDeSegmentos,tam)){
+			condicion=true;
+		}
+			list_remove(ptr_aux,posicion_de_segmento(segmento,ptr_aux));
+		}
 	}
 	else{
 		//Situacion nro 1. (o de creacion de segmento)
 		// No hay ningun segmento de tipo HEAP que estamos buscando
 		int cantidad_de_paginas= paginas_necesarias(tam);
-		uint32_t baseLogica = proceso->tablaDeSegmentos->elements_count*cantidad_de_paginas;
-		segment *segmento = crear_segmento(HEAP,baseLogica,tam); // TODO: implementar de forma correcta la base
+		segment *segmento = crear_segmento(HEAP,0,tam); // TODO: implementar de forma correcta la base
 		list_add(proceso->tablaDeSegmentos,segmento); // Se agrega el segmento creado a nuestra tabla de segmentos
 		(*segmento).tablaDePaginas=crear_lista_paginas(cantidad_de_paginas);
-		asignar_marcos((*segmento).tablaDePaginas->head);
+		asignar_marcos((*segmento).tablaDePaginas);
 		return (*segmento).baseLogica+sizeof(metadata); /*Devuelve la base logica + 5 de la metadata.
 		Como no hay ningun segmento que se pueda extender, o no exista ningun segmento
 		se devuelve 'automaticamente' 5. TODO: fijarse si funciona correctamente */
 	}
 
-}
-
-bool tiene_segmento_heap_para_extender(t_list* tabla){
-	if(tabla->elements_count==0)
-		return false; // Si la tabla se encuentra vacia, entonces no hay segmentos => nuevo seg heap
-	else{
-
-	}
-}
-
-bool es_segmento_de_tipo_HEAP(segment segmento){
-	return segmento->tipo == HEAP;
 }
 
 void* magia_muse_get(t_proceso* proceso, t_list* paqueteRecibido){
@@ -154,7 +138,7 @@ void* magia_muse_get(t_proceso* proceso, t_list* paqueteRecibido){
 }
 
 int magia_muse_init(t_proceso* cliente_a_atender, char* ipCliente, int id){
-
+	PROCESS_TABLE=list_create();
 		if(cliente_a_atender != NULL){
 			return ERROR; //YA EXISTE EN NUESTRA TABLA ERROR
 
@@ -170,7 +154,7 @@ int magia_muse_cpy(t_proceso* proceso, t_list* paqueteRecibido){
 	int cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1));
 	uint32_t direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 3));
 
-	void* buffer = malloc(cantidad_de_bytes);
+	void* buffer = (void*)malloc(cantidad_de_bytes);
 
 	memcpy(buffer, list_get(paqueteRecibido,2), cantidad_de_bytes);
 

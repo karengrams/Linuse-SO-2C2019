@@ -10,6 +10,10 @@ int minimo(int a, int b){
 		return b;
 }
 
+bool es_segmento_de_tipo_HEAP(segment *segmento){
+	return segmento->tipo == HEAP;
+}
+
 uint32_t limite_segmento(segment* segmento){
 	if(segmento->tablaDePaginas!=NULL)
 	return (segmento->baseLogica)+(segmento->tablaDePaginas->elements_count)*TAM_PAG;
@@ -180,6 +184,7 @@ void reservar_memoria(int bytesPedidos, uint32_t desplazamiento, segment* segmen
 	free(segmentoMappeado);
 }
 
+//FUNCION AUXILIAR DE RESERVAR_MEMORIA(..)
 void escribir_segmento(segment* segmento, uint32_t direccion_pedida, int cantidad_de_bytes, void* buffer){
 	div_t aux = numero_pagina(segmento, direccion_pedida);
 	int numeroPagina = aux.quot; //pagina correspondiente a la direccion
@@ -235,4 +240,16 @@ bool segmento_puede_escribirse(void* segmentoMappeado, int desplazamientoEnSegme
 	return false; //por si me olvide de algun caso medio borde
 }
 
-
+int posicion_de_segmento(segment* segmento, t_list* tabla_de_segmentos){
+	int i;
+	bool encontrado = false;
+	segment* ptr_aux_seg;
+	for(i=0;i<tabla_de_segmentos->elements_count;i++){
+		ptr_aux_seg=(segment*) list_get(tabla_de_segmentos,i);
+		if(segmento->baseLogica==ptr_aux_seg->baseLogica){
+			free(ptr_aux_seg);
+			return i;
+		}
+	}
+	return -1;
+}

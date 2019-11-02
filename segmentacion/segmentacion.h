@@ -16,7 +16,7 @@ typedef enum segment_type_t{
 typedef struct segment_t{
 	segment_type tipo;
 	uint32_t baseLogica;
-	int tamanio; //  tam. ocupado
+	int tamanio; //  tam. pedido
 	t_list* tablaDePaginas;
 } segment;
 
@@ -33,6 +33,6 @@ segment* buscar_segmento_dada_una_direccion(t_list*,uint32_t);
 void escribir_segmento(segment*, uint32_t , int , void* );
 bool segmento_puede_escribirse(void* , int , int );
 void reservar_memoria(int , uint32_t , segment* );
-
+bool es_segmento_de_tipo_HEAP(segment*);
 
 #endif /* muse-segmentacion_h */

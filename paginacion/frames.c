@@ -46,4 +46,17 @@ int numero_marco_libre(){
 	return marco;
 }
 
+void asignar_marco_a_pagina(page* pagina, int index){
+	bitarray_set_bit(BIT_ARRAY_FRAMES, index);
+	pagina->numero_frame = index;
+}
+
+void asignar_marcos(t_list* tabla_de_pags){
+	int i;
+	for(i=0;i<tabla_de_pags->elements_count;i++){
+		page *pag = list_get(tabla_de_pags,i);
+		asignar_marco_a_pagina(pag,numero_marco_libre());
+	}
+}
+
 

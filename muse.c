@@ -5,7 +5,7 @@
 #include "segmentacion/segmentacion.c"
 #include "paginacion/paginacion.c"
 #include "paginacion/frames.c"
-
+#include "utils/utilsSockets.c"
 
 #include <stdlib.h>
 #include <string.h>
