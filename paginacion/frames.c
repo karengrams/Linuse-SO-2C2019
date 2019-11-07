@@ -4,25 +4,29 @@
  *  Created on: 25 oct. 2019
  *      Author: utnso
  */
-#include <stdbool.h>
 #include "frames.h"
 
-void dividir_memoria_en_frames(void* memoria, int pagetam, int memtam){
-	int offset = 0;
-	metadata *metadata_ptr;
-	void* frame_ptr = memoria;
+void inicilizar_tabla_de_frames(){
 	FRAMES_TABLE=list_create();
-	while(offset<memtam){
-		metadata_ptr = malloc(sizeof(metadata));
-		(*metadata_ptr).bytes=pagetam-sizeof(metadata);
+}
+
+void dividir_memoria_en_frames(int pagetam, int memtam){
+	metadata *metadata_ptr;
+	frame *frame_ptr;
+	for(int i=0;i<memtam/pagetam;i++){
+		frame_ptr = (frame*)malloc(sizeof(frame));
+		metadata_ptr = (metadata*)malloc(sizeof(metadata));
+		(*metadata_ptr).bytes=pagetam;
 		(*metadata_ptr).ocupado=false;
-		list_add(FRAMES_TABLE,frame_ptr+offset);
-		offset+=pagetam;
-		free(metadata_ptr);
+		(*frame_ptr).nro_frame=i;
+		(*frame_ptr).usado=false;
+		list_add(FRAMES_TABLE,frame_ptr);
+		(*frame_ptr).metadatas=list_create();
+		list_add(frame_ptr->metadatas,metadata_ptr);
 	}
 }
 
-void crear_bitmap(){
+void inicializar_bitmap(){
 	int bytes;
 	int cantidadDeMarcos = list_size(FRAMES_TABLE);
 	div_t aux = div(cantidadDeMarcos, 8);
@@ -32,31 +36,28 @@ void crear_bitmap(){
 	}else {
 		bytes = aux.quot + 1;
 	}
-	char *punteroABits = malloc(bytes);
-	BIT_ARRAY_FRAMES = bitarray_create_with_mode(punteroABits, bytes, LSB_FIRST);
-	free(punteroABits);
+	char *punteroABits = (char*)malloc(bytes+1);
+	BIT_ARRAY_FRAMES = bitarray_create_with_mode(punteroABits, (size_t)bytes, LSB_FIRST);
 }
 
-int numero_marco_libre(){
-	int marco=NO_FRAME; //Si no hay ningun marco libre devuelve -1
-	for(int i = (bitarray_get_max_bit(BIT_ARRAY_FRAMES)-1); i>=0; i--){
-		if(!bitarray_test_bit(BIT_ARRAY_FRAMES, i)) //Si esta vacio lo asignamos a j y lo devolvemos
-			marco=i;
+frame* obtener_marco_libre(){
+	bool _es_un_marco_libre(void *elemento) {
+		int nro_de_frame=((frame*)elemento)->nro_frame;
+		return !bitarray_test_bit(BIT_ARRAY_FRAMES,nro_de_frame);
 	}
-	return marco;
-}
+	return (frame*)list_find(FRAMES_TABLE,&_es_un_marco_libre);
 
-void asignar_marco_a_pagina(page* pagina, int index){
-	bitarray_set_bit(BIT_ARRAY_FRAMES, index);
-	pagina->numero_frame = index;
 }
 
 void asignar_marcos(t_list* tabla_de_pags){
-	int i;
-	for(i=0;i<tabla_de_pags->elements_count;i++){
-		page *pag = list_get(tabla_de_pags,i);
-		asignar_marco_a_pagina(pag,numero_marco_libre());
+	void _asignar_marco(void *elemento){
+		asignar_marco((page*)elemento);
 	}
+	list_iterate(tabla_de_pags,&_asignar_marco);
 }
 
-
+void asignar_marco(page *pag){
+	frame *marco_libre=obtener_marco_libre();
+	bitarray_set_bit(BIT_ARRAY_FRAMES,(off_t)marco_libre->nro_frame);
+	pag->frame=marco_libre;
+}

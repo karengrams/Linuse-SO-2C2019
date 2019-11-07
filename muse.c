@@ -2,33 +2,52 @@
 #include <stdio.h>
 #include <commons/collections/list.h>
 #include <commons/collections/node.h>
-#include "segmentacion/segmentacion.c"
-#include "paginacion/paginacion.c"
-#include "paginacion/frames.c"
-#include "utils/utilsSockets.c"
-
+#include <commons/bitarray.h>
+#include "segmentacion/segmentacion.h"
+#include "paginacion/frames.h"
+#include "paginacion/paginacion.h"
+#include "utils/utilsSockets.h"
+#include "utils/utils.h"
 #include <stdlib.h>
 #include <string.h>
 
-t_config* archivo_config;
 
-void leer_config(void){
-	archivo_config = config_create("/home/utnso/Escritorio/muse.config");
+t_config* leer_config(){
+	return config_create("/home/utnso/Escritorio/muse.config");
 }
 
-int leer_del_config(char* valor){
+int leer_del_config(char* valor,t_config* archivo_config){
 	return config_get_int_value(archivo_config,valor);
 }
 
+void destruccion_tabla_de_marcos() {
+	void _destroy_element(void *elemento) {
+
+		void _destroy_metadata(void*elemento){
+			free((metadata*)elemento);
+		}
+
+		frame *marco=(frame*)elemento;
+		list_destroy_and_destroy_elements((*marco).metadatas,&_destroy_metadata);
+		free(marco);
+	}
+	list_destroy_and_destroy_elements(FRAMES_TABLE, &_destroy_element);
+	free(BIT_ARRAY_FRAMES->bitarray);
+	bitarray_destroy(BIT_ARRAY_FRAMES);
+}
+
 int main(void){
-    leer_config();
-    void *memoria =  malloc(leer_del_config("MEMORY_SIZE"));
-    int tam_mem = leer_del_config("MEMORY_SIZE");
-    TAM_PAG = leer_del_config("PAGE_SIZE");
-    char* puerto = config_get_string_value(archivo_config,"LISTEN_PORT");
-    dividir_memoria_en_frames(memoria,TAM_PAG,tam_mem);
-    crear_bitmap();
+	inicilizar_tabla_de_frames();
+	inicializar_bitmap();
+	t_config* config = leer_config();
+	void *memoria = (void*)malloc(leer_del_config("MEMORY_SIZE",config));
+	dividir_memoria_en_frames(leer_del_config("PAGE_SIZE",config),leer_del_config("MEMORY_SIZE",config));
+	destruccion_tabla_de_marcos();
+	free(memoria);
+	config_destroy(config);
+
     //Arranca a atender clientes
+    /*
 	fd_set master;   // conjunto maestro de descriptores de fichero
 	fd_set read_fds; // conjunto temporal para lectura de descriptores de fichero para select()
 	int fdmax;        // Ultimo socket recibido
@@ -51,7 +70,7 @@ int main(void){
            	   	  }
          	 }
      	 }
-	}
+	}*/
     return 0;
 }
 
