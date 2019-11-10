@@ -32,9 +32,10 @@ Proceso #1:
 - [ ] Hacer el swap in y swap out de archivo swap y archivo map
 - [ ] Hacer al algoritmo clock modificado para swap
 - [ ] Hacer tests
-— [ ] Hacer procedimiento que separe el archivo en frames/pages
 - [ ] Asignarle a un archivo las paginas divididas
 - [ ] Page fault
-- [ ] Manejo de errores si hace un muse_free de una direccion invalida
+- [ ] Hacer procedimiento que separe el archivo en frames/pages
+- [ ] Manejo de errores si hace un muse_free de una direccion invalida 
+
 
 *Colocando una x entre los corchetes se pone como marcado*
