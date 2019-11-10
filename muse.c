@@ -55,7 +55,19 @@ uint32_t muse_alloc(t_proceso* proceso,int tam){
 	list_add(ptr_segmento->metadatas,paux_seg_metadata_libre);
 	paux_metadata_ocupado->bytes=tam;
 	paux_metadata_ocupado->ocupado=true;
+	ptr_segmento->tamanio+=tam;
 	return ptr_segmento->base_logica+offset+sizeof(heapmetadata);
+}
+
+void muse_free(t_proceso *proceso, uint32_t direccion){
+	segment *ptr_segmento = buscar_segmento_dada_una_direccion(direccion,proceso->tablaDeSegmentos);
+	segmentmetadata *ptr_seg_metadata = buscar_metadata_para_liberar(direccion-ptr_segmento->base_logica,ptr_segmento);
+	if(ptr_seg_metadata){
+		heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
+		ptr_metadata->ocupado=false;
+		buddy_system(ptr_seg_metadata,ptr_segmento->metadatas);
+	}
+
 }
 
 int main(void) {
@@ -66,7 +78,6 @@ int main(void) {
 	dividir_memoria_en_frames(memoria,leer_del_config("PAGE_SIZE", config),
 			leer_del_config("MEMORY_SIZE", config));
 	TAM_PAG = leer_del_config("PAGE_SIZE", config);
-
 	destruccion_tabla_de_marcos_y_bitmap();
 	free(memoria);
 	config_destroy(config);
