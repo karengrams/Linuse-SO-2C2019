@@ -8,19 +8,14 @@ int leer_del_config(char* valor, t_config* archivo_config) {
 	return config_get_int_value(archivo_config, valor);
 }
 
-void destruccion_tabla_de_marcos_y_bitmap() {
-//	void _destroy_element(void *elemento) {
-//
-//		void _destroy_metadata(void*elemento) {
-//			free((metadata*) elemento);
-//		}
-//
-//		frame *marco = (frame*) elemento;
-//		list_destroy_and_destroy_elements((*marco).metadatas,&_destroy_metadata);
-//		free(marco);
-//	}
-//	list_destroy_and_destroy_elements(FRAMES_TABLE, &_destroy_element);
-	list_destroy(FRAMES_TABLE);
+void liberacion_de_recursos(void*mem,t_config *config) {
+	config_destroy(config);
+	free(mem);
+	void _destroy_element(void *elemento) {
+		frame *marco = (frame*) elemento;
+		free(marco);
+	}
+	list_destroy_and_destroy_elements(FRAMES_TABLE, &_destroy_element);
 	free(BIT_ARRAY_FRAMES->bitarray);
 	bitarray_destroy(BIT_ARRAY_FRAMES);
 }
@@ -67,7 +62,6 @@ void muse_free(t_proceso *proceso, uint32_t direccion){
 		ptr_metadata->ocupado=false;
 		buddy_system(ptr_seg_metadata,ptr_segmento->metadatas);
 	}
-
 }
 
 int main(void) {
@@ -75,12 +69,12 @@ int main(void) {
 	inicializar_bitmap();
 	t_config* config = leer_config();
 	void *memoria = (void*) malloc(leer_del_config("MEMORY_SIZE", config));
-	dividir_memoria_en_frames(memoria,leer_del_config("PAGE_SIZE", config),
-			leer_del_config("MEMORY_SIZE", config));
+	dividir_memoria_en_frames(memoria,leer_del_config("PAGE_SIZE", config),leer_del_config("MEMORY_SIZE", config));
 	TAM_PAG = leer_del_config("PAGE_SIZE", config);
-	destruccion_tabla_de_marcos_y_bitmap();
-	free(memoria);
-	config_destroy(config);
+
+
+
+	liberacion_de_recursos(memoria,config);
 
 	//Arranca a atender clientes
 	/*
@@ -109,8 +103,6 @@ int main(void) {
 	 }*/
 	return 0;
 }
-
-
 
 /*
  * Cosas de Facu

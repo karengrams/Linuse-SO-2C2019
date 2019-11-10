@@ -21,12 +21,13 @@
 #include "utils/utils.h"
 
 t_config* leer_config();
-void destruccion_tabla_de_marcos_y_bitmap();
+void liberacion_de_recursos(void*,t_config*);
 int leer_del_config(char*, t_config*);
 //int magia_muse_cpy(t_proceso* proceso, t_list* paqueteRecibido);
 //int magia_muse_init(t_proceso* cliente_a_atender, char* ipCliente, int id);
 //void* magia_muse_get(t_proceso* , t_list*);
-uint32_t magia_muse_alloc(t_proceso* proceso, int tam);
+uint32_t muse_alloc(t_proceso* proceso, int tam);
+void muse_free(t_proceso *, uint32_t );
 int main();
 
 #endif /* MUSE_H_ */

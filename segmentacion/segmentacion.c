@@ -234,7 +234,7 @@ void mostrar_metadatas(t_list* metadatas_random) {
 	void _mostrar_por_pantalla(void*element) {
 		segmentmetadata *ptr_seg_metadata = (segmentmetadata*) element;
 		heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
-		printf("Metadata:\n - Posicion inicial: %d\n- Ocupado: %d \n- Bytes: %d\n",ptr_seg_metadata->posicion_inicial, ptr_metadata->ocupado,ptr_metadata->bytes);
+		printf("-Metadata:\n     - Posicion inicial: %d\n     - Ocupado: %d \n     - Bytes: %d\n",ptr_seg_metadata->posicion_inicial, ptr_metadata->ocupado,ptr_metadata->bytes);
 	}
 
 	list_iterate(metadatas_random, &_mostrar_por_pantalla);
@@ -243,7 +243,7 @@ void mostrar_metadatas(t_list* metadatas_random) {
 void mostrar_segmentos(t_list *tabla_de_segmentos){
 	void _mostrar_segmentos(void *element){
 		segment *ptr_segmento = (segment*) element;
-		printf("-Segmento nro.%d\n -Cantidad de paginas del segmento: %d\n",posicion_en_tabla_segmento(ptr_segmento,tabla_de_segmentos),ptr_segmento->tabla_de_paginas->elements_count);
+		printf("\n\n-Segmento nro.%d\n -Cantidad de paginas del segmento: %d\n",posicion_en_tabla_segmento(ptr_segmento,tabla_de_segmentos),ptr_segmento->tabla_de_paginas->elements_count);
 		mostrar_metadatas(ptr_segmento->metadatas);
 	}
 	list_iterate(tabla_de_segmentos,_mostrar_segmentos);
