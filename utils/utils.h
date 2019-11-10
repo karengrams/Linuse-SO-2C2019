@@ -31,10 +31,6 @@ t_proceso* buscar_proceso(t_list*,char* );
  * Si el elemento no existe devuelve -1
  */
 int posicion_en_lista_proceso(t_proceso* elemento);
-uint32_t magia_muse_alloc(t_proceso* , int);
 void liberar_proceso(t_proceso* proceso);
-int magia_muse_cpy(t_proceso* proceso, t_list* paqueteRecibido);
-int magia_muse_init(t_proceso* cliente_a_atender, char* ipCliente, int id);
-void* magia_muse_get(t_proceso* , t_list*);
-uint32_t magia_muse_alloc(t_proceso* proceso, int tam);
+
 #endif /* UTILS_H_ */

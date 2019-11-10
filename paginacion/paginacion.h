@@ -7,27 +7,27 @@
 
 #ifndef PAGINACION_H_
 #define PAGINACION_H_
-
-#include "../segmentacion/segmentacion.h"
 #include "frames.h"
-
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <commons/collections/list.h>
 #include <commons/bitarray.h>
+#include <stdint.h>
 
 int TAM_PAG;
 
-typedef struct{
-	int nro_pag;
+typedef struct t_page{
 	bool bit_presencia;
 	struct frame *frame;
-}page;
+} __attribute__((packed)) page;
 
 page* crear_pagina();
-
 t_list* crear_tabla_de_paginas(int);
 void agregar_paginas(t_list*,int);
 int paginas_necesarias(int);
+void asignar_marco(page*);
+//uint32_t obtener_offset_de_tabla_de_pags_para_tam(t_list *, int );
+//int obtener_indice_de_pag_con_espacio_disponible(t_list *,int );
 
 #endif /* PAGINACION_H_ */
