@@ -12,7 +12,6 @@ void inicilizar_tabla_de_frames() {
 }
 
 void dividir_memoria_en_frames(void * memoria ,int pagetam, int memtam) {
-	heapmetadata *metadata_ptr;
 	frame *frame_ptr;
 	for (int i = 0; i < memtam / pagetam; i++) {
 		frame_ptr = (frame*) malloc(sizeof(frame));
