@@ -25,6 +25,19 @@ void destruccion_tabla_de_marcos_y_bitmap() {
 	bitarray_destroy(BIT_ARRAY_FRAMES);
 }
 
+int magia_muse_init(t_proceso* cliente_a_atender, char* ipCliente, int id){
+		if(cliente_a_atender != NULL){
+			return ERROR; //YA EXISTE EN NUESTRA TABLA ERROR
+
+			} else {
+			t_proceso* procesoNuevo = crear_proceso(id, ipCliente);
+			list_add(PROCESS_TABLE, procesoNuevo); //Si no existe lo creamos y agregamos
+			return 0;
+			}
+}
+
+
+
 uint32_t muse_alloc(t_proceso* proceso,int tam){
 	uint32_t offset;
 	t_list *tabla_de_segmento = proceso->tablaDeSegmentos;
@@ -35,26 +48,31 @@ uint32_t muse_alloc(t_proceso* proceso,int tam){
 			expandir_segmento(ptr_segmento,tam);
 
 		else
-			ptr_segmento=crear_segmento(HEAP,tam,tabla_de_segmento);
+			ptr_segmento=crear_segmento(HEAP,tam,tabla_de_segmento); //Pongo 0 en tamanio porque despues se lo sumas
 
 	}
 
 	offset = obtener_offset_para_tam(ptr_segmento,tam);
 
 	segmentmetadata *paux_seg_metadata_ocupado = buscar_metadata_de_segmento_segun(offset,ptr_segmento);
-	segmentmetadata *paux_seg_metadata_libre= (segmentmetadata*)malloc(sizeof(segmentmetadata));
-
-	heapmetadata *paux_metadata_libre = (heapmetadata*) malloc(sizeof(heapmetadata));
 	heapmetadata *paux_metadata_ocupado = paux_seg_metadata_ocupado->metadata;
 
-	paux_metadata_libre->bytes=paux_metadata_ocupado->bytes-tam-sizeof(heapmetadata);
-	paux_metadata_libre->ocupado=false;
+	if(paux_metadata_ocupado->bytes != tam){
+		segmentmetadata *paux_seg_metadata_libre= (segmentmetadata*)malloc(sizeof(segmentmetadata));
+		heapmetadata *paux_metadata_libre = (heapmetadata*) malloc(sizeof(heapmetadata));
 
-	paux_seg_metadata_libre->posicion_inicial=offset+sizeof(heapmetadata)+tam;
-	paux_seg_metadata_libre->metadata=paux_metadata_libre;
-	list_add(ptr_segmento->metadatas,paux_seg_metadata_libre);
+		paux_metadata_libre->bytes=paux_metadata_ocupado->bytes-tam-sizeof(heapmetadata);
+		paux_metadata_libre->ocupado=false;
+
+		paux_seg_metadata_libre->posicion_inicial=offset+sizeof(heapmetadata)+tam;
+		paux_seg_metadata_libre->metadata=paux_metadata_libre;
+		list_add(ptr_segmento->metadatas,paux_seg_metadata_libre);
+		escribir_metadata_en_frame(ptr_segmento, paux_seg_metadata_libre);
+	}
+
 	paux_metadata_ocupado->bytes=tam;
 	paux_metadata_ocupado->ocupado=true;
+	escribir_metadata_en_frame(ptr_segmento, paux_seg_metadata_ocupado);
 	ptr_segmento->tamanio+=tam;
 	return ptr_segmento->base_logica+offset+sizeof(heapmetadata);
 }
@@ -67,6 +85,98 @@ void muse_free(t_proceso *proceso, uint32_t direccion){
 		ptr_metadata->ocupado=false;
 		buddy_system(ptr_seg_metadata,ptr_segmento->metadatas);
 	}
+
+}
+
+void* muse_get(t_proceso* proceso, t_list* paqueteRecibido){
+	int cantidadDeBytes = *((int*)list_get(paqueteRecibido, 1));
+	uint32_t direccion = *((uint32_t*)list_get(paqueteRecibido, 2));
+
+	segment* ptr_segmento = buscar_segmento_dada_una_direccion(proceso->tablaDeSegmentos, direccion);
+	void* buffer = malloc(cantidadDeBytes);
+
+	if(ptr_segmento == NULL){
+		free(buffer);
+		return NULL; //ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO.
+		}
+
+	if((direccion+cantidadDeBytes)>limite_segmento(ptr_segmento)){
+		free(buffer);
+		return NULL; // SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
+		}
+
+	int numeroPagina = numero_pagina(ptr_segmento, direccion);
+	int desplazamientoEnPagina = desplazamiento_en_pagina(ptr_segmento, direccion);
+
+	int auxiliar = 0;
+	int tamanioACopiar;
+	int desplazamientoEnBuffer = 0;
+
+		while(cantidadDeBytes>0){
+
+			page* pagina = list_get(ptr_segmento->tabla_de_paginas, numeroPagina+auxiliar);
+			frame* marco = pagina->frame;
+			tamanioACopiar = minimo(cantidadDeBytes, (TAM_PAG - desplazamientoEnPagina));
+
+	//
+			memcpy(buffer+desplazamientoEnBuffer, marco->memoria+desplazamientoEnPagina , tamanioACopiar);
+
+			cantidadDeBytes -= tamanioACopiar;
+			auxiliar++; //siguiente pagina
+			desplazamientoEnBuffer += tamanioACopiar;
+			desplazamientoEnPagina = 0; //Solo era valido para la primera pagina
+			}
+	//
+			return(buffer);
+	}
+
+
+int muse_cpy(t_proceso* proceso, t_list* paqueteRecibido){
+
+	int cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1));
+	uint32_t direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 3));
+//
+	void* buffer_a_copiar = malloc(cantidad_de_bytes);
+//
+	memcpy(buffer_a_copiar, list_get(paqueteRecibido,2), cantidad_de_bytes);
+//
+	segment* ptr_segmento = buscar_segmento_dada_una_direccion(proceso->tablaDeSegmentos, direccion_pedida);
+//
+		if(ptr_segmento == NULL){
+			free(buffer_a_copiar);
+			return ERROR; //ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO.
+		}
+//
+		if((direccion_pedida+cantidad_de_bytes)>limite_segmento(ptr_segmento)){
+			free(buffer_a_copiar);
+			return ERROR; // SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
+		}
+
+		int numeroPagina = numero_pagina(ptr_segmento, direccion_pedida);
+		int desplazamientoEnPagina = desplazamiento_en_pagina(ptr_segmento, direccion_pedida);
+
+		int auxiliar = 0;
+		int tamanioACopiar;
+		int desplazamientoEnBuffer = 0;
+
+			while(cantidad_de_bytes>0){
+
+				page* pagina = list_get(ptr_segmento->tabla_de_paginas, numeroPagina+auxiliar);
+				frame* marco = pagina->frame;
+				tamanioACopiar = minimo(cantidad_de_bytes, (TAM_PAG - desplazamientoEnPagina));
+
+
+				memcpy(marco->memoria+desplazamientoEnPagina, buffer_a_copiar+desplazamientoEnBuffer,tamanioACopiar);
+
+				cantidad_de_bytes -= tamanioACopiar;
+				auxiliar++; //siguiente pagina
+				desplazamientoEnBuffer += tamanioACopiar;
+				desplazamientoEnPagina = 0; //Solo era valido para la primera pagina
+				}
+
+				return 0;
+		}
+
 
 }
 
@@ -83,13 +193,13 @@ int main(void) {
 	config_destroy(config);
 
 	//Arranca a atender clientes
-	/*
+
 	 fd_set master;   // conjunto maestro de descriptores de fichero
 	 fd_set read_fds; // conjunto temporal para lectura de descriptores de fichero para select()
 	 int fdmax;        // Ultimo socket recibido
 	 FD_ZERO(&master);    // borra los conjuntos maestro y temporal
 	 FD_ZERO(&read_fds);
-	 int socketEs = iniciar_socket_escucha("127.0.0.1", puerto); // obtener socket para listen
+	 int socketEs = iniciar_socket_escucha("127.0.0.1", config_get_string_value(config, "LISTEN_PORT")); // obtener socket para listen
 
 	 FD_SET(socketEs, &master);// añadir socketEscucha al conjunto maestro
 	 fdmax = socketEs;
@@ -106,7 +216,7 @@ int main(void) {
 	 }
 	 }
 	 }
-	 }*/
+	 }
 	return 0;
 }
 
@@ -115,67 +225,6 @@ int main(void) {
 /*
  * Cosas de Facu
  */
-//void* magia_muse_get(t_proceso* proceso, t_list* paqueteRecibido){
-//	int cantidadDeBytes = *((int*)list_get(paqueteRecibido, 1));
-//	uint32_t direccion = *((uint32_t*)list_get(paqueteRecibido, 2));
-//
-//	segment* segmento = buscar_segmento_dada_una_direccion(proceso->tablaDeSegmentos, direccion);
-//	void* buffer = malloc(cantidadDeBytes);
-//	void* marco;
-//	page* pagina = malloc(sizeof(page));
-//
-//		if(segmento == NULL){
-//			free(buffer);
-//			return NULL; //ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO.
-//		}
-//
-//		if((direccion+cantidadDeBytes)>limite_segmento(segmento)){
-//			free(buffer);
-//			return NULL; // SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
-//		}
-//
-//		div_t aux = numero_pagina(segmento, direccion);
-//		int numeroPagina = aux.quot; //pagina correspondiente a la direccion
-//		int desplazamientoEnPagina = aux.rem; //desde que posicion de esa pagina vamos a empezar a copiar
-//
-//		//int sobrante = cantidadDeBytes - (TAM_PAG - desplazamientoEnPagina);
-//		//int cantidadDePaginasAMappear = 1; //minimo vamos a mappear la pagina que tiene el dato
-//		//
-//		//		if(sobrante>0){
-//		//			cantidadDePaginasAMappear += paginas_necesarias(sobrante);
-//		//			} CREO que esto termina siendo innecesario, lo dejo comentado por las dudas
-//
-//		int auxiliar = 0;
-//		int tamanioACopiar;
-//		int desplazamientoEnBuffer = 0;
-//
-//		while(cantidadDeBytes>0){
-//
-//				pagina = list_get(segmento->tablaDePaginas, numeroPagina+auxiliar);
-//				tamanioACopiar = minimo(cantidadDeBytes, (TAM_PAG - desplazamientoEnPagina));
-//				marco = list_get(FRAMES_TABLE, (pagina->numero_frame));
-//
-//				memcpy(buffer+desplazamientoEnBuffer, marco+desplazamientoEnPagina , tamanioACopiar);
-//
-//				cantidadDeBytes -= tamanioACopiar;
-//				auxiliar++; //siguiente pagina
-//				desplazamientoEnBuffer += tamanioACopiar;
-//				desplazamientoEnPagina = 0; //Solo era valido para la primera pagina
-//		}
-//
-//		free(pagina);
-//		return(buffer);
-//}
-//int magia_muse_init(t_proceso* cliente_a_atender, char* ipCliente, int id){
-//		if(cliente_a_atender != NULL){
-//			return ERROR; //YA EXISTE EN NUESTRA TABLA ERROR
-//
-//			} else {
-//			t_proceso* procesoNuevo = crear_proceso(id, ipCliente);
-//			list_add(PROCESS_TABLE, procesoNuevo); //Si no existe lo creamos y agregamos
-//			return 0;
-//			}
-//}
 //int magia_muse_cpy(t_proceso* proceso, t_list* paqueteRecibido){
 //
 //	int cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1));

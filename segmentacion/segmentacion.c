@@ -17,6 +17,7 @@ segment* crear_segmento(segment_type tipo, int tam, t_list* tabla_de_segmentos) 
 	(*segmento_ptr).base_logica = calculo_base_logica(segmento_ptr,tabla_de_segmentos);
 	(*segmento_ptr).tipo = tipo;
 	(*segmento_ptr).metadatas = list_create();
+	(*segmento_ptr).tamanio = 0;
 
 	return segmento_ptr;
 }
@@ -114,6 +115,11 @@ int numero_pagina(segment* segmento, uint32_t direccion) {
 	return div(desplazamientoEnSegmento, TAM_PAG).quot;
 }
 
+int desplazamiento_en_pagina(segment* segmento, uint32_t direccion) {
+	int desplazamientoEnSegmento = direccion - segmento->base_logica;
+	return div(desplazamientoEnSegmento, TAM_PAG).rem;
+}
+
 //TODO: ver caso de error
 int tamanio_segmento(segment* segmento) {
 	return ((list_size(segmento->tabla_de_paginas)) * (TAM_PAG));
@@ -136,7 +142,7 @@ uint32_t obtener_offset_para_tam(segment *segmento, int tam) {
 	} else {
 		for (int i = 0; i < paux_metadatas->elements_count; i++) {
 			segmentmetadata* ptr_seg_metadata = (segmentmetadata*) list_get(paux_metadatas, i);
-			if (!ptr_seg_metadata->metadata->ocupado && ptr_seg_metadata->metadata->bytes>= (tam + sizeof(heapmetadata)))
+			if ((!ptr_seg_metadata->metadata->ocupado) && (ptr_seg_metadata->metadata->bytes>= (tam + sizeof(heapmetadata)) || ptr_seg_metadata->metadata->bytes == tam))
 				direccion = ptr_seg_metadata->posicion_inicial;
 		}
 	}

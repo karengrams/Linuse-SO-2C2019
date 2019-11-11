@@ -53,4 +53,26 @@ void asignar_marcos(t_list* tabla_de_pags) {
 	list_iterate(tabla_de_pags, &_asignar_marco);
 }
 
+escribir_metadata_en_frame(segment* ptr_segmento, segmentmetadata paux_metadata_ocupado){
+	uint32_t direccionAbsoluta = paux_metadata_ocupado->posicion_inicial+ptr_segmento->base_logica;
+	int numeroPagina = numero_pagina(ptr_segmento, direccionAbsoluta);
+	int desplazamiento = desplazamiento_en_pagina(ptr_segmento, direccionAbsoluta);
 
+	if(TAM_PAG - desplazamiento >= sizeof(metadata)){ //si entra copiamos solo en esa pagina
+		page* pagina = (page*)list_get(ptr_segmento->tabla_de_paginas, numeroPagina);
+		frame* ptr_frame_aux = pagina->frame; //Por alguna razon no me dejaba entrar al campo memoria si no hacia esto
+
+		memcpy(ptr_frame_aux->memoria+desplazamiento, paux_metadata_ocupado->metadata, sizeof(metadata));
+
+			} else { //si no entra lo copiamos de a pedazos
+		page* paginaUno = (page*)list_get(ptr_segmento->tabla_de_paginas, numeroPagina);
+		page* paginaDos = (page*)list_get(ptr_segmento->tabla_de_paginas, numeroPagina+1);
+		frame* ptr_frame_aux_uno = paginaUno->frame;
+		frame* ptr_frame_aux_dos = paginaDos->frame;
+		int aCopiar = TAM_PAG - desplazamiento;
+
+		memcpy(ptr_frame_aux_uno->memoria+desplazamiento, paux_metadata_ocupado->metadata, aCopiar);
+		memcpy(ptr_frame_aux_dos->memoria, paux_metadata_ocupado->metadata+aCopiar, sizeof(metadata)-aCopiar);
+		}
+
+}
