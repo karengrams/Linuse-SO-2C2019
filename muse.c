@@ -25,7 +25,7 @@ void destruccion_tabla_de_marcos_y_bitmap() {
 	bitarray_destroy(BIT_ARRAY_FRAMES);
 }
 
-int magia_muse_init(t_proceso* cliente_a_atender, char* ipCliente, int id){
+int muse_init(t_proceso* cliente_a_atender, char* ipCliente, int id){
 		if(cliente_a_atender != NULL){
 			return ERROR; //YA EXISTE EN NUESTRA TABLA ERROR
 
@@ -175,10 +175,10 @@ int muse_cpy(t_proceso* proceso, t_list* paqueteRecibido){
 				}
 
 				return 0;
-		}
-
-
 }
+
+
+
 
 int main(void) {
 	inicilizar_tabla_de_frames();
