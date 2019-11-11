@@ -52,7 +52,7 @@ void asignar_marcos(t_list* tabla_de_pags) {
 	list_iterate(tabla_de_pags, &_asignar_marco);
 }
 
-escribir_metadata_en_frame(segment* ptr_segmento, segmentmetadata paux_metadata_ocupado){
+void escribir_metadata_en_frame(segment* ptr_segmento, segmentmetadata paux_metadata_ocupado){
 	uint32_t direccionAbsoluta = paux_metadata_ocupado->posicion_inicial+ptr_segmento->base_logica;
 	int numeroPagina = numero_pagina(ptr_segmento, direccionAbsoluta);
 	int desplazamiento = desplazamiento_en_pagina(ptr_segmento, direccionAbsoluta);

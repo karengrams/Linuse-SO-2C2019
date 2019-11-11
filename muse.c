@@ -79,7 +79,9 @@ void muse_free(t_proceso *proceso, uint32_t direccion){
 		heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
 		ptr_metadata->ocupado=false;
 		buddy_system(ptr_seg_metadata,ptr_segmento->metadatas);
+		escribir_metadata_en_frame(ptr_segmento, ptr_seg_metadata);
 	}
+
 }
 
 void* muse_get(t_proceso* proceso, t_list* paqueteRecibido){
@@ -144,6 +146,11 @@ int muse_cpy(t_proceso* proceso, t_list* paqueteRecibido){
 		if((direccion_pedida+cantidad_de_bytes)>limite_segmento(ptr_segmento)){
 			free(buffer_a_copiar);
 			return ERROR; // SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
+		}
+
+		if(direccion_pisa_alguna_metadata(ptr_segmento, direccion_pedida, cantidad_de_bytes)){
+			free(buffer_a_copiar);
+			return ERROR;
 		}
 
 		int numeroPagina = numero_pagina(ptr_segmento, direccion_pedida);
@@ -214,44 +221,3 @@ int main(void) {
 	return 0;
 }
 
-/*
- * Cosas de Facu
- */
-//int magia_muse_cpy(t_proceso* proceso, t_list* paqueteRecibido){
-//
-//	int cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1));
-//	uint32_t direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 3));
-//
-//	void* buffer = (void*)malloc(cantidad_de_bytes);
-//
-//	memcpy(buffer, list_get(paqueteRecibido,2), cantidad_de_bytes);
-//
-//	segment* segmento = buscar_segmento_dada_una_direccion(proceso->tablaDeSegmentos, direccion_pedida);
-//
-//		if(segmento == NULL){
-//				free(buffer);
-//				return -1; //ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO.
-//			}
-//
-//		if((direccion_pedida+cantidad_de_bytes)>limite_segmento(segmento)){
-//				free(buffer);
-//				return -1; // SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
-//			}
-//
-//	int desplazamientoEnSegmento = direccion_pedida - segmento->baseLogica;
-//	void *segmentoMappeado = malloc(((segmento->tablaDePaginas->elements_count)*TAM_PAG)+sizeof(metadata));
-//	mappear_segmento(segmento, segmentoMappeado);
-//
-//	bool puedeEscribirse = segmento_puede_escribirse(segmentoMappeado, desplazamientoEnSegmento, cantidad_de_bytes);
-//
-//	if(!puedeEscribirse){
-//		free(buffer);
-//		free(segmentoMappeado);
-//		return -1; //Quiere escribir sobre una metadata.
-//	}
-//
-//	escribir_segmento(segmento, direccion_pedida, cantidad_de_bytes, buffer);
-//	free(buffer);
-//	free(segmentoMappeado);
-//	return 0;
-//}

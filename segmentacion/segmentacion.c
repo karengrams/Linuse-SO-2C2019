@@ -267,6 +267,26 @@ void mostrar_tabla_de_segmentos(t_list *tabla_de_segmentos){
 	list_iterate(tabla_de_segmentos,_mostrar_estructura_segmento);
 }
 
+bool direccion_pisa_alguna_metadata(segment *ptr_segmento, uint32_t direccion_pedida, int cantidad_de_bytes){
+
+	bool _coincide_con_metadata(void* element){
+			segmentmetadata *ptr_seg_metadata = ((segmentmetadata*)element);
+			uint32_t direccion_seg_metadata =  ptr_seg_metadata->posicion_inicial;
+			bool condicionInicial = ((direccion_pedida>=direccion_seg_metadata) && (direccion_pedida<(direccion_seg_metadata+sizeof(metadata))));
+			bool condicionFinal = (((direccion_pedida+cantidad_de_bytes)>direccion_seg_metadata) && (direccion_seg_metadata>direccion_pedida));
+			return condicionFinal || condicionFinal;
+		}
+
+
+		if(list_find(ptr_segmento->metadatas,_coincide_con_metadata))
+			return true;
+
+		return false;
+}
+
+
+
+
 
 // Begin: Cosas de Facu
 
