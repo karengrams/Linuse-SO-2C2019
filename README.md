@@ -28,7 +28,7 @@ Proceso #1:
 ![Imagen de tabla de segmentos](https://i.ibb.co/SQqQH2v/adklsjdal-Page-3-2.png)
 
 ### TODO list
-- [ ] Copiar metadatas en los frames correspondientes (falta hacerlo en muse_alloc y muse_free)
+- [X] Copiar metadatas en los frames correspondientes (falta hacerlo en muse_alloc y muse_free)
 - [ ] Hacer el swap in y swap out de archivo swap y archivo map
 - [ ] Hacer al algoritmo clock modificado para swap
 - [ ] Hacer tests
