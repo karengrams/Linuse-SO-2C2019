@@ -49,13 +49,5 @@ void buddy_system(segmentmetadata *, t_list *);
 void mostrar_metadatas(t_list*);
 void mostrar_segmentos(t_list *);
 void mostrar_tabla_de_segmentos(t_list*);
-//bool segmento_tiene_espacio_disponible(segment*, int,uint32_t*);
-//bool tiene_espacio(void*,int, uint32_t*);
-//void desmappear_segmento(segment*, void*);
-//void mappear_segmento(segment*, void*);
-//void escribir_segmento(segment*, uint32_t , int , void* );
-//bool segmento_puede_escribirse(void* , int , int );
-//void reservar_memoria(int , uint32_t , segment* );
-//
 
 #endif /* muse-segmentacion_h */
