@@ -200,8 +200,6 @@ int main(void) {
 			leer_del_config("MEMORY_SIZE", config));
 	TAM_PAG = leer_del_config("PAGE_SIZE", config);
 
-	liberacion_de_recursos(memoria, config);
-
 	//Arranca a atender clientes
 
 	fd_set master;   // conjunto maestro de descriptores de fichero
@@ -228,6 +226,9 @@ int main(void) {
 			}
 		}
 	}
+
+	liberacion_de_recursos(memoria, config);
+
 	return 0;
 }
 
