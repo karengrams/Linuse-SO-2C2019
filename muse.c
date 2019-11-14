@@ -34,37 +34,30 @@ int muse_init(t_proceso* cliente_a_atender, char* ipCliente, int id) {
 uint32_t muse_alloc(t_proceso* proceso, int tam) {
 	uint32_t offset;
 	t_list *tabla_de_segmento = proceso->tablaDeSegmentos;
-	segment *ptr_segmento = buscar_segmento_heap_para_tam(tabla_de_segmento,
-			tam); // Busca segmento de tipo heap con espacio
+	segment *ptr_segmento = buscar_segmento_heap_para_tam(tabla_de_segmento,tam); // Busca segmento de tipo heap con espacio
 	if (!ptr_segmento) {
-		ptr_segmento = buscar_segmento_heap_expandible_para_tam(
-				tabla_de_segmento, tam);
+		ptr_segmento = buscar_segmento_heap_expandible_para_tam(tabla_de_segmento, tam);
+
 		if (ptr_segmento)
 			expandir_segmento(ptr_segmento, tam);
 
 		else
 			ptr_segmento = crear_segmento(HEAP, tam, tabla_de_segmento); //Pongo 0 en tamanio porque despues se lo sumas
-
 	}
 
 	offset = obtener_offset_para_tam(ptr_segmento, tam);
 
-	segmentmetadata *paux_seg_metadata_ocupado =
-			buscar_metadata_de_segmento_segun(offset, ptr_segmento);
+	segmentmetadata *paux_seg_metadata_ocupado = buscar_metadata_de_segmento_segun(offset, ptr_segmento);
 	heapmetadata *paux_metadata_ocupado = paux_seg_metadata_ocupado->metadata;
 
 	if (paux_metadata_ocupado->bytes != tam) {
-		segmentmetadata *paux_seg_metadata_libre = (segmentmetadata*) malloc(
-				sizeof(segmentmetadata));
-		heapmetadata *paux_metadata_libre = (heapmetadata*) malloc(
-				sizeof(heapmetadata));
+		segmentmetadata *paux_seg_metadata_libre = (segmentmetadata*) malloc(sizeof(segmentmetadata));
+		heapmetadata *paux_metadata_libre = (heapmetadata*) malloc(sizeof(heapmetadata));
 
-		paux_metadata_libre->bytes = paux_metadata_ocupado->bytes - tam
-				- sizeof(heapmetadata);
+		paux_metadata_libre->bytes = paux_metadata_ocupado->bytes - tam - sizeof(heapmetadata);
 		paux_metadata_libre->ocupado = false;
 
-		paux_seg_metadata_libre->posicion_inicial = offset
-				+ sizeof(heapmetadata) + tam;
+		paux_seg_metadata_libre->posicion_inicial = offset + sizeof(heapmetadata) + tam;
 		paux_seg_metadata_libre->metadata = paux_metadata_libre;
 		list_add(ptr_segmento->metadatas, paux_seg_metadata_libre);
 		escribir_metadata_en_frame(ptr_segmento, paux_seg_metadata_libre);
