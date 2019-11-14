@@ -50,7 +50,8 @@ uint32_t muse_alloc(t_proceso* proceso, int tam) {
 	segmentmetadata *paux_seg_metadata_ocupado = buscar_metadata_de_segmento_segun(offset, ptr_segmento);
 	heapmetadata *paux_metadata_ocupado = paux_seg_metadata_ocupado->metadata;
 
-	if (paux_metadata_ocupado->bytes != tam) {
+	//
+	if (paux_metadata_ocupado->bytes >=tam+sizeof(heapmetadata)) {
 		segmentmetadata *paux_seg_metadata_libre = (segmentmetadata*) malloc(sizeof(segmentmetadata));
 		heapmetadata *paux_metadata_libre = (heapmetadata*) malloc(sizeof(heapmetadata));
 

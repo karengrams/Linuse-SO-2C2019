@@ -154,10 +154,10 @@ uint32_t obtener_offset_para_tam(segment *segmento, int tam) {
 		for (int i = 0; i < paux_metadatas->elements_count; i++) {
 			segmentmetadata* ptr_seg_metadata = (segmentmetadata*) list_get(
 					paux_metadatas, i);
-			if ((!ptr_seg_metadata->metadata->ocupado)
-					&& (ptr_seg_metadata->metadata->bytes
-							>= (tam + sizeof(heapmetadata))
-							|| ptr_seg_metadata->metadata->bytes == tam))
+			if (
+					(!ptr_seg_metadata->metadata->ocupado) && (ptr_seg_metadata->metadata->bytes>= (tam)
+							|| ptr_seg_metadata->metadata->bytes == tam)
+							)
 				direccion = ptr_seg_metadata->posicion_inicial;
 		}
 	}
