@@ -21,6 +21,11 @@ typedef struct segment_t {
 	t_list *tabla_de_paginas;
 }__attribute__((packed)) segment;
 
+typedef struct heapmetadata_t{
+	bool ocupado;
+	int bytes;
+}__attribute__((packed)) heapmetadata;
+
 typedef struct {
 	heapmetadata *metadata;
 	uint32_t posicion_inicial;
@@ -40,7 +45,7 @@ bool segmento_puede_agrandarse(segment*, int, t_list*);
 int numero_pagina(segment*, uint32_t);
 int espacio_libre(segment *);
 segment* buscar_segmento_dada_una_direccion(uint32_t, t_list*);
-uint32_t obtener_offset_para_tam(segment *, int ); //uint32_t reservar_memoria(segment *, int );
+uint32_t obtener_offset_para_tam(segment *, int );
 void expandir_segmento(segment *,int);
 bool metadatas_fusionables(segmentmetadata *, segmentmetadata *);
 segmentmetadata* buscar_metadata_para_anidar(t_list *, segmentmetadata *);

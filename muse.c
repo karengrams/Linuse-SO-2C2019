@@ -1,5 +1,7 @@
 #include "muse.h"
 
+#define ERROR -1;
+
 t_config* leer_config() {
 	return config_create("/home/utnso/Escritorio/muse.config");
 }
@@ -195,7 +197,7 @@ int main(void) {
 	TAM_PAG = leer_del_config("PAGE_SIZE", config);
 
 	//Arranca a atender clientes
-
+/*
 	fd_set master;   // conjunto maestro de descriptores de fichero
 	fd_set read_fds; // conjunto temporal para lectura de descriptores de fichero para select()
 	int fdmax;        // Ultimo socket recibido
@@ -220,7 +222,7 @@ int main(void) {
 			}
 		}
 	}
-
+*/
 	liberacion_de_recursos(memoria, config);
 
 	return 0;

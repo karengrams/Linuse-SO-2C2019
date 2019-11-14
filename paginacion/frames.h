@@ -13,14 +13,10 @@
 #include "paginacion.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include "../segmentacion/segmentacion.h"
 
 t_list *FRAMES_TABLE;
 t_bitarray *BIT_ARRAY_FRAMES;
-
-typedef struct heapmetadata_t{
-	bool ocupado;
-	int bytes;
-}__attribute__((packed))heapmetadata;
 
 typedef struct frame_t{
 	void *memoria;
