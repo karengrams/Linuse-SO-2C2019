@@ -93,14 +93,19 @@ void muse_free(t_proceso *proceso, uint32_t direccion) {
 }
 
 void* muse_get(t_proceso* proceso, t_list* paqueteRecibido) {
+
+	printf("muse get\n");
+
 	int cantidadDeBytes = *((int*) list_get(paqueteRecibido, 1));
 	uint32_t direccion = *((uint32_t*) list_get(paqueteRecibido, 2));
 
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(
-			proceso->tablaDeSegmentos, direccion);
+			 direccion, proceso->tablaDeSegmentos);
+
+	printf("Ya tenemos el segmento\n");
 	void* buffer = malloc(cantidadDeBytes);
 
-	if (ptr_segmento == NULL) {
+	if (!ptr_segmento) {
 		free(buffer);
 		return NULL; //ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO.
 	}
@@ -118,6 +123,7 @@ void* muse_get(t_proceso* proceso, t_list* paqueteRecibido) {
 	int tamanioACopiar;
 	int desplazamientoEnBuffer = 0;
 
+	printf("Vamos a copiar\n");
 	while (cantidadDeBytes > 0) {
 
 		page* pagina = list_get(ptr_segmento->tabla_de_paginas,
@@ -132,6 +138,7 @@ void* muse_get(t_proceso* proceso, t_list* paqueteRecibido) {
 		desplazamientoEnBuffer += tamanioACopiar;
 		desplazamientoEnPagina = 0; //Solo era valido para la primera pagina
 	}
+	printf("Listo el museGet\n");
 	return (buffer);
 }
 
@@ -204,6 +211,8 @@ int muse_cpy(t_proceso* proceso, t_list* paqueteRecibido) {
 
 void atenderCliente(fd_set* master, int socketCli){
 
+
+
 	t_paquete* paquete_respuesta;
 	int cod_error;
 	int id_cliente, cantidad_de_bytes, flags;
@@ -214,6 +223,7 @@ void atenderCliente(fd_set* master, int socketCli){
 	ipCliente(socketCli, ipCli);
 
 	int cod_op = recibir_operacion(socketCli);
+	printf("Codigo operacion %d\n", cod_op);
 	paqueteRecibido = recibir_paquete(socketCli);
 
 	t_proceso* cliente_a_atender = buscar_proceso(paqueteRecibido, ipCli);
@@ -261,7 +271,7 @@ void atenderCliente(fd_set* master, int socketCli){
 				break;
 
 			case MUSE_GET:
-
+				cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
 				buffer = muse_get(cliente_a_atender, paqueteRecibido);
 
 				if (buffer == NULL){
@@ -270,7 +280,7 @@ void atenderCliente(fd_set* master, int socketCli){
 
 				} else {
 
-				paquete_respuesta = crear_paquete(0);
+				paquete_respuesta = crear_paquete(10);
 				agregar_a_paquete(paquete_respuesta, buffer, cantidad_de_bytes);
 				enviar_paquete(paquete_respuesta, socketCli);
 				eliminar_paquete(paquete_respuesta);
@@ -325,9 +335,14 @@ void atenderCliente(fd_set* master, int socketCli){
 				send(socketCli, &cod_error, sizeof(int), 0);
 				break;
 
+			 default:
+				 printf("ERROR AAAAAAAA\n");
+				 break;
+
 			}
 
 		free(ipCli);
+
 		//free(buffer);
 		//free(paqueteRecibido); //TODO:fijarse como eliminar la lista de las commons
 
@@ -356,14 +371,16 @@ int main(void) {
 	fdmax = socketEs;
 
 	while (1) {
+
 		read_fds = master;
 		select(fdmax + 1, &read_fds, NULL, NULL, NULL); // @suppress("Symbol is not resolved")
+
 		for (int i = 0; i <= fdmax; i++) { // explorar conexiones existentes en busca de datos que leer
 			if (FD_ISSET(i, &read_fds)) { //Hay datos que leer...
 				if (i == socketEs) { //si se recibe en el socket escucha hay nuevas conexiones que aceptar
 					admitirNuevoCliente(&master, &fdmax, i); //agregar al master los nuevos clientes
 				} else {
-					atenderCliente(&master, i); //leer mensajes y paquetes e imprimirlos por consola
+					atenderCliente(&master, i);
 				}
 			}
 		}

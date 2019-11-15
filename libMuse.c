@@ -271,7 +271,7 @@ int muse_get(void* dst, uint32_t src, size_t n){
 
 	t_list* lista = recibir_paquete(SOCKET);
 
-	memcpy(dst, (char*)list_get(lista, 0), n); //recibir paquete con datos pedidos y copiarlo en dst con memcpy
+	memcpy(dst, list_get(lista, 0), n); //recibir paquete con datos pedidos y copiarlo en dst con memcpy
 
 	return error;
 }

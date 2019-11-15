@@ -17,8 +17,8 @@ int main(){
 	error = muse_cpy(direccion, "Putitaasfjdk", 13);
 	printf("Hubo error en el muse_cpy? %d\n", error);
 
-//	muse_get(recibir, direccion, size);
-//	printf("MUSE_GET me devolvio %s\n", (char*)recibir);
+	muse_get(recibir, direccion, size);
+	printf("MUSE_GET me devolvio %s\n", (char*)recibir);
 
 //	muse_free(direccion);
 
