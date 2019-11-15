@@ -27,6 +27,10 @@ Proceso #1:
 ```
 ![Imagen de tabla de segmentos](https://i.ibb.co/SQqQH2v/adklsjdal-Page-3-2.png)
 
+### muse_map
+
+![Imagen de @b0rk sobre mmap](https://pbs.twimg.com/media/DbcAjhJW4AAI28b?format=jpg&name=medium)
+
 ### TODO list
 - [X] Copiar metadatas en los frames correspondientes (falta hacerlo en muse_alloc y muse_free)
 - [ ] Hacer el swap in y swap out de archivo swap y archivo map
