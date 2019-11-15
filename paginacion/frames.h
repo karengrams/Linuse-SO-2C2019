@@ -1,10 +1,3 @@
-/*
- * frames.h
- *
- *  Created on: 25 oct. 2019
- *      Author: utnso
- */
-
 #ifndef PAGINACION_FRAMES_H_
 #define PAGINACION_FRAMES_H_
 #define NO_FRAME -1
@@ -14,6 +7,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "../segmentacion/segmentacion.h"
+#include "paginacion.h"
 
 t_list *FRAMES_TABLE;
 t_bitarray *BIT_ARRAY_FRAMES;

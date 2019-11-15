@@ -2,12 +2,14 @@
 #define SEGMENTACION_H
 #include <commons/collections/list.h>
 #include "../paginacion/frames.h"
+#include "../paginacion/paginacion.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+
 
 typedef enum segment_type_t {
 	HEAP, MMAP,

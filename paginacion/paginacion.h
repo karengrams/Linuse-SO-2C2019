@@ -1,10 +1,3 @@
-/*
- * paginacion.h
- *
- *  Created on: 12 oct. 2019
- *      Author: utnso
- */
-
 #ifndef PAGINACION_H_
 #define PAGINACION_H_
 #include "frames.h"

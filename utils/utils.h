@@ -1,6 +1,7 @@
 #ifndef UTILS_H_
 #define UTILS_H_
 
+#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include <commons/collections/list.h>
@@ -10,7 +11,6 @@
 #include "../segmentacion/segmentacion.h"
 
 t_list* PROCESS_TABLE;
-
 
 typedef struct{
 	int id;

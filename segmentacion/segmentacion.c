@@ -1,6 +1,5 @@
 #include "segmentacion.h"
-#include "../paginacion/paginacion.h"
-#include "../paginacion/frames.h"
+
 
 int minimo(int a, int b) {
 	if (a < b)

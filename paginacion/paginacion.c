@@ -56,7 +56,7 @@ void asignar_marco(page* pag) {
 
 
 
-void swap_pages(page* victima, page* paginaPedida){
+/*void swap_pages(page* victima, page* paginaPedida){
 	//datos de la victima
 	int nroFrame = victima->nro_frame
 	frame* frameVictima = ((frame*)list_get(FRAMES_TABLE, nroFrame));
@@ -82,5 +82,5 @@ void swap_pages(page* victima, page* paginaPedida){
 	paginaPedida->bit_uso = true;
 	paginaPedida->bit_modificado = false;
 
-}
+}*/
 

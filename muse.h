@@ -20,6 +20,9 @@
 #include "utils/utilsSockets.h"
 #include "utils/utils.h"
 
+t_list* PROCESS_TABLE;
+
+
 t_config* leer_config();
 void liberacion_de_recursos(void*,t_config*);
 int leer_del_config(char*, t_config*);

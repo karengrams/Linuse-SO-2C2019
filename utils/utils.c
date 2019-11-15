@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include "utils.h"
 
 int ERROR = -1;

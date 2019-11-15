@@ -1,11 +1,4 @@
-/*
- * frames.c
- *
- *  Created on: 25 oct. 2019
- *      Author: utnso
- */
 #include "frames.h"
-#include "paginacion.h"
 
 void inicilizar_tabla_de_frames() {
 	FRAMES_TABLE = list_create();
