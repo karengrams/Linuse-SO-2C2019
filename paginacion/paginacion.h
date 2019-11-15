@@ -19,7 +19,10 @@ int TAM_PAG;
 
 typedef struct t_page{
 	bool bit_presencia;
-	struct frame *frame;
+	bool bit_modificado;
+	bool bit_uso;
+	int nro_frame; //Es necesario para buscarlo en el archivo swap si no esta cargado en memoria
+	struct frame *frame; //Creo que esto no tiene sentido tenerlo
 } __attribute__((packed)) page;
 
 page* crear_pagina();
