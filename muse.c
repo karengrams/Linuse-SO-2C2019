@@ -15,7 +15,7 @@ int leer_del_config(char* valor, t_config* archivo_config) {
 	return config_get_int_value(archivo_config, valor);
 }
 
-void liberacion_de_recursos(void*mem, t_config *config) {
+void liberacion_de_recursos(void*mem, t_config *config){
 	config_destroy(config);
 	free(mem);
 	void _destroy_element(void *elemento) {
@@ -27,7 +27,7 @@ void liberacion_de_recursos(void*mem, t_config *config) {
 	bitarray_destroy(BIT_ARRAY_FRAMES);
 }
 
-int muse_init(t_proceso* cliente_a_atender, char* ipCliente, int id) {
+int muse_init(t_proceso* cliente_a_atender, char* ipCliente, int id){
 	if (cliente_a_atender != NULL) {
 		return ERROR; //YA EXISTE EN NUESTRA TABLA ERROR
 
@@ -92,17 +92,13 @@ void muse_free(t_proceso *proceso, uint32_t direccion) {
 
 }
 
-void* muse_get(t_proceso* proceso, t_list* paqueteRecibido) {
-
-	printf("muse get\n");
-
+void* muse_get(t_proceso* proceso, t_list* paqueteRecibido){
 	int cantidadDeBytes = *((int*) list_get(paqueteRecibido, 1));
 	uint32_t direccion = *((uint32_t*) list_get(paqueteRecibido, 2));
 
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(
 			 direccion, proceso->tablaDeSegmentos);
 
-	printf("Ya tenemos el segmento\n");
 	void* buffer = malloc(cantidadDeBytes);
 
 	if (!ptr_segmento) {
@@ -123,7 +119,6 @@ void* muse_get(t_proceso* proceso, t_list* paqueteRecibido) {
 	int tamanioACopiar;
 	int desplazamientoEnBuffer = 0;
 
-	printf("Vamos a copiar\n");
 	while (cantidadDeBytes > 0) {
 
 		page* pagina = list_get(ptr_segmento->tabla_de_paginas,
@@ -138,7 +133,6 @@ void* muse_get(t_proceso* proceso, t_list* paqueteRecibido) {
 		desplazamientoEnBuffer += tamanioACopiar;
 		desplazamientoEnPagina = 0; //Solo era valido para la primera pagina
 	}
-	printf("Listo el museGet\n");
 	return (buffer);
 }
 
@@ -150,8 +144,6 @@ int muse_cpy(t_proceso* proceso, t_list* paqueteRecibido) {
 	void* buffer_a_copiar = malloc(cantidad_de_bytes);
 
 	memcpy(buffer_a_copiar, list_get(paqueteRecibido, 2), cantidad_de_bytes);
-
-	printf("Quieren que copie\n%s\nen la direccion %d\n", buffer_a_copiar, direccion_pedida);
 
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion_pedida,
 			proceso->tablaDeSegmentos);
@@ -201,153 +193,6 @@ int muse_cpy(t_proceso* proceso, t_list* paqueteRecibido) {
 	return 0;
 }
 
-
-
-
-
-
-
-
-
-void atenderCliente(fd_set* master, int socketCli){
-
-
-
-	t_paquete* paquete_respuesta;
-	int cod_error;
-	int id_cliente, cantidad_de_bytes, flags;
-	void* buffer;
-	uint32_t direccion_pedida, direccion;
-	t_list* paqueteRecibido;
-	char* ipCli = (char*)malloc(sizeof(char)*20);
-	ipCliente(socketCli, ipCli);
-
-	int cod_op = recibir_operacion(socketCli);
-	printf("Codigo operacion %d\n", cod_op);
-	paqueteRecibido = recibir_paquete(socketCli);
-
-	t_proceso* cliente_a_atender = buscar_proceso(paqueteRecibido, ipCli);
-
-
-		switch(cod_op)
-			{
-			case DESCONEXION:
-				printf("Se desconecto el socket %d\n", socketCli);
-				FD_CLR(socketCli, master);
-				close(socketCli);
-				break;
-
-			case MUSE_INIT:
-				printf("Muse init\n");
-				id_cliente = *((int*)list_get(paqueteRecibido, 0));
-				cod_error = muse_init(cliente_a_atender, ipCli, id_cliente);
-				send(socketCli, &cod_error, sizeof(int), 0);
-				break;
-
-			case MUSE_CLOSE:
-
-				liberar_proceso(cliente_a_atender);
-				close(socketCli);
-				break;
-
-			case MUSE_ALLOC:
-				//id_cliente = *((int*)list_get(paqueteRecibido, 0));
-				//cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1));
-
-				direccion = muse_alloc(cliente_a_atender, *((int*)list_get(paqueteRecibido,1)));
-				printf("Se le asigna la posicion %x\n", direccion);
-				send(socketCli, &direccion, sizeof(uint32_t), 0);
-				break;
-
-			case MUSE_FREE:
-				id_cliente = *((int*)list_get(paqueteRecibido, 0));
-				direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
-
-				//TODO: Magia de SEGMENTACION PAGINADA
-
-				printf("MUSE_FREE, el proceso %d de la ip %s nos esta pidiendo que "
-				"liberemos la memoria de la direccion %x \n", id_cliente,
-				ipCli, direccion_pedida);
-				break;
-
-			case MUSE_GET:
-				cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
-				buffer = muse_get(cliente_a_atender, paqueteRecibido);
-
-				if (buffer == NULL){
-					cod_error = -1;
-					send(socketCli, &cod_error, sizeof(int), 0);
-
-				} else {
-
-				paquete_respuesta = crear_paquete(10);
-				agregar_a_paquete(paquete_respuesta, buffer, cantidad_de_bytes);
-				enviar_paquete(paquete_respuesta, socketCli);
-				eliminar_paquete(paquete_respuesta);
-
-				}
-				break;
-
-			case MUSE_CPY:
-				cod_error = muse_cpy(cliente_a_atender, paqueteRecibido);
-				send(socketCli, &cod_error, sizeof(int), 0);
-				printf("Listo el musecpy\n");
-				break;
-
-			case MUSE_MAP:
-				id_cliente = *((int*)list_get(paqueteRecibido, 0));
-				strcpy(buffer, (char*)list_get(paqueteRecibido,1));
-				cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 2)); //este seria el length a mappear
-				flags = *((int*)list_get(paqueteRecibido, 3));
-
-				printf("MUSE_MAP, el proceso %d de la ip %s quiere mappear %d bytes del archivo del path \n %s \n",
-						id_cliente, ipCli, cantidad_de_bytes, (char*)buffer);
-
-				//magia de MUSE
-				//guardar la direccion del map en direccion y enviarla
-
-				direccion = &flags; //direccion random para pruebas
-				send(socketCli, &direccion, sizeof(uint32_t), 0);
-				break;
-
-			case MUSE_SYNC:
-				 id_cliente = *((int*)list_get(paqueteRecibido, 0));
-				 cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1)); //cantidad de bytes a guardar en el archivo
-				 direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 2)); //direccion a partir de la cual hacer el sync
-
-				 printf("MUSE_SYNC, el proceso %d de la ip %s quiere sincronizar %d bytes de la direccion %x \n",
-				 		id_cliente, ipCli, cantidad_de_bytes, direccion_pedida);
-
-				 //Magia de MUSE
-
-				send(socketCli, &cod_error, sizeof(int), 0);
-				break;
-
-			 case MUSE_UNMAP:
-				id_cliente = *((int*)list_get(paqueteRecibido, 0));
-				direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
-
-				printf("MUSE_UNMAP, el proceso %d de la ip %s quiere unmappear la direccion %x de memoria \n",
-						id_cliente, ipCli, direccion_pedida);
-
-				//Magia de MUSE
-
-				send(socketCli, &cod_error, sizeof(int), 0);
-				break;
-
-			 default:
-				 printf("ERROR AAAAAAAA\n");
-				 break;
-
-			}
-
-		free(ipCli);
-
-		//free(buffer);
-		//free(paqueteRecibido); //TODO:fijarse como eliminar la lista de las commons
-
-}
-
 int main(void) {
 	inicilizar_tabla_de_frames();
 	inicializar_bitmap();
@@ -358,14 +203,12 @@ int main(void) {
 	TAM_PAG = leer_del_config("PAGE_SIZE", config);
 
 	//Arranca a atender clientes
-	printf("VAMOS A ATENDER BOLUDOS \n");
 	fd_set master;   // conjunto maestro de descriptores de fichero
 	fd_set read_fds; // conjunto temporal para lectura de descriptores de fichero para select()
 	int fdmax;        // Ultimo socket recibido
 	FD_ZERO(&master);    // borra los conjuntos maestro y temporal
 	FD_ZERO(&read_fds);
-	int socketEs = iniciar_socket_escucha("127.0.0.1",
-			config_get_string_value(config, "LISTEN_PORT")); // obtener socket para listen
+	int socketEs = iniciar_socket_escucha("127.0.0.1",config_get_string_value(config, "LISTEN_PORT")); // obtener socket para listen
 
 	FD_SET(socketEs, &master); // añadir socketEscucha al conjunto maestro
 	fdmax = socketEs;
@@ -378,9 +221,9 @@ int main(void) {
 		for (int i = 0; i <= fdmax; i++) { // explorar conexiones existentes en busca de datos que leer
 			if (FD_ISSET(i, &read_fds)) { //Hay datos que leer...
 				if (i == socketEs) { //si se recibe en el socket escucha hay nuevas conexiones que aceptar
-					admitirNuevoCliente(&master, &fdmax, i); //agregar al master los nuevos clientes
+					admitir_nuevo_cliente(&master, &fdmax, i); //agregar al master los nuevos clientes
 				} else {
-					atenderCliente(&master, i);
+					atender_cliente(&master, i);
 				}
 			}
 		}

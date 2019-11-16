@@ -1,4 +1,4 @@
-#include "libMuse.c"
+#include "libMuse.h"
 
 int main(){
 	int *ptr;
@@ -31,9 +31,7 @@ int main(){
 //	error = muse_unmap(direccion);
 //	printf("Hubo error en el muse_unmap? %d\n", error);
 //
-	if(getc(stdin) == 'c')
-		muse_close();
-
+//	muse_close();
 	free(cosas);
 	free(recibir);
 	return 0;
