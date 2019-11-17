@@ -210,20 +210,20 @@ void admitir_nuevo_cliente(fd_set *master, int* fdmax, int socketEs){
 }
 
 void atender_cliente(fd_set* master, int socketCli){
-	t_paquete* paquete_respuesta;
+	t_paquete* paquete_respuesta = NULL;
 	int cod_error;
 	int id_cliente, cantidad_de_bytes, flags;
-	void* buffer;
+	void* buffer = NULL;
 	t_proceso* cliente_a_atender = NULL;
 	uint32_t direccion_pedida, direccion;
-	t_list* paqueteRecibido;
+	t_list* paqueteRecibido = NULL;
 	char* ipCli = (char*)malloc(sizeof(char)*20);
 	ipCliente(socketCli, ipCli);
 
 	int cod_op = recibir_operacion(socketCli);
 	printf("Codigo operacion %d\n", cod_op);
 
-	if(cod_op!=0){
+	if(cod_op!=DESCONEXION){
 		paqueteRecibido = recibir_paquete(socketCli);
 		cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
 		switch(cod_op){
@@ -234,8 +234,9 @@ void atender_cliente(fd_set* master, int socketCli){
 			send(socketCli, &cod_error, sizeof(int), 0);
 		break;
 		case MUSE_CLOSE:
-			printf("Chau proceso!");
+			printf("Chau proceso!\n");
 //			liberar_proceso(cliente_a_atender);
+			FD_CLR(socketCli, master);
 			close(socketCli);
 		break;
 		case MUSE_ALLOC:
@@ -264,14 +265,13 @@ void atender_cliente(fd_set* master, int socketCli){
 				eliminar_paquete(paquete_respuesta);
 			}
 		break;
-
-			case MUSE_CPY:
+		case MUSE_CPY:
 				cod_error = muse_cpy(cliente_a_atender, paqueteRecibido);
 				send(socketCli, &cod_error, sizeof(int), 0);
 				printf("Listo el musecpy\n");
-				break;
+		break;
 
-			case MUSE_MAP:
+		case MUSE_MAP:
 				id_cliente = *((int*)list_get(paqueteRecibido, 0));
 				strcpy(buffer, (char*)list_get(paqueteRecibido,1));
 				cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 2)); //este seria el length a mappear
@@ -285,9 +285,9 @@ void atender_cliente(fd_set* master, int socketCli){
 
 				direccion = &flags; //direccion random para pruebas
 				send(socketCli, &direccion, sizeof(uint32_t), 0);
-				break;
+		break;
 
-			case MUSE_SYNC:
+		case MUSE_SYNC:
 				 id_cliente = *((int*)list_get(paqueteRecibido, 0));
 				 cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1)); //cantidad de bytes a guardar en el archivo
 				 direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 2)); //direccion a partir de la cual hacer el sync
@@ -298,9 +298,9 @@ void atender_cliente(fd_set* master, int socketCli){
 				 //Magia de MUSE
 
 				send(socketCli, &cod_error, sizeof(int), 0);
-				break;
+		break;
 
-			 case MUSE_UNMAP:
+		case MUSE_UNMAP:
 				id_cliente = *((int*)list_get(paqueteRecibido, 0));
 				direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
 
@@ -310,20 +310,11 @@ void atender_cliente(fd_set* master, int socketCli){
 				//Magia de MUSE
 
 				send(socketCli, &cod_error, sizeof(int), 0);
-				break;
-
-			 default:
-				 printf("ERROR AAAAAAAA\n");
-				 break;
+		break;
 			}
-	} else{
-		printf("Se desconecto el socket %d\n", socketCli);
-		FD_CLR(socketCli, master);
-		close(socketCli);
 	}
 	free(ipCli);
-
-		//free(buffer);
+	free(buffer);
 		//free(paqueteRecibido); //TODO:fijarse como eliminar la lista de las commons
 
 }

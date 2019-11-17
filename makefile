@@ -12,16 +12,16 @@ all: $(OBJS)
 muse.o: muse.c
 	$(CC) $(FLAGS) muse.c
 
-segmentacion/segmentacion.o: segmentacion/segmentacion.c
+segmentacion.o: segmentacion/segmentacion.c
 	$(CC) $(FLAGS) segmentacion/segmentacion.c
 
-paginacion/paginacion.o: paginacion/paginacion.c
+paginacion.o: paginacion/paginacion.c
 	$(CC) $(FLAGS) paginacion/paginacion.c
 
-paginacion/frames.o: paginacion/frames.c
+frames.o: paginacion/frames.c
 	$(CC) $(FLAGS) paginacion/frames.c
 
-sockets/sockets.o: sockets/sockets.c
+sockets.o: sockets/sockets.c
 	$(CC) $(FLAGS) sockets/sockets.c
 
 
