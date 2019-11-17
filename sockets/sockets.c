@@ -159,16 +159,16 @@ t_list* recibir_paquete(int socket_cliente){
 }
 
 t_proceso* crear_proceso(int id, char* ip){
-	t_proceso* proceso = malloc(sizeof(t_proceso));
+	t_proceso* proceso = (t_proceso*)malloc(sizeof(t_proceso));
 	proceso->id = id;
-	proceso->ip = malloc(sizeof(char) * 16);
+	proceso->ip = (char*)malloc(sizeof(char) * 16);
 	strcpy(proceso->ip, ip);
 	proceso->tablaDeSegmentos = list_create();
 	return proceso;
 }
 
 t_proceso* buscar_proceso(t_list* paqueteRecibido, char* ipCliente){
-	int id = *((int*) list_get(paqueteRecibido, 0));
+	int id = *((int*) list_get(paqueteRecibido, 0)); // ACA se muere?
 
 	bool mismoipid(void* arg) {
 		t_proceso* cliente = (t_proceso*) arg;
@@ -214,6 +214,7 @@ void atender_cliente(fd_set* master, int socketCli){
 	int cod_error;
 	int id_cliente, cantidad_de_bytes, flags;
 	void* buffer;
+	t_proceso* cliente_a_atender = NULL;
 	uint32_t direccion_pedida, direccion;
 	t_list* paqueteRecibido;
 	char* ipCli = (char*)malloc(sizeof(char)*20);
@@ -221,67 +222,48 @@ void atender_cliente(fd_set* master, int socketCli){
 
 	int cod_op = recibir_operacion(socketCli);
 	printf("Codigo operacion %d\n", cod_op);
-	paqueteRecibido = recibir_paquete(socketCli);
 
-	t_proceso* cliente_a_atender = buscar_proceso(paqueteRecibido, ipCli);
-
+	if(cod_op!=0){
+		paqueteRecibido = recibir_paquete(socketCli);
+		cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
 		switch(cod_op){
-			case DESCONEXION:
-				printf("Se desconecto el socket %d\n", socketCli);
-				FD_CLR(socketCli, master);
-				close(socketCli);
-				break;
-
-			case MUSE_INIT:
-				printf("Muse init\n");
-				id_cliente = *((int*)list_get(paqueteRecibido, 0));
-				cod_error = muse_init(cliente_a_atender, ipCli, id_cliente);
-				send(socketCli, &cod_error, sizeof(int), 0);
-				break;
-
-			case MUSE_CLOSE:
-				printf("Chau proceso!");
-//				liberar_proceso(cliente_a_atender);
-//				close(socketCli);
-				break;
-
-			case MUSE_ALLOC:
-				//id_cliente = *((int*)list_get(paqueteRecibido, 0));
-				//cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1));
-
-				direccion = muse_alloc(cliente_a_atender, *((int*)list_get(paqueteRecibido,1)));
-				printf("Se le asigna la posicion %x\n", direccion);
-				send(socketCli, &direccion, sizeof(uint32_t), 0);
-				break;
-
-			case MUSE_FREE:
-				id_cliente = *((int*)list_get(paqueteRecibido, 0));
-				direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
-
+		case MUSE_INIT:
+			printf("Muse init\n");
+			id_cliente = *((int*)list_get(paqueteRecibido, 0));
+			cod_error = muse_init(cliente_a_atender, ipCli, id_cliente);
+			send(socketCli, &cod_error, sizeof(int), 0);
+		break;
+		case MUSE_CLOSE:
+			printf("Chau proceso!");
+//			liberar_proceso(cliente_a_atender);
+			close(socketCli);
+		break;
+		case MUSE_ALLOC:
+			//id_cliente = *((int*)list_get(paqueteRecibido, 0));
+			//cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1));
+			direccion = muse_alloc(cliente_a_atender, *((int*)list_get(paqueteRecibido,1)));
+			printf("Se le asigna la posicion %x\n", direccion);
+			send(socketCli, &direccion, sizeof(uint32_t), 0);
+		break;
+		case MUSE_FREE:
+			id_cliente = *((int*)list_get(paqueteRecibido, 0));
+			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
 				//TODO: Magia de SEGMENTACION PAGINADA
+		break;
+		case MUSE_GET:
+			cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
+			buffer = muse_get(cliente_a_atender, paqueteRecibido);
 
-				printf("MUSE_FREE, el proceso %d de la ip %s nos esta pidiendo que "
-				"liberemos la memoria de la direccion %x \n", id_cliente,
-				ipCli, direccion_pedida);
-				break;
-
-			case MUSE_GET:
-				cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
-				buffer = muse_get(cliente_a_atender, paqueteRecibido);
-
-				if (buffer == NULL){
-					cod_error = -1;
-					send(socketCli, &cod_error, sizeof(int), 0);
-
-				} else {
-
+			if (buffer == NULL){
+				cod_error = -1;
+				send(socketCli, &cod_error, sizeof(int), 0);
+			} else {
 				paquete_respuesta = crear_paquete(10);
 				agregar_a_paquete(paquete_respuesta, buffer, cantidad_de_bytes);
 				enviar_paquete(paquete_respuesta, socketCli);
 				eliminar_paquete(paquete_respuesta);
-
-				}
-				break;
+			}
+		break;
 
 			case MUSE_CPY:
 				cod_error = muse_cpy(cliente_a_atender, paqueteRecibido);
@@ -333,10 +315,13 @@ void atender_cliente(fd_set* master, int socketCli){
 			 default:
 				 printf("ERROR AAAAAAAA\n");
 				 break;
-
 			}
-
-		free(ipCli);
+	} else{
+		printf("Se desconecto el socket %d\n", socketCli);
+		FD_CLR(socketCli, master);
+		close(socketCli);
+	}
+	free(ipCli);
 
 		//free(buffer);
 		//free(paqueteRecibido); //TODO:fijarse como eliminar la lista de las commons
