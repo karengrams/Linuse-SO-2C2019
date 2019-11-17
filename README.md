@@ -1,14 +1,25 @@
 # libMUSE y MUSE
 ### ¿Como importar un archivo de una carpeta?
-Se coloca un nuevo `#include`
+Se coloca un nuevo `#include` con la siguiente ruta si estas parado en el directorio principal
 ```C
 #include "/carpeta/archivo.h"
+```
+Se coloca un nuevo `#include` con la siguiente ruta si estas desde una carpeta y necesitas el header de otra carpeta
+```C
+#include "../carpeta/archivo.h"
 ```
 
 ### ¿Como compilar si no tenemos el makefile?
 ```C
-gcc muse.c paginacion/paginacion.c paginacion/frames.c segmentacion/segmentacion.c utils/utils.c -o muse -lcommons
+gcc muse.c paginacion/paginacion.c segmentacion/segmentacion.c paginacion/frames.c 
+sockets/sockets.c -o muse -lcommons
 ```
+
+### ¿Como compilar con el makefile?
+```C
+make
+```
+
 
 ### Ejemplo de tabla de segmentos
 Proceso #1:
