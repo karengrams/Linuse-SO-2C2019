@@ -23,6 +23,6 @@ int posicion_libre_en_swap();
 void inicializar_bitmap_swap(int,int);
 void asignar_marco_en_swap(page*);
 void swap_pages(page*,page*);
-
+page *clock_modificado_de_mentiritas();
 
 #endif /* VIRTUAL_MEMORY_VIRTUAL_MEMORY_H_ */
