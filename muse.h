@@ -29,6 +29,7 @@
 
 t_list* PROCESS_TABLE;
 t_list* MAPPED_SHARED_FILES;
+page** PAGINAS_EN_FRAMES; //vector con paginas que estan presentes en frames para clock modificado
 
 typedef struct mapped_shared_file_t{
 	void *file_mmap;

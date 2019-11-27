@@ -82,5 +82,85 @@ void swap_pages(page* victima, page* paginaPedida){
 	paginaPedida->bit_uso = true;
 	paginaPedida->bit_modificado = false;
 
+	PAGINAS_EN_FRAMES[nroFrame] = paginaPedida; //cargamos la pagina pedida en el vector de paginas cargadas en memoria
 	free(bufferAux);
 }
+
+
+
+
+
+
+
+
+void traer_pagina(page* pagina){
+	//cada vez que referencian
+	//una pagina si no esta en memoria la buscamos
+	//y cargamos, si esta en memoria seteamos el bit de uso
+
+	if (!pagina->bit_presencia){
+		page* victima = algoritmo_clock_modificado();
+		swap_pages(victima, pagina);
+	}
+	pagina->bit_uso = true;
+
+}
+
+page* buscar_cero_cero(){
+	for(int i=0; i<list_size(FRAMES_TABLE); i++){
+
+		page* pagina = PAGINAS_EN_FRAMES[INDICE_ALGORITMO_CLOCK];
+
+		if((pagina->bit_uso == 0) && (pagina->bit_modificado == 0)){
+			incrementar_indice();
+			return pagina;
+		}
+
+		incrementar_indice();
+	}
+	return NULL;
+}
+
+page* buscar_cero_uno(){
+
+	for(int i=0; i<list_size(FRAMES_TABLE); i++){
+
+		page* pagina = PAGINAS_EN_FRAMES[INDICE_ALGORITMO_CLOCK];
+
+		if((pagina->bit_uso == 0)){
+			incrementar_indice();
+			return pagina;
+		}
+		pagina->bit_uso = 0; //lo seteamos en 0 y avanzamos
+		incrementar_indice();
+	}
+	return NULL;
+}
+
+
+void incrementar_indice(){
+	if(INDICE_ALGORITMO_CLOCK == (list_size(FRAMES_TABLE)-1)){
+		INDICE_ALGORITMO_CLOCK = 0;
+	} else {
+		INDICE_ALGORITMO_CLOCK ++;
+	}
+}
+
+
+page* algoritmo_clock_modificado(void){
+	page* victima = NULL;
+
+	while(!victima){
+
+		victima = buscar_cero_cero();
+
+		if(!victima){
+			victima = buscar_cero_uno();
+		}
+
+	}
+
+	return victima;
+}
+
+

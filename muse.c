@@ -74,11 +74,13 @@ uint32_t muse_alloc(t_proceso* proceso,int tam){
 		paux_seg_metadata_libre->posicion_inicial=offset+sizeof(heapmetadata)+tam;
 		paux_seg_metadata_libre->metadata=paux_metadata_libre;
 		list_add(ptr_segmento->metadatas,paux_seg_metadata_libre);
+		escribir_metadata_en_frame(ptr_segmento, paux_seg_metadata_libre);
 	}
 
 	paux_metadata_ocupado->bytes=tam;
 	paux_metadata_ocupado->ocupado=true;
 	ptr_segmento->tamanio+=tam;
+	escribir_metadata_en_frame(ptr_segmento, paux_metadata_ocupado);
 	return ptr_segmento->base_logica+offset+sizeof(heapmetadata);
 }
 
@@ -104,7 +106,7 @@ void* muse_get(t_proceso* proceso, t_list* paqueteRecibido){
 
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion, proceso->tablaDeSegmentos);
 
-    if (!ptr_segmento && (direccion + cantidadDeBytes) > limite_segmento(ptr_segmento)) {
+    if (!ptr_segmento || (direccion + cantidadDeBytes) > limite_segmento(ptr_segmento)) {
       free(buffer);
       return NULL; //ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO O SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
     }
@@ -115,28 +117,24 @@ void* muse_get(t_proceso* proceso, t_list* paqueteRecibido){
 	int tamanioACopiar;
 	int desplazamientoEnBuffer = 0;
 	while (cantidadDeBytes > 0) {
-	  page* pagina = (page*)list_get(ptr_segmento->tabla_de_paginas,numeroPagina + auxiliar);
-	  if(pagina->bit_presencia){
-		  frame* marco =(frame*) (pagina->frame);
-		  tamanioACopiar = minimo(cantidadDeBytes,(TAM_PAG - desplazamientoEnPagina));
-		  memcpy(buffer + desplazamientoEnBuffer,marco->memoria + desplazamientoEnPagina, tamanioACopiar);
-		  cantidadDeBytes -= tamanioACopiar;
-		  auxiliar++; //siguiente pagina
-		  desplazamientoEnBuffer += tamanioACopiar;
-		  desplazamientoEnPagina = 0; //Solo era valido para la primera pagina
+		page* pagina = (page*)list_get(ptr_segmento->tabla_de_paginas,numeroPagina + auxiliar);
+		traer_pagina(pagina);
+		frame* marco =(frame*) (pagina->frame);
+		tamanioACopiar = minimo(cantidadDeBytes,(TAM_PAG - desplazamientoEnPagina));
+		memcpy(buffer + desplazamientoEnBuffer,marco->memoria + desplazamientoEnPagina, tamanioACopiar);
+		cantidadDeBytes -= tamanioACopiar;
+		auxiliar++; //siguiente pagina
+		desplazamientoEnBuffer += tamanioACopiar;
+		desplazamientoEnPagina = 0; //Solo era valido para la primera pagina
 	  }
-	  else{//Page fault
-		  printf("page fault");
-		  cantidadDeBytes=0;
-	  }
-	}
+
 
 	return (buffer);
 }
 
 mmapmetadata* crear_mmapmetadata(char *path, size_t length, int flags,segment* segmento_mmap){
 	mmapmetadata *ptr_metadata = (mmapmetadata*) malloc(sizeof(mmapmetadata));
-	(*ptr_metadata).path= (char*) malloc(strlen(path));
+	(*ptr_metadata).path= (char*) malloc(strlen(path)+1);
 	strcpy(ptr_metadata->path,path);
 	(*ptr_metadata).posicion_inicial=(*segmento_mmap).base_logica;
 	(*ptr_metadata).bytes=length;
@@ -231,7 +229,7 @@ int muse_cpy(t_proceso* proceso, t_list* paqueteRecibido) {
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion_pedida,
 			proceso->tablaDeSegmentos);
 
-	if (!ptr_segmento && (direccion_pedida + cantidad_de_bytes)> limite_segmento(ptr_segmento)) {
+	if (!ptr_segmento || (direccion_pedida + cantidad_de_bytes)> limite_segmento(ptr_segmento)) {
 		free(buffer_a_copiar);
 		return -1; //ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO.
 		//O SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
@@ -251,10 +249,13 @@ int muse_cpy(t_proceso* proceso, t_list* paqueteRecibido) {
 
 	while (cantidad_de_bytes > 0) {
 		page* pagina = (page*)list_get(ptr_segmento->tabla_de_paginas,numeroPagina + auxiliar);
+		traer_pagina(pagina);
 		frame* marco = pagina->frame;
 		tamanioACopiar = minimo(cantidad_de_bytes, (TAM_PAG - desplazamientoEnPagina));
 
 		memcpy((marco->memoria + desplazamientoEnPagina), (buffer_a_copiar + desplazamientoEnBuffer), tamanioACopiar);
+
+		pagina->bit_modificado = true;
 
 		cantidad_de_bytes -= tamanioACopiar;
 		auxiliar++; //siguiente pagina

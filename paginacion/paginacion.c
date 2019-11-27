@@ -41,9 +41,9 @@ int paginas_necesarias(int valorPedido) {
 void asignar_marco(page* pag) {
 	frame *marco_libre = obtener_marco_libre();
 
-	if(!marco_libre || !pag->bit_presencia){
+	if(!marco_libre){
 		asignar_marco_en_swap(pag);
-	} else if(pag->bit_presencia) {
+	} else {
 		bitarray_set_bit(BIT_ARRAY_FRAMES, (off_t) marco_libre->nro_frame);
 		pag->frame = marco_libre;
 		pag->bit_presencia = true;
@@ -53,16 +53,16 @@ void asignar_marco(page* pag) {
 	}
 }
 
-void cambiar_bit_de_prescencia(t_list *pages_table){
-
-	void _cambiar_bit_de_paginas(void*element){
-		page *ptr_page = (page*) element;
-		bool estado_anterior = ptr_page->bit_presencia;
-		ptr_page->bit_presencia=!estado_anterior;
-	}
-
-	list_iterate(pages_table,_cambiar_bit_de_paginas);
-}
+//void cambiar_bit_de_prescencia(t_list *pages_table){
+//
+//	void _cambiar_bit_de_paginas(void*element){
+//		page *ptr_page = (page*) element;
+//		bool estado_anterior = ptr_page->bit_presencia;
+//		ptr_page->bit_presencia=!estado_anterior;
+//	}
+//
+//	list_iterate(pages_table,_cambiar_bit_de_paginas);
+//}
 
 int posicion_en_tabla_paginas(page* elemento, t_list *tabla_de_paginas) {
 	segment *comparador;

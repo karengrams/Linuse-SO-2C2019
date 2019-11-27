@@ -6,11 +6,15 @@ void inicilizar_tabla_de_frames() {
 
 void dividir_memoria_en_frames(void * memoria, int pagetam, int memtam) {
 	frame *frame_ptr;
-	for (int i = 0; i < memtam / pagetam; i++) {
+	int cantidadDeFrames = memtam/pagetam;
+	PAGINAS_EN_FRAMES = malloc(cantidadDeFrames*sizeof(page*));
+	for (int i = 0; i < cantidadDeFrames; i++) {
 		frame_ptr = (frame*) malloc(sizeof(frame));
 		(*frame_ptr).memoria = memoria + i * pagetam;
 		(*frame_ptr).nro_frame = i;
 		list_add(FRAMES_TABLE, frame_ptr);
+		PAGINAS_EN_FRAMES[i] = NULL; //YA INICIALIZO EL VECTOR EN NULL CON LA CANTIDAD DE ELEMENTOS
+									 //IGUAL A LA CANTIDAD DE FRAMES
 	}
 }
 
@@ -45,6 +49,13 @@ void asignar_marcos(t_list* tabla_de_pags) {
 	list_iterate(tabla_de_pags, &_asignar_marco);
 }
 
+void asignar_marcos_swap(t_list* tabla_de_pags) {
+	void _asignar_marco_swap(void *elemento) {
+		asignar_marco_en_swap((page*) elemento);
+	}
+	list_iterate(tabla_de_pags, &_asignar_marco_swap);
+}
+
 void escribir_metadata_en_frame(segment* ptr_segmento,segmentmetadata* paux_metadata_ocupado) {
 	uint32_t direccionAbsoluta = paux_metadata_ocupado->posicion_inicial+ ptr_segmento->base_logica;
 	int numeroPagina = numero_pagina(ptr_segmento, direccionAbsoluta);
@@ -52,6 +63,7 @@ void escribir_metadata_en_frame(segment* ptr_segmento,segmentmetadata* paux_meta
 
 	if (TAM_PAG - desplazamiento >= sizeof(heapmetadata)) { //si entra copiamos solo en esa pagina
 		page* pagina = (page*) list_get(ptr_segmento->tabla_de_paginas,numeroPagina);
+		traer_pagina(pagina);
 		frame* ptr_frame_aux = pagina->frame; //Por alguna razon no me dejaba entrar al campo memoria si no hacia esto
 
 		memcpy(ptr_frame_aux->memoria + desplazamiento,paux_metadata_ocupado->metadata, sizeof(heapmetadata));
@@ -61,6 +73,8 @@ void escribir_metadata_en_frame(segment* ptr_segmento,segmentmetadata* paux_meta
 				numeroPagina);
 		page* paginaDos = (page*) list_get(ptr_segmento->tabla_de_paginas,
 				numeroPagina + 1);
+		traer_pagina(paginaUno);
+		traer_pagina(paginaDos);
 		frame* ptr_frame_aux_uno = paginaUno->frame;
 		frame* ptr_frame_aux_dos = paginaDos->frame;
 		int aCopiar = TAM_PAG - desplazamiento;

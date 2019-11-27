@@ -16,6 +16,8 @@
 
 t_bitarray *BIT_ARRAY_SWAP;
 void* VIRTUAL_MEMORY;
+int INDICE_ALGORITMO_CLOCK = 0; //ptr para el algoritmo
+
 
 void* crear_archivo_swap(int);
 void llenar_archivo(int,int);

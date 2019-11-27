@@ -16,14 +16,14 @@ segment* crear_segmento(segment_type tipo, int tam, t_list* tabla_de_segmentos) 
 		asignar_marcos((*segmento_ptr).tabla_de_paginas);
 		(*segmento_ptr).tamanio = 0;
 	} else{
-		cambiar_bit_de_prescencia((*segmento_ptr).tabla_de_paginas);
+		asignar_marcos_swap((*segmento_ptr).tabla_de_paginas);
 		(*segmento_ptr).tamanio = tam;
 	}
 	(*segmento_ptr).metadatas = list_create();
 	(*segmento_ptr).base_logica = calculo_base_logica(segmento_ptr,tabla_de_segmentos);
 	(*segmento_ptr).tipo = tipo;
 
-	asignar_marcos((*segmento_ptr).tabla_de_paginas);
+
 
 	return segmento_ptr;
 }
