@@ -54,7 +54,27 @@ void asignar_marco(page* pag) {
 	}
 }
 
+void cambiar_bit_de_prescencia(t_list *pages_table){
 
+	void _cambiar_bit_de_paginas(void*element){
+		page *ptr_page = (page*) element;
+		bool estado_anterior = ptr_page->bit_presencia;
+		ptr_page->bit_presencia=!estado_anterior;
+	}
+
+	list_iterate(pages_table,_cambiar_bit_de_paginas);
+}
+
+int posicion_en_tabla_paginas(page* elemento, t_list *tabla_de_paginas) {
+	segment *comparador;
+	for (int index = 0; index < tabla_de_paginas->elements_count; index++) {
+		comparador = list_get(tabla_de_paginas, index);
+		if (!memcmp(elemento, comparador, sizeof(segment))) { //Si son iguales devuelve 0
+			return index;
+		}
+	}
+	return -1;
+}
 
 /*void swap_pages(page* victima, page* paginaPedida){
 	//datos de la victima

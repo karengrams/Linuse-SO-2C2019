@@ -228,22 +228,18 @@ void atender_cliente(fd_set* master, int socketCli){
 		cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
 		switch(cod_op){
 		case MUSE_INIT:
-			printf("Muse init\n");
 			id_cliente = *((int*)list_get(paqueteRecibido, 0));
 			cod_error = muse_init(cliente_a_atender, ipCli, id_cliente);
 			send(socketCli, &cod_error, sizeof(int), 0);
 		break;
 		case MUSE_CLOSE:
-			printf("Chau proceso!\n");
+			mostrar_segmentos(cliente_a_atender->tablaDeSegmentos);
 //			liberar_proceso(cliente_a_atender);
 			FD_CLR(socketCli, master);
 			close(socketCli);
 		break;
 		case MUSE_ALLOC:
-			//id_cliente = *((int*)list_get(paqueteRecibido, 0));
-			//cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1));
 			direccion = muse_alloc(cliente_a_atender, *((int*)list_get(paqueteRecibido,1)));
-			printf("Se le asigna la posicion %x\n", direccion);
 			send(socketCli, &direccion, sizeof(uint32_t), 0);
 		break;
 		case MUSE_FREE:
@@ -254,7 +250,6 @@ void atender_cliente(fd_set* master, int socketCli){
 		case MUSE_GET:
 			cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
 			buffer = muse_get(cliente_a_atender, paqueteRecibido);
-
 			if (buffer == NULL){
 				cod_error = -1;
 				send(socketCli, &cod_error, sizeof(int), 0);
@@ -268,50 +263,36 @@ void atender_cliente(fd_set* master, int socketCli){
 		case MUSE_CPY:
 				cod_error = muse_cpy(cliente_a_atender, paqueteRecibido);
 				send(socketCli, &cod_error, sizeof(int), 0);
-				printf("Listo el musecpy\n");
 		break;
-
 		case MUSE_MAP:
-				id_cliente = *((int*)list_get(paqueteRecibido, 0));
-				strcpy(buffer, (char*)list_get(paqueteRecibido,1));
-				cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 2)); //este seria el length a mappear
-				flags = *((int*)list_get(paqueteRecibido, 3));
-
-				printf("MUSE_MAP, el proceso %d de la ip %s quiere mappear %d bytes del archivo del path \n %s \n",
-						id_cliente, ipCli, cantidad_de_bytes, (char*)buffer);
-
-				//magia de MUSE
-				//guardar la direccion del map en direccion y enviarla
-
-				direccion = &flags; //direccion random para pruebas
-				send(socketCli, &direccion, sizeof(uint32_t), 0);
+			id_cliente = *((int*)list_get(paqueteRecibido, 0));
+			buffer = (char*)malloc(sizeof((char*)list_get(paqueteRecibido,1)));
+			strcpy(buffer, (char*)list_get(paqueteRecibido,1));
+			cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 2)); //este seria el length a mappear
+			flags = *((int*)list_get(paqueteRecibido, 3));
+			direccion = muse_map(cliente_a_atender,buffer,cantidad_de_bytes,flags);
+			send(socketCli, &direccion, sizeof(uint32_t), 0);
 		break;
-
 		case MUSE_SYNC:
-				 id_cliente = *((int*)list_get(paqueteRecibido, 0));
-				 cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1)); //cantidad de bytes a guardar en el archivo
-				 direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 2)); //direccion a partir de la cual hacer el sync
+			id_cliente = *((int*)list_get(paqueteRecibido, 0));
+			cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1)); //cantidad de bytes a guardar en el archivo
+			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 2)); //direccion a partir de la cual hacer el sync
+			muse_sync(cliente_a_atender,direccion_pedida,(size_t)cantidad_de_bytes);
 
-				 printf("MUSE_SYNC, el proceso %d de la ip %s quiere sincronizar %d bytes de la direccion %x \n",
-				 		id_cliente, ipCli, cantidad_de_bytes, direccion_pedida);
-
-				 //Magia de MUSE
-
-				send(socketCli, &cod_error, sizeof(int), 0);
+			send(socketCli, &cod_error, sizeof(int), 0);
 		break;
-
 		case MUSE_UNMAP:
-				id_cliente = *((int*)list_get(paqueteRecibido, 0));
-				direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
+			id_cliente = *((int*)list_get(paqueteRecibido, 0));
+			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
 
-				printf("MUSE_UNMAP, el proceso %d de la ip %s quiere unmappear la direccion %x de memoria \n",
+			printf("MUSE_UNMAP, el proceso %d de la ip %s quiere unmappear la direccion %x de memoria \n",
 						id_cliente, ipCli, direccion_pedida);
 
 				//Magia de MUSE
 
-				send(socketCli, &cod_error, sizeof(int), 0);
+			send(socketCli, &cod_error, sizeof(int), 0);
 		break;
-			}
+		}
 	}
 	free(ipCli);
 	free(buffer);

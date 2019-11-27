@@ -27,6 +27,7 @@
 #define ERROR -1;
 
 t_list* PROCESS_TABLE;
+t_list* MAPPED_SHARED_FILES;
 
 typedef struct{
 	int id;
@@ -75,5 +76,6 @@ int posicion_en_lista_proceso(t_proceso*);
 void liberar_proceso(t_proceso*);
 void admitir_nuevo_cliente(fd_set*, int*, int);
 void atender_cliente(fd_set*, int);
+
 
 #endif /* SOCKETS_SOCKETS_H_ */

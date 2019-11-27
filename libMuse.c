@@ -90,7 +90,6 @@ int muse_cpy(uint32_t dst, void* src, int n){
 }
 
 uint32_t muse_map(char *path, size_t length, int flags){
-	printf("%s\n", path);
 	uint32_t direccion;
 	t_paquete* paquete = crear_paquete(MUSE_MAP);
 	agregar_a_paquete(paquete, &ID, sizeof(int));

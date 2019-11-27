@@ -26,4 +26,4 @@ sockets.o: sockets/sockets.c
 
 
 clean:
-	rm -f $(OBJS) $(OUT)
+	rm -f $(OBJS)

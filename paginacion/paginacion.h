@@ -23,7 +23,7 @@ t_list* crear_tabla_de_paginas(int);
 void agregar_paginas(t_list*,int);
 int paginas_necesarias(int);
 void asignar_marco(page*);
-//uint32_t obtener_offset_de_tabla_de_pags_para_tam(t_list *, int );
-//int obtener_indice_de_pag_con_espacio_disponible(t_list *,int );
+void cambiar_bit_de_prescencia(t_list *);
+int posicion_en_tabla_paginas(page*,t_list*);
 
 #endif /* PAGINACION_H_ */

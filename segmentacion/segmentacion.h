@@ -19,7 +19,7 @@ typedef struct segment_t {
 	segment_type tipo;
 	uint32_t base_logica;
 	int tamanio; //  tam. pedido
-	t_list *metadatas;
+	t_list *metadatas; // Hay dos tipos segmentmetadata o mmapmetadata
 	t_list *tabla_de_paginas;
 }__attribute__((packed)) segment;
 
@@ -28,10 +28,18 @@ typedef struct heapmetadata_t{
 	int bytes;
 }__attribute__((packed)) heapmetadata;
 
-typedef struct {
+typedef struct segmentmetadata_t{
 	heapmetadata *metadata;
 	uint32_t posicion_inicial;
 }__attribute__((packed)) segmentmetadata;
+
+typedef struct mmapmetadata_t{
+	char *path;
+	uint32_t posicion_inicial;
+	void *ptr_file;
+	int bytes;
+	int flags;
+}__attribute__((packed)) mmapmetadata;
 
 int minimo(int, int);
 segment* crear_segmento(segment_type, int, t_list*);
@@ -54,6 +62,7 @@ segmentmetadata* buscar_metadata_para_anidar(t_list *, segmentmetadata *);
 int index_del_segment_metadata(segmentmetadata *, t_list *);
 void buddy_system(segmentmetadata *, t_list *);
 void mostrar_metadatas(t_list*);
+void mostrar_metadatas_mmap(t_list*);
 void mostrar_segmentos(t_list *);
 void mostrar_tabla_de_segmentos(t_list*);
 

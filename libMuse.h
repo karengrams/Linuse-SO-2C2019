@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include "sockets/sockets.h"
+#include <sys/mman.h>
 
     /**
      * Inicializa la biblioteca de MUSE.
