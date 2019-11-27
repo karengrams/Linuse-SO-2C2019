@@ -25,6 +25,7 @@
 #include "paginacion/frames.h"
 #include "paginacion/paginacion.h"
 #include "sockets/sockets.h"
+#include "virtual-memory/virtual-memory.h"
 
 t_list* PROCESS_TABLE;
 t_list* MAPPED_SHARED_FILES;
@@ -43,7 +44,7 @@ typedef struct{
 
 void inicializar_tabla_procesos();
 void inicializar_tabla_archivos_compartidos();
-
+void inicializar_memoria_virtual(int);
 t_config* leer_config();
 void liberacion_de_recursos(void*,t_config*);
 int leer_del_config(char*, t_config*);

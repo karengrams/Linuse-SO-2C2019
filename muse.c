@@ -10,6 +10,11 @@ void inicializar_tabla_archivos_compartidos(){
 	MAPPED_SHARED_FILES = list_create();
 }
 
+void inicializar_memoria_virtual(int tam){
+	VIRTUAL_MEMORY = crear_archivo_swap(tam);
+	inicializar_bitmap_swap(tam,TAM_PAG);
+}
+
 t_config* leer_config(){
 	return config_create("muse.config");
 }
@@ -129,11 +134,6 @@ void* muse_get(t_proceso* proceso, t_list* paqueteRecibido){
 	return (buffer);
 }
 
-/*
- * Crea el segmento mmap. Luego abre el fd para mappear el archivo en memoria. Cuando se produzca un
- * page fault. Se deberia buscar sus paginas, es decir, se debera mappear el
- * archivo y de ahi, deberia ir buscando la direccion que se le pide.
- */
 mmapmetadata* crear_mmapmetadata(char *path, size_t length, int flags,segment* segmento_mmap){
 	mmapmetadata *ptr_metadata = (mmapmetadata*) malloc(sizeof(mmapmetadata));
 	(*ptr_metadata).path= (char*) malloc(strlen(path));
@@ -183,9 +183,9 @@ mapped_shared_file* buscar_archivo_abierto(char*path){
 int muse_sync(t_proceso* proceso,uint32_t direccion, size_t length){
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion, proceso->tablaDeSegmentos);
 
-	// Esto era para ver si funcionaba bien
-	harcodeo_un_poquito_las_cosas(ptr_segmento);
-	hardcodeo_para_muse_sync(ptr_segmento);
+//	Esto era para ver si funcionaba bien
+//	harcodeo_un_poquito_las_cosas(ptr_segmento);
+//	hardcodeo_para_muse_sync(ptr_segmento);
 
 	if(ptr_segmento->tipo==MMAP){
 		int nro_pag = div(direccion-ptr_segmento->base_logica,TAM_PAG).quot;
@@ -300,9 +300,11 @@ int main(void) {
 	inicializar_tabla_procesos();
 	inicializar_tabla_archivos_compartidos();
 	t_config* config = leer_config();
-	void *memoria = malloc(leer_del_config("MEMORY_SIZE", config));
-	dividir_memoria_en_frames(memoria, leer_del_config("PAGE_SIZE", config), leer_del_config("MEMORY_SIZE", config));
 	TAM_PAG = leer_del_config("PAGE_SIZE", config);
+	inicializar_memoria_virtual(leer_del_config("SWAP_SIZE",config));
+	void *memoria = malloc(leer_del_config("MEMORY_SIZE", config));
+	dividir_memoria_en_frames(memoria, TAM_PAG, leer_del_config("MEMORY_SIZE", config));
+
 //	Arranca a atender clientes
 	fd_set master;
 	fd_set read_fds;

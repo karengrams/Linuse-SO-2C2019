@@ -22,6 +22,9 @@ segment* crear_segmento(segment_type tipo, int tam, t_list* tabla_de_segmentos) 
 	(*segmento_ptr).metadatas = list_create();
 	(*segmento_ptr).base_logica = calculo_base_logica(segmento_ptr,tabla_de_segmentos);
 	(*segmento_ptr).tipo = tipo;
+
+	asignar_marcos((*segmento_ptr).tabla_de_paginas);
+
 	return segmento_ptr;
 }
 

@@ -1,6 +1,6 @@
-OBJS	= muse.o segmentacion.o paginacion.o frames.o sockets.o
-SOURCE	= muse.c segmentacion/segmentacion.c paginacion/paginacion.c paginacion/frames.c sockets/sockets.c
-HEADER	= muse.h segmentacion/segmentacion.h paginacion/paginacion.h paginacion/frames.h sockets/sockets.h
+OBJS	= muse.o segmentacion.o paginacion.o frames.o sockets.o virtual-memory.o
+SOURCE	= muse.c segmentacion/segmentacion.c paginacion/paginacion.c paginacion/frames.c sockets/sockets.c virtual-memory/virtual-memory.c
+HEADER	= muse.h segmentacion/segmentacion.h paginacion/paginacion.h paginacion/frames.h sockets/sockets.h virtual-memory/virtual-memory.h
 OUT	= muse
 CC	 = gcc
 FLAGS	 = -g -c -Wall
@@ -24,6 +24,8 @@ frames.o: paginacion/frames.c
 sockets.o: sockets/sockets.c
 	$(CC) $(FLAGS) sockets/sockets.c
 
+virtual-memory.o: virtual-memory/virtual-memory.c
+	$(CC) $(FLAGS) virtual-memory/virtual-memory.c
 
 clean:
 	rm -f $(OBJS)

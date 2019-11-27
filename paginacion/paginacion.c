@@ -41,10 +41,9 @@ int paginas_necesarias(int valorPedido) {
 void asignar_marco(page* pag) {
 	frame *marco_libre = obtener_marco_libre();
 
-	if(!marco_libre){
-		//buscar posicion en swap libre
-		//asignarle posicion a la pagina
-	} else {
+	if(!marco_libre || !pag->bit_presencia){
+		asignar_marco_en_swap(pag);
+	} else if(pag->bit_presencia) {
 		bitarray_set_bit(BIT_ARRAY_FRAMES, (off_t) marco_libre->nro_frame);
 		pag->frame = marco_libre;
 		pag->bit_presencia = true;
