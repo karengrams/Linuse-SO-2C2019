@@ -16,7 +16,7 @@ segment* crear_segmento(segment_type tipo, int tam, t_list* tabla_de_segmentos) 
 		asignar_marcos((*segmento_ptr).tabla_de_paginas);
 		(*segmento_ptr).tamanio = 0;
 	} else{
-		asignar_marcos_swap((*segmento_ptr).tabla_de_paginas);
+		asignar_marcos_swap((*segmento_ptr).tabla_de_paginas); //los segmentos mmap los cargamos directamente en el swap
 		(*segmento_ptr).tamanio = tam;
 	}
 	(*segmento_ptr).metadatas = list_create();

@@ -198,8 +198,11 @@ int muse_sync(t_proceso* proceso,uint32_t direccion, size_t length){
 		void _sincronizar_con_archivo_en_disco(void *element){
 			page *ptr_pagina = (page*)element;
 			if(posicion_en_tabla_paginas(ptr_pagina,ptr_segmento->tabla_de_paginas)>=nro_pag){
-				while(!ptr_pagina->bit_presencia)
+				while(!ptr_pagina->bit_presencia){
+					page *ptr_pagina_victima = clock_modificado_de_mentiritas();
+					swap_pages(ptr_pagina_victima,ptr_pagina);
 					perror("page fault\n"); // Aca hay que fijarse si es compartido, en caso de que lo sea, deberia buscar los frames
+				}
 				frame *ptr_frame = ptr_pagina->frame;
 				memcpy(ptr_metadata->ptr_file+direccion-ptr_segmento->base_logica+bytes_sincronizados,ptr_frame->memoria,TAM_PAG);
 				bytes_sincronizados+=TAM_PAG;
