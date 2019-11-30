@@ -44,14 +44,14 @@ Proceso #1:
 
 ### TODO list
 - [X] Copiar metadatas en los frames correspondientes (falta hacerlo en muse_alloc y muse_free)
-- [ ] Hacer el swap in y swap out de archivo swap y archivo map
-- [ ] Hacer al algoritmo clock modificado para swap
+- [X] Hacer el swap in y swap out de archivo swap y archivo map
+- [X] Hacer al algoritmo clock modificado para swap
 - [ ] Hacer tests
 - [ ] Asignarle a un archivo las paginas divididas
-- [ ] Page fault
-- [ ] Hacer procedimiento que separe el archivo en frames/pages
+- [X] Page fault
+- [X] Hacer procedimiento que separe el archivo en frames/pages
 - [ ] Manejo de errores si hace un muse_free de una direccion invalida 
-
+- [X] Calculo de metricas para los logs
 
 *Colocando una x entre los corchetes se pone como marcado*
 
