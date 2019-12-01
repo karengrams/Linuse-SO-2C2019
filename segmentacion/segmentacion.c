@@ -33,11 +33,14 @@ uint32_t calculo_base_logica(segment *segmento_ptr, t_list *tabla_de_segmentos) 
 segment* buscar_segmento_heap_para_tam(t_list* tabla_de_segmentos, int tam) {
 
 	bool _segmento_de_tipo_heap_que_tenga_espacio_suficiente(void*element) {
-		return segmento_de_tipo_heap_y_con_espacio(tam, element);
+		segment *ptr_segmento=(segment*)element;
+		if(ptr_segmento->tipo==HEAP)
+			return segmento_de_tipo_heap_y_con_espacio(tam, element);
+		else
+			return false;
 	}
 
-	return (segment*) list_find(tabla_de_segmentos,
-			_segmento_de_tipo_heap_que_tenga_espacio_suficiente);
+	return (segment*) list_find(tabla_de_segmentos,_segmento_de_tipo_heap_que_tenga_espacio_suficiente);
 }
 
 segment* buscar_segmento_heap_expandible_para_tam(t_list* tabla_de_segmentos,int tam) {
@@ -67,7 +70,7 @@ bool segmento_de_tipo_heap_y_con_espacio(int tam, void*element) {
 	if (list_is_empty(ptr_segmento->metadatas))
 		tiene_espacio = true;
 
-	return ptr_segmento->tipo == HEAP && tiene_espacio;
+	return tiene_espacio;
 }
 
 bool tiene_espacio_suficiente(int tam, void*element) {

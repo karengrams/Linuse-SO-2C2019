@@ -35,6 +35,8 @@ typedef struct segmentheapmetadata_t{
 
 typedef struct segmentmmapmetadata_t{
 	void *ptr_file;
+	char *path;
+	int tam_mappeado;
 }__attribute__((packed)) segmentmmapmetadata;
 
 int minimo(int, int);

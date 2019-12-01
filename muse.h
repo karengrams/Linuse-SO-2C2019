@@ -21,6 +21,7 @@
 #include <commons/collections/list.h>
 #include <commons/collections/node.h>
 #include <commons/bitarray.h>
+#include <commons/string.h>
 #include "segmentacion/segmentacion.h"
 #include "paginacion/frames.h"
 #include "paginacion/paginacion.h"
@@ -57,7 +58,7 @@ int muse_cpy(t_proceso* , t_list*);
 mapped_file* buscar_archivo_abierto(char*);
 uint32_t muse_map(t_proceso*,char*, size_t, int);
 int muse_sync(t_proceso* ,uint32_t , size_t );
-int muse_unmap(uint32_t);
+int muse_unmap(t_proceso*,uint32_t);
 int main();
 void hardcodeo_para_muse_sync(segment* segmento_map);
 
