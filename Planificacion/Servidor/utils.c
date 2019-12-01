@@ -1,4 +1,4 @@
-#include "../Servidor/utils.h"
+#include "utils.h"
 
 int iniciar_servidor(char* ip, char* port)
 {
@@ -29,8 +29,6 @@ int iniciar_servidor(char* ip, char* port)
 
     freeaddrinfo(servinfo);
 
-    log_trace(logger, "Listo para escuchar a mi cliente");
-
     return socket_servidor;
 }
 
@@ -41,7 +39,7 @@ int esperar_cliente(int socket_servidor)
 
 	int socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion);
 
-	log_info(logger, "Se conecto un cliente!");
+
 
 	return socket_cliente;
 }

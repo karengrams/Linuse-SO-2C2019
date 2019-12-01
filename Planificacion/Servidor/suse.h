@@ -1,27 +1,25 @@
 #ifndef SUSE_H_
-	#define SUSE_H_
+#define SUSE_H_
 
-	#include <stdio.h>
-	#include <stdlib.h>
-	#include <string.h>
-	#include <commons/log.h>
-	#include <commons/collections/list.h>
-	#include <hilolay/alumnos.h>
-	#include <pthread.h>
-	#include <semaphore.h>
-	#include <time.h>
-	#include "utils.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <commons/log.h>
+#include <commons/collections/list.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <time.h>
+#include <pthread.h>
 
-
-	typedef enum {
-		DESCONEXION = 0,
-		SUSE_INIT = 1,
-		SUSE_SCHEDULE = 2,
-		SUSE_JOIN = 3,
-		SUSE_CLOSE = 4,
-		SUSE_WAIT = 5,
-		SUSE_SIGNAL = 6,
-	} op_code;
+typedef enum {
+	DESCONEXION = -1,
+	SUSE_INIT = 1,
+	SUSE_SCHEDULE = 2,
+	SUSE_JOIN = 3,
+	SUSE_CLOSE = 4,
+	SUSE_WAIT = 5,
+	SUSE_SIGNAL = 6,
+} op_code;
 
 //	t_thread newThread(int);
 //	t_thread findThread(int, t_list*);
@@ -50,7 +48,7 @@ typedef struct{
 
 typedef struct{
 	int socket_fd;
-	t_thread thread;
+	t_thread* thread;
 } t_execute;
 
 #endif
