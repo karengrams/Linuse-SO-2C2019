@@ -15,7 +15,6 @@ segment* crear_segmento(segment_type tipo, int tam, t_list* tabla_de_segmentos) 
 		segmento_ptr=crear_segmento_heap(tam,tabla_de_segmentos);
 	else
 		segmento_ptr=crear_segmento_map(tam,tabla_de_segmentos);
-	list_add(tabla_de_segmentos, segmento_ptr);
 	return segmento_ptr;
 }
 
@@ -338,6 +337,7 @@ bool direccion_pisa_alguna_metadata(segment *ptr_segmento,
 
 segment* crear_segmento_heap(int tam, t_list* tabla_de_segmentos){
 	segment *segmento_ptr = (segment*) malloc(sizeof(segment));
+	list_add(tabla_de_segmentos, segmento_ptr);
 	(*segmento_ptr).tipo = HEAP;
 	(*segmento_ptr).metadatas = list_create();
 	(*segmento_ptr).tamanio=0;
@@ -349,6 +349,7 @@ segment* crear_segmento_heap(int tam, t_list* tabla_de_segmentos){
 
 segment* crear_segmento_map(int tam, t_list* tabla_de_segmentos) {
 	segment *segmento_ptr = (segment*) malloc(sizeof(segment));
+	list_add(tabla_de_segmentos, segmento_ptr);
 	(*segmento_ptr).tamanio = tam;
 	(*segmento_ptr).metadatas = list_create();
 	(*segmento_ptr).base_logica = calculo_base_logica(segmento_ptr,tabla_de_segmentos);

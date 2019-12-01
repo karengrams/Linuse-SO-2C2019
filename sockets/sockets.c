@@ -233,7 +233,7 @@ void atender_cliente(fd_set* master, int socketCli){
 			send(socketCli, &cod_error, sizeof(int), 0);
 		break;
 		case MUSE_CLOSE:
-//			mostrar_segmentos(cliente_a_atender->tablaDeSegmentos);
+			mostrar_segmentos(cliente_a_atender->tablaDeSegmentos);
 //			liberar_proceso(cliente_a_atender);
 			FD_CLR(socketCli, master);
 			close(socketCli);
