@@ -135,6 +135,7 @@ uint32_t muse_map(t_proceso*proceso, char*path, size_t length, int flags){
 	int paginas_de_seg;
 	segment *segmento_mmap=crear_segmento(MMAP,length,proceso->tablaDeSegmentos);
 	mapped_file *ptr_mapped_file_metadata;
+	segmentmmapmetadata *ptr_metadata;
 	int fd = open(path, O_RDWR | O_CREAT, S_IRUSR); // Lo abre para lectura si existe, sino lo crea
 	struct stat statfile;
 	if(fstat(fd,&statfile)==-1)
@@ -143,6 +144,9 @@ uint32_t muse_map(t_proceso*proceso, char*path, size_t length, int flags){
 	if(flags == MAP_PRIVATE && !buscar_archivo_abierto(path)){
 		void *file_mmap = mmap(NULL,length,PROT_READ | PROT_WRITE,MAP_SHARED,fd,0);
 		segmento_mmap->tabla_de_paginas=crear_tabla_de_paginas(length);
+		ptr_metadata=(segmentmmapmetadata*)malloc(sizeof(segmentmmapmetadata));
+		ptr_metadata->ptr_file=file_mmap;
+		list_add(segmento_mmap->metadatas,ptr_metadata);
 		ptr_mapped_file_metadata = (mapped_file*) malloc(sizeof(mapped_file));
 		ptr_mapped_file_metadata->paginas_min_asignadas=list_create();
 		ptr_mapped_file_metadata->flag=flags;
@@ -156,6 +160,9 @@ uint32_t muse_map(t_proceso*proceso, char*path, size_t length, int flags){
 		escribir_en_archivo_swap(file_mmap,segmento_mmap->tabla_de_paginas,length);
 	} else if (flags == MAP_SHARED && buscar_archivo_abierto(path)){
 		ptr_mapped_file_metadata = buscar_archivo_abierto(path);
+		ptr_metadata=(segmentmmapmetadata*)malloc(sizeof(segmentmmapmetadata));
+		ptr_metadata->ptr_file=ptr_mapped_file_metadata->file;
+		list_add(segmento_mmap->metadatas,ptr_metadata);
 		list_add(ptr_mapped_file_metadata->procesos,proceso);
 		if(length>strlen((char*)ptr_mapped_file_metadata->file)){
 			segmento_mmap->tabla_de_paginas=list_duplicate(ptr_mapped_file_metadata->paginas_min_asignadas);
@@ -170,6 +177,9 @@ uint32_t muse_map(t_proceso*proceso, char*path, size_t length, int flags){
 			segmento_mmap->tabla_de_paginas=ptr_mapped_file_metadata->paginas_min_asignadas;
 	}else if(flags == MAP_SHARED && !buscar_archivo_abierto(path)){
 		void *file_mmap = mmap(NULL,statfile.st_size,PROT_READ | PROT_WRITE,MAP_SHARED,fd,0);
+		ptr_metadata=(segmentmmapmetadata*)malloc(sizeof(segmentmmapmetadata));
+		ptr_metadata->ptr_file=file_mmap;
+		list_add(segmento_mmap->metadatas,ptr_metadata);
 		ptr_mapped_file_metadata = (mapped_file*) malloc(sizeof(mapped_file));
 		ptr_mapped_file_metadata->paginas_min_asignadas=crear_tabla_de_paginas(statfile.st_size);
 		ptr_mapped_file_metadata->flag=flags;
@@ -206,39 +216,32 @@ mapped_file* buscar_archivo_abierto(char*path){
 
 int muse_sync(t_proceso* proceso,uint32_t direccion, size_t length){
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion, proceso->tablaDeSegmentos);
-	return 0;
-//	Esto era para ver si funcionaba bien
-//	harcodeo_un_poquito_las_cosas(ptr_segmento);
-//	hardcodeo_para_muse_sync(ptr_segmento);
-//	if(ptr_segmento->tipo==MMAP){
-//		int nro_pag = div(direccion-ptr_segmento->base_logica,TAM_PAG).quot;
-//		int offset_pag = div(direccion-ptr_segmento->base_logica,TAM_PAG).rem;
-//		size_t bytes_sincronizados = 0;
-//
-//		if(!ptr_segmento && (direccion + length) > limite_segmento(ptr_segmento))
-//			return -1; // No encontro el segmento o se fue de limite
-//
-//		mmapmetadata *ptr_metadata = list_get(ptr_segmento->metadatas,0);
-//
-//		void _sincronizar_con_archivo_en_disco(void *element){
-//			page *ptr_pagina = (page*)element;
-//			if(posicion_en_tabla_paginas(ptr_pagina,ptr_segmento->tabla_de_paginas)>=nro_pag){
-//				while(!ptr_pagina->bit_presencia){
-//					page *ptr_pagina_victima = clock_modificado_de_mentiritas();
-//					swap_pages(ptr_pagina_victima,ptr_pagina);
-//					perror("page fault\n"); // Aca hay que fijarse si es compartido, en caso de que lo sea, deberia buscar los frames
-//				}
-//				frame *ptr_frame = ptr_pagina->frame;
-//				memcpy(ptr_metadata->ptr_file+direccion-ptr_segmento->base_logica+bytes_sincronizados,ptr_frame->memoria,TAM_PAG);
-//				bytes_sincronizados+=TAM_PAG;
-//			}
-//		}
-//
-//		list_iterate(ptr_segmento->tabla_de_paginas,_sincronizar_con_archivo_en_disco);
-//		return 0;
-//	}
-//	else // Puede que no sea un segmento heap
-//		return -1;
+	hardcodeo_para_muse_sync(ptr_segmento);
+	void *file;
+	if(direccion + length > limite_segmento(ptr_segmento) || !ptr_segmento || ptr_segmento->tipo!=MMAP)
+		return -1; // Se fue de limite o no existe tal segmento
+	else {
+		int nro_pag = div(direccion-ptr_segmento->base_logica,TAM_PAG).quot;
+		int offset_pag = div(direccion-ptr_segmento->base_logica,TAM_PAG).rem;
+		size_t bytes_sincronizados = 0;
+		int bytes_a_copiar=0;
+
+		file = ((segmentmmapmetadata*)list_get(ptr_segmento->metadatas,0))->ptr_file;
+		printf("%s\n\n",(char*)file);
+		for(int i=nro_pag;bytes_sincronizados<length;i++){
+			page *ptr_pagina = (page*)list_get(ptr_segmento->tabla_de_paginas,i);
+			traer_pagina(ptr_pagina);
+			frame *ptr_frame = ptr_pagina->frame;
+			if(i==nro_pag)
+				bytes_a_copiar=TAM_PAG-offset_pag;
+			else
+				bytes_a_copiar=minimo(TAM_PAG,length-bytes_sincronizados);
+			memcpy(file+direccion-ptr_segmento->base_logica+bytes_sincronizados,ptr_frame->memoria,bytes_a_copiar);
+			bytes_sincronizados+=bytes_a_copiar;
+			offset_pag=0; // Si la primera vez esta parado en el medio o casi al final y se puede, se posiciona ahi, despues ya no
+		}
+		return 0;
+	}
 }
 
 int muse_unmap(uint32_t dir){
@@ -306,6 +309,7 @@ int main(void) {
 	inicializar_bitmap_swap(leer_del_config("SWAP_SIZE",config),TAM_PAG);
 	inicializar_memoria_virtual(leer_del_config("SWAP_SIZE",config));
 
+
 //	Arranca a atender clientes
 	fd_set master;
 	fd_set read_fds;
@@ -336,5 +340,16 @@ int main(void) {
 	liberacion_de_recursos(memoria, config);
 
 	return 0;
+}
+
+void hardcodeo_para_muse_sync(segment* segmento_map){
+	void _modificar_marcos(void *element){
+		page* ptr_pagina = (page*)element;
+		traer_pagina(ptr_pagina);
+		frame* ptr_marco = ptr_pagina->frame;
+		memcpy(ptr_marco->memoria,"Hola, estamos probando a ver si funciona muse_sync",TAM_PAG);
+	}
+
+	list_iterate(segmento_map->tabla_de_paginas,_modificar_marcos);
 }
 

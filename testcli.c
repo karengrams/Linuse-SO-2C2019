@@ -15,7 +15,9 @@ int main(){
 //	printf("my_other_memory = %lu\n",my_other_memory);
 //	printf("my_other_other_memory = %lu",my_other_other_memory);s
 
-	uint32_t map = muse_map("holi.txt",265,MAP_SHARED);
+	uint32_t map = muse_map("holi.txt",90,MAP_SHARED);
+	muse_sync(map,90);
+
 //	sleep(240);
 	//printf("map = %lu\n",map);
 	//muse_get(recibir,115,1);

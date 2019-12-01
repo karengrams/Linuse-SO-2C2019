@@ -33,11 +33,9 @@ typedef struct segmentheapmetadata_t{
 	uint32_t posicion_inicial;
 }__attribute__((packed)) segmentheapmetadata;
 
-typedef struct mmapmetadata_t{
+typedef struct segmentmmapmetadata_t{
 	void *ptr_file;
-	int bytes_del_archivo;
-	int flags;
-}__attribute__((packed)) mmapmetadata;
+}__attribute__((packed)) segmentmmapmetadata;
 
 int minimo(int, int);
 segment* crear_segmento(segment_type, int, t_list*);

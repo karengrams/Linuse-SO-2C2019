@@ -54,11 +54,11 @@ uint32_t muse_alloc(t_proceso*, int);
 void muse_free(t_proceso *, uint32_t);
 void* muse_get(t_proceso*, t_list*);
 int muse_cpy(t_proceso* , t_list*);
-mmapmetadata* crear_mmapmetadata(char *, size_t , int ,segment* );
 mapped_file* buscar_archivo_abierto(char*);
 uint32_t muse_map(t_proceso*,char*, size_t, int);
 int muse_sync(t_proceso* ,uint32_t , size_t );
 int muse_unmap(uint32_t);
 int main();
+void hardcodeo_para_muse_sync(segment* segmento_map);
 
 #endif /* MUSE_H_ */
