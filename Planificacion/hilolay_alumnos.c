@@ -1,4 +1,5 @@
 #include "hilolay_alumnos.h"
+#include "utils-cli.h"
 
 int SOCKET;
 

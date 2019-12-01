@@ -6,6 +6,49 @@ t_list* colaREADY;
 t_list* listaEXEC;
 t_list* listaEXIT;
 t_list* listaBLOCKED;
+t_config* CONFIG;
+
+
+char* puerto_listen(){
+	return config_get_string_value(CONFIG, "LISTEN_PORT");
+}
+
+int grado_de_multiprogramacion_maximo(){
+	return config_get_int_value(CONFIG, "MAX_MULTIPROG");
+}
+
+int alpha_sjf(){
+	return config_get_int_value(CONFIG, "ALPHA_SJF");
+}
+
+bool _not_null(void* elem){
+	t_execute* elemento = (t_execute*) elem;
+	return (elemento->thread != NULL);
+}
+
+void* _suma_hilos(void* seed, void* elem){
+	int inicial = *((int*) seed);
+	t_cola_ready* elemento = (t_cola_ready*) elem;
+	inicial =+ list_size(elemento->lista_threads);
+	memcpy(seed, &inicial, sizeof(int));
+	return seed;
+}
+
+
+int total_hilos_en_ready_y_exec(){
+	int seed = 0;
+	int ready = *((int*)list_fold(colaREADY,&seed, &_suma_hilos));
+	int exec = list_size(list_filter(listaEXEC, &_not_null));
+	return ready+exec;
+}
+
+bool podemos_agregar_hilos_a_ready(){
+	return total_hilos_en_ready_y_exec() < grado_de_multiprogramacion_maximo();
+}
+
+
+
+
 
 void crear_entrada_en_cola_ready(int fd){
 	t_cola_ready* entradaNueva = malloc(sizeof(t_cola_ready));
@@ -37,7 +80,8 @@ void crear_thread(int fd, int tid){
 
 void atenderCliente(void* elemento){
 	int socketCli = *((int*)elemento);
-	t_list* paqueteRecibido = NULL;
+	t_list* paqueteRecibido = NULL, *colaAAplicarSJF;
+	t_execute* hiloEnEjecucion;
 	int tid;
 
 	while(1){
@@ -57,6 +101,14 @@ void atenderCliente(void* elemento){
 			break;
 
 		case SUSE_SCHEDULE:
+			bool _mismo_fd(void* elem){
+				t_cola_ready* elemento = (t_cola_ready*)elem;
+				return elemento->socket_fd == socketCli;
+			}
+			colaAAplicarSJF = ((t_cola_ready*)list_find(colaREADY, &_mismo_fd))->lista_threads;
+			hiloEnEjecucion = (t_execute*)list_find(listaEXEC, &_mismo_fd);
+
+
 			break;
 		case SUSE_CLOSE:
 			break;
@@ -74,7 +126,7 @@ void atenderCliente(void* elemento){
 
 
 int main(){
-
+	CONFIG = config_create("suse.config");
 	colaNEW = list_create();
 	listaEXIT = list_create();
 	listaBLOCKED = list_create();
@@ -85,7 +137,7 @@ int main(){
 
 
 	pthread_t hilo;
-	int socketEscucha = iniciar_servidor("48480","127.0.0.1");
+	int socketEscucha = iniciar_servidor(puerto_listen(),"127.0.0.1");
 	int cliente;
 
 	while(1){

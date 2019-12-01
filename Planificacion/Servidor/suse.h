@@ -39,16 +39,16 @@ typedef struct {
     int tiempo_ejecucion; //intervalo en milisegundos desde la creacion hasta el momento de tomar la metrica
     int ultima_rafaga; //ultimo tiempo en estado EXEC
     int ultima_estimacion; //la primera es 0
-} t_thread;
+} __attribute__((packed)) t_thread;
 
 typedef struct{
 	int socket_fd;
 	t_list* lista_threads;
-} t_cola_ready;
+}__attribute__((packed)) t_cola_ready;
 
 typedef struct{
 	int socket_fd;
 	t_thread* thread;
-} t_execute;
+} __attribute__((packed)) t_execute;
 
 #endif

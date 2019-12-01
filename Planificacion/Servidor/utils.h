@@ -10,8 +10,7 @@
 	#include<commons/collections/list.h>
 	#include<string.h>
 
-	#define IP "127.0.0.1"
-	#define PUERTO "5003"
+
 
 	void* recibir_buffer(int*, int);
 
