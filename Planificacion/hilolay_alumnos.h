@@ -1,10 +1,9 @@
 
 #ifndef hilolay_alumnos_h__
-	#define hilolay_alumnos_h__
+#define hilolay_alumnos_h__
 
-
-#include "hilolay_internal.h"
-#include "utils_cli.c"
+#include "utils-cli.c"
+#include <commons/config.h>
 
 	typedef struct hilolay_operations {
 		int (*suse_create) (int);
@@ -15,7 +14,7 @@
 		int (*suse_signal) (int, char *);
 	} hilolay_operations;
 
-	hilolay_operations *main_ops;
+	struct hilolay_operations *main_ops;
 
 	void init_internal(struct hilolay_operations*);
 
