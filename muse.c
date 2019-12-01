@@ -7,12 +7,11 @@ void inicializar_tabla_procesos(){
 }
 
 void inicializar_tabla_archivos_compartidos(){
-	MAPPED_SHARED_FILES = list_create();
+	MAPPED_FILES = list_create();
 }
 
 void inicializar_memoria_virtual(int tam){
-	VIRTUAL_MEMORY = crear_archivo_swap(tam);
-	inicializar_bitmap_swap(tam,TAM_PAG);
+	crear_archivo_swap(tam);
 }
 
 t_config* leer_config(){
@@ -62,12 +61,12 @@ uint32_t muse_alloc(t_proceso* proceso,int tam){
 
 	offset = obtener_offset_para_tam(ptr_segmento,tam);
 
-	segmentmetadata *paux_seg_metadata_ocupado = buscar_metadata_de_segmento_segun(offset,ptr_segmento);
+	segmentheapmetadata *paux_seg_metadata_ocupado=buscar_metadata_de_segmento_segun(offset,ptr_segmento);
 	heapmetadata *paux_metadata_ocupado = paux_seg_metadata_ocupado->metadata;
 
 	if(paux_metadata_ocupado->bytes>tam+sizeof(heapmetadata)){ // Si los bytes que tenia libre antes de modificarlo, es mayor a lo pedido +
 		// el tam. del heapmetadata, deberia ir el metadata de libre
-		segmentmetadata *paux_seg_metadata_libre= (segmentmetadata*)malloc(sizeof(segmentmetadata));
+		segmentheapmetadata *paux_seg_metadata_libre= (segmentheapmetadata*)malloc(sizeof(segmentheapmetadata));
 		heapmetadata *paux_metadata_libre = (heapmetadata*) malloc(sizeof(heapmetadata));
 		paux_metadata_libre->bytes=paux_metadata_ocupado->bytes-tam-sizeof(heapmetadata);
 		paux_metadata_libre->ocupado=false;
@@ -87,7 +86,7 @@ uint32_t muse_alloc(t_proceso* proceso,int tam){
 void muse_free(t_proceso *proceso, uint32_t direccion) {
 	segment *ptr_segmento = buscar_segmento_dada_una_direccion(direccion,proceso->tablaDeSegmentos);
 	if(ptr_segmento->tipo==HEAP){
-		segmentmetadata *ptr_seg_metadata = buscar_metadata_para_liberar(direccion - ptr_segmento->base_logica, ptr_segmento);
+		segmentheapmetadata *ptr_seg_metadata = buscar_metadata_para_liberar(direccion - ptr_segmento->base_logica, ptr_segmento);
 		if (ptr_seg_metadata) {
 			heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
 			ptr_metadata->ocupado = false;
@@ -96,10 +95,11 @@ void muse_free(t_proceso *proceso, uint32_t direccion) {
 		}
 	}
 
+	// CUando es la ultima pagina que esta vacia completamente, hay que fijarse de eliminarla
+
 }
 
 void* muse_get(t_proceso* proceso, t_list* paqueteRecibido){
-
 	int cantidadDeBytes = *((int*) list_get(paqueteRecibido, 1));
 	uint32_t direccion = *((uint32_t*) list_get(paqueteRecibido, 2));
 	void* buffer = malloc(cantidadDeBytes);
@@ -128,92 +128,117 @@ void* muse_get(t_proceso* proceso, t_list* paqueteRecibido){
 		desplazamientoEnPagina = 0; //Solo era valido para la primera pagina
 	  }
 
-
 	return (buffer);
 }
 
-mmapmetadata* crear_mmapmetadata(char *path, size_t length, int flags,segment* segmento_mmap){
-	mmapmetadata *ptr_metadata = (mmapmetadata*) malloc(sizeof(mmapmetadata));
-	(*ptr_metadata).path= (char*) malloc(strlen(path)+1);
-	strcpy(ptr_metadata->path,path);
-	(*ptr_metadata).posicion_inicial=(*segmento_mmap).base_logica;
-	(*ptr_metadata).bytes=length;
-	(*ptr_metadata).flags=flags;
-	list_add((*segmento_mmap).metadatas,ptr_metadata);
-	return ptr_metadata;
-}
-
 uint32_t muse_map(t_proceso*proceso, char*path, size_t length, int flags){
-	segment *segmento_mmap = crear_segmento(MMAP,length,proceso->tablaDeSegmentos);
-	mmapmetadata *ptr_metadata = crear_mmapmetadata(path,length,flags,segmento_mmap);
-	if(flags == MAP_SHARED && buscar_archivo_abierto(path)){ // Si es compartido y ya se abrio antes se debe buscar el file_mmap abiero
-		mapped_shared_file *ptr_open_file=buscar_archivo_abierto(path);
-		(*ptr_metadata).ptr_file=(*ptr_open_file).file_mmap;
-	}else{ // No es compartido, o no se abrio antes
-		int fd = open(path, O_RDWR | O_CREAT, S_IRUSR); // Lo abre para lectura si existe, sino lo crea
-		struct stat statfile;
-		if(fstat(fd,&statfile)==-1)
-			perror("ERROR: couldn't get file size");
+	int paginas_de_seg;
+	segment *segmento_mmap=crear_segmento(MMAP,length,proceso->tablaDeSegmentos);
+	mapped_file *ptr_mapped_file_metadata;
+	int fd = open(path, O_RDWR | O_CREAT, S_IRUSR); // Lo abre para lectura si existe, sino lo crea
+	struct stat statfile;
+	if(fstat(fd,&statfile)==-1)
+			return -1;
+
+	if(flags == MAP_PRIVATE && !buscar_archivo_abierto(path)){
 		void *file_mmap = mmap(NULL,length,PROT_READ | PROT_WRITE,MAP_SHARED,fd,0);
-		ptr_metadata->ptr_file=file_mmap;
-		close(fd);
-		if(flags == MAP_SHARED){ // Es un archivo compartido que se abrio por primera vez
-			mapped_shared_file *ptr_shared_file = (mapped_shared_file*)malloc(sizeof(mapped_shared_file));
-			(*ptr_shared_file).path=(char*)malloc(strlen(path));
-			strcpy(ptr_shared_file->path,path);
-			ptr_shared_file->procesos=list_create();
-			list_add(ptr_shared_file->procesos,proceso);
-			(*ptr_shared_file).file_mmap=file_mmap;
-			list_add(MAPPED_SHARED_FILES,ptr_shared_file);
+		segmento_mmap->tabla_de_paginas=crear_tabla_de_paginas(length);
+		ptr_mapped_file_metadata = (mapped_file*) malloc(sizeof(mapped_file));
+		ptr_mapped_file_metadata->paginas_min_asignadas=list_create();
+		ptr_mapped_file_metadata->flag=flags;
+		ptr_mapped_file_metadata->file=file_mmap;
+		ptr_mapped_file_metadata->path=(char*)malloc(strlen(path)+1);
+		strcpy(ptr_mapped_file_metadata->path,path);
+		ptr_mapped_file_metadata->procesos=list_create();
+		list_add(ptr_mapped_file_metadata->procesos,proceso);
+		list_add(MAPPED_FILES,ptr_mapped_file_metadata);
+		asignar_marcos_swap(segmento_mmap->tabla_de_paginas);
+		escribir_en_archivo_swap(file_mmap,segmento_mmap->tabla_de_paginas,length);
+	} else if (flags == MAP_SHARED && buscar_archivo_abierto(path)){
+		ptr_mapped_file_metadata = buscar_archivo_abierto(path);
+		list_add(ptr_mapped_file_metadata->procesos,proceso);
+		if(length>strlen((char*)ptr_mapped_file_metadata->file)){
+			segmento_mmap->tabla_de_paginas=list_duplicate(ptr_mapped_file_metadata->paginas_min_asignadas);
+			paginas_de_seg=ceil(((float)length)/TAM_PAG)-list_size(segmento_mmap->tabla_de_paginas);
+			agregar_paginas_extras(segmento_mmap->tabla_de_paginas,paginas_de_seg);
 		}
-	}
+		if(length<strlen((char*)ptr_mapped_file_metadata->file)){
+			paginas_de_seg=ceil(((float)length)/TAM_PAG);
+			segmento_mmap->tabla_de_paginas=list_take(ptr_mapped_file_metadata->paginas_min_asignadas,paginas_de_seg);
+		}
+		if(length==strlen((char*)ptr_mapped_file_metadata->file))
+			segmento_mmap->tabla_de_paginas=ptr_mapped_file_metadata->paginas_min_asignadas;
+	}else if(flags == MAP_SHARED && !buscar_archivo_abierto(path)){
+		void *file_mmap = mmap(NULL,statfile.st_size,PROT_READ | PROT_WRITE,MAP_SHARED,fd,0);
+		ptr_mapped_file_metadata = (mapped_file*) malloc(sizeof(mapped_file));
+		ptr_mapped_file_metadata->paginas_min_asignadas=crear_tabla_de_paginas(statfile.st_size);
+		ptr_mapped_file_metadata->flag=flags;
+		ptr_mapped_file_metadata->file=file_mmap;
+		ptr_mapped_file_metadata->path=(char*)malloc(strlen(path)+1);
+		strcpy(ptr_mapped_file_metadata->path,path);
+		ptr_mapped_file_metadata->procesos=list_create();
+		list_add(ptr_mapped_file_metadata->procesos,proceso);
+		list_add(MAPPED_FILES,ptr_mapped_file_metadata);
+		escribir_en_archivo_swap(file_mmap,ptr_mapped_file_metadata->paginas_min_asignadas,statfile.st_size);
+		segmento_mmap->tamanio=length;
+		paginas_de_seg=ceil(((float)length)/TAM_PAG);
+		if(paginas_de_seg==list_size(ptr_mapped_file_metadata->paginas_min_asignadas))
+			segmento_mmap->tabla_de_paginas=list_duplicate(ptr_mapped_file_metadata->paginas_min_asignadas);
+		if(paginas_de_seg>list_size(ptr_mapped_file_metadata->paginas_min_asignadas)){
+			segmento_mmap->tabla_de_paginas=list_duplicate(ptr_mapped_file_metadata->paginas_min_asignadas);
+			agregar_paginas_extras(segmento_mmap->tabla_de_paginas,paginas_de_seg);
+		}else{
+			segmento_mmap->tabla_de_paginas=list_take(ptr_mapped_file_metadata->paginas_min_asignadas,paginas_de_seg);
+		}
+	}else
+		return -1; // TODO: tirar error y cortar flujo de ejecucion
+	close(fd);
     return segmento_mmap->base_logica;
 }
 
-mapped_shared_file* buscar_archivo_abierto(char*path){
+mapped_file* buscar_archivo_abierto(char*path){
 	bool _archivo_fue_abierto(void *element){
-		mapped_shared_file *ptr_mapped_file = (mapped_shared_file*)element;
+		mapped_file *ptr_mapped_file = (mapped_file*)element;
 		return !strcmp(path,ptr_mapped_file->path);
 	}
-	return (mapped_shared_file*)list_find(MAPPED_SHARED_FILES,_archivo_fue_abierto);
+	return (mapped_file*)list_find(MAPPED_FILES,_archivo_fue_abierto);
 }
 
 int muse_sync(t_proceso* proceso,uint32_t direccion, size_t length){
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion, proceso->tablaDeSegmentos);
-
+	return 0;
 //	Esto era para ver si funcionaba bien
 //	harcodeo_un_poquito_las_cosas(ptr_segmento);
 //	hardcodeo_para_muse_sync(ptr_segmento);
-
-	if(ptr_segmento->tipo==MMAP){
-		int nro_pag = div(direccion-ptr_segmento->base_logica,TAM_PAG).quot;
-		int offset_pag = div(direccion-ptr_segmento->base_logica,TAM_PAG).rem;
-		size_t bytes_sincronizados = 0;
-
-		if(!ptr_segmento && (direccion + length) > limite_segmento(ptr_segmento))
-			return -1; // No encontro el segmento o se fue de limite
-
-		mmapmetadata *ptr_metadata = list_get(ptr_segmento->metadatas,0);
-
-		void _sincronizar_con_archivo_en_disco(void *element){
-			page *ptr_pagina = (page*)element;
-			if(posicion_en_tabla_paginas(ptr_pagina,ptr_segmento->tabla_de_paginas)>=nro_pag){
-				while(!ptr_pagina->bit_presencia){
-					page *ptr_pagina_victima = clock_modificado_de_mentiritas();
-					swap_pages(ptr_pagina_victima,ptr_pagina);
-					perror("page fault\n"); // Aca hay que fijarse si es compartido, en caso de que lo sea, deberia buscar los frames
-				}
-				frame *ptr_frame = ptr_pagina->frame;
-				memcpy(ptr_metadata->ptr_file+direccion-ptr_segmento->base_logica+bytes_sincronizados,ptr_frame->memoria,TAM_PAG);
-				bytes_sincronizados+=TAM_PAG;
-			}
-		}
-
-		list_iterate(ptr_segmento->tabla_de_paginas,_sincronizar_con_archivo_en_disco);
-		return 0;
-	}
-	else // Puede que no sea un segmento heap
-		return -1;
+//	if(ptr_segmento->tipo==MMAP){
+//		int nro_pag = div(direccion-ptr_segmento->base_logica,TAM_PAG).quot;
+//		int offset_pag = div(direccion-ptr_segmento->base_logica,TAM_PAG).rem;
+//		size_t bytes_sincronizados = 0;
+//
+//		if(!ptr_segmento && (direccion + length) > limite_segmento(ptr_segmento))
+//			return -1; // No encontro el segmento o se fue de limite
+//
+//		mmapmetadata *ptr_metadata = list_get(ptr_segmento->metadatas,0);
+//
+//		void _sincronizar_con_archivo_en_disco(void *element){
+//			page *ptr_pagina = (page*)element;
+//			if(posicion_en_tabla_paginas(ptr_pagina,ptr_segmento->tabla_de_paginas)>=nro_pag){
+//				while(!ptr_pagina->bit_presencia){
+//					page *ptr_pagina_victima = clock_modificado_de_mentiritas();
+//					swap_pages(ptr_pagina_victima,ptr_pagina);
+//					perror("page fault\n"); // Aca hay que fijarse si es compartido, en caso de que lo sea, deberia buscar los frames
+//				}
+//				frame *ptr_frame = ptr_pagina->frame;
+//				memcpy(ptr_metadata->ptr_file+direccion-ptr_segmento->base_logica+bytes_sincronizados,ptr_frame->memoria,TAM_PAG);
+//				bytes_sincronizados+=TAM_PAG;
+//			}
+//		}
+//
+//		list_iterate(ptr_segmento->tabla_de_paginas,_sincronizar_con_archivo_en_disco);
+//		return 0;
+//	}
+//	else // Puede que no sea un segmento heap
+//		return -1;
 }
 
 int muse_unmap(uint32_t dir){
@@ -268,46 +293,18 @@ int muse_cpy(t_proceso* proceso, t_list* paqueteRecibido) {
 	return 0;
 }
 
-void hardcodeo_para_muse_sync(segment* segmento_map){
-	void _modificar_marcos(void *element){
-		page* ptr_pagina = (page*)element;
-		frame* ptr_marco = ptr_pagina->frame;
-		memcpy(ptr_marco->memoria,"Hola, estamos probando a ver si funciona muse_sync",TAM_PAG);
-	}
-
-	list_iterate(segmento_map->tabla_de_paginas,_modificar_marcos);
-}
-
-void harcodeo_un_poquito_las_cosas(segment* segmento_map){
-	char *buffer = malloc(TAM_PAG);
-	int offset = 0;
-	mmapmetadata *ptr_metadata = list_get(segmento_map->metadatas,0);
-	int tam_archivo =ptr_metadata->bytes;
-	cambiar_bit_de_prescencia(segmento_map->tabla_de_paginas);
-	asignar_marcos(segmento_map->tabla_de_paginas);
-	void *memoria_a_copiar = ptr_metadata->ptr_file;
-
-	void _copiar_en_frame_info(void*element){
-		page *ptr_page = (page*)element;
-		frame *ptr_frame = ptr_page->frame;
-		memcpy(ptr_frame->memoria,memoria_a_copiar+offset,TAM_PAG);
-		offset+=TAM_PAG;
-	}
-
-	list_iterate(segmento_map->tabla_de_paginas,_copiar_en_frame_info);
-
-}
 
 int main(void) {
+	t_config* config = leer_config();
+	TAM_PAG = leer_del_config("PAGE_SIZE", config);
 	inicilizar_tabla_de_frames();
+	void *memoria = malloc(leer_del_config("MEMORY_SIZE", config));
+	dividir_memoria_en_frames(memoria, TAM_PAG, leer_del_config("MEMORY_SIZE", config));
 	inicializar_bitmap();
 	inicializar_tabla_procesos();
 	inicializar_tabla_archivos_compartidos();
-	t_config* config = leer_config();
-	TAM_PAG = leer_del_config("PAGE_SIZE", config);
+	inicializar_bitmap_swap(leer_del_config("SWAP_SIZE",config),TAM_PAG);
 	inicializar_memoria_virtual(leer_del_config("SWAP_SIZE",config));
-	void *memoria = malloc(leer_del_config("MEMORY_SIZE", config));
-	dividir_memoria_en_frames(memoria, TAM_PAG, leer_del_config("MEMORY_SIZE", config));
 
 //	Arranca a atender clientes
 	fd_set master;

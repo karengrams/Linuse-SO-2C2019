@@ -9,22 +9,13 @@ int minimo(int a, int b) {
 }
 
 segment* crear_segmento(segment_type tipo, int tam, t_list* tabla_de_segmentos) {
-	segment *segmento_ptr = (segment*) malloc(sizeof(segment));
+	segment *segmento_ptr;
+
+	if(tipo == HEAP)
+		segmento_ptr=crear_segmento_heap(tam,tabla_de_segmentos);
+	else
+		segmento_ptr=crear_segmento_map(tam,tabla_de_segmentos);
 	list_add(tabla_de_segmentos, segmento_ptr);
-	(*segmento_ptr).tabla_de_paginas = crear_tabla_de_paginas(tam);
-	if(tipo==HEAP){
-		asignar_marcos((*segmento_ptr).tabla_de_paginas);
-		(*segmento_ptr).tamanio = 0;
-	} else{
-		asignar_marcos_swap((*segmento_ptr).tabla_de_paginas); //los segmentos mmap los cargamos directamente en el swap
-		(*segmento_ptr).tamanio = tam;
-	}
-	(*segmento_ptr).metadatas = list_create();
-	(*segmento_ptr).base_logica = calculo_base_logica(segmento_ptr,tabla_de_segmentos);
-	(*segmento_ptr).tipo = tipo;
-
-
-
 	return segmento_ptr;
 }
 
@@ -80,7 +71,7 @@ bool segmento_de_tipo_heap_y_con_espacio(int tam, void*element) {
 }
 
 bool tiene_espacio_suficiente(int tam, void*element) {
-	segmentmetadata *ptr_seg_metadata = (segmentmetadata*) element;
+	segmentheapmetadata *ptr_seg_metadata = (segmentheapmetadata*) element;
 	return ((ptr_seg_metadata->metadata->bytes) >= (tam + sizeof(heapmetadata)) || (ptr_seg_metadata->metadata->bytes) >= tam) && !ptr_seg_metadata->metadata->ocupado;
 }
 
@@ -104,7 +95,7 @@ bool segmento_puede_agrandarse(segment* segmento, int valorPedido,t_list*tabla_d
 	int paginasNecesarias;
 	segment *siguiente = (segment*) list_get(tabla_de_segmentos, (pos_seg + 1)); // TODO: si el segmento se libera, se toma un segmento inexistente?
 
-	segmentmetadata *ptr_seg_metadata = (segmentmetadata*) list_get(segmento->metadatas, segmento->metadatas->elements_count - 1);
+	segmentheapmetadata *ptr_seg_metadata = (segmentheapmetadata*) list_get(segmento->metadatas, segmento->metadatas->elements_count - 1);
 	heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
 
 	if(!ptr_metadata->ocupado) // Si el ultimo metadata es de ocupado, entonces no se deberia restar. Si es de libre, si.
@@ -155,7 +146,7 @@ uint32_t obtener_offset_para_tam(segment *segmento, int tam) {
 		return direccion;
 	}else {
 		for (int i = 0; i < paux_metadatas->elements_count; i++){
-			segmentmetadata* ptr_seg_metadata = (segmentmetadata*) list_get(paux_metadatas, i);
+			segmentheapmetadata* ptr_seg_metadata = (segmentheapmetadata*) list_get(paux_metadatas, i);
 			if (
 					(!ptr_seg_metadata->metadata->ocupado) && (ptr_seg_metadata->metadata->bytes>= (tam)
 							|| ptr_seg_metadata->metadata->bytes == tam)
@@ -166,23 +157,23 @@ uint32_t obtener_offset_para_tam(segment *segmento, int tam) {
 	return direccion;
 }
 
-segmentmetadata *buscar_metadata_para_liberar(uint32_t direccion, segment *segmento){
+segmentheapmetadata *buscar_metadata_para_liberar(uint32_t direccion, segment *segmento){
 	bool _direccion_de_metadata(void* element) {
-		segmentmetadata *ptr_seg_metadata = ((segmentmetadata*) element);
+		segmentheapmetadata *ptr_seg_metadata = ((segmentheapmetadata*) element);
 		uint32_t direccion_seg_metadata = sizeof(heapmetadata) + ptr_seg_metadata->posicion_inicial;
 		return direccion_seg_metadata == direccion;
 	}
-	return (segmentmetadata*) list_find(segmento->metadatas,_direccion_de_metadata);
+	return (segmentheapmetadata*) list_find(segmento->metadatas,_direccion_de_metadata);
 }
 
-segmentmetadata* buscar_metadata_de_segmento_segun(uint32_t offset, segment* segmento) {
+segmentheapmetadata* buscar_metadata_de_segmento_segun(uint32_t offset, segment* segmento) {
 	bool _direccion_de_metadata(void* element) {
-		return ((segmentmetadata*) element)->posicion_inicial == offset;
+		return ((segmentheapmetadata*) element)->posicion_inicial == offset;
 	}
-	segmentmetadata *ptr_seg_metadata;
+	segmentheapmetadata *ptr_seg_metadata;
 
 	if (list_is_empty(segmento->metadatas)) {
-		ptr_seg_metadata = (segmentmetadata*) malloc(sizeof(segmentmetadata));
+		ptr_seg_metadata = (segmentheapmetadata*) malloc(sizeof(segmentheapmetadata));
 		heapmetadata *ptr_metadata = (heapmetadata*) malloc(sizeof(heapmetadata));
 		ptr_metadata->bytes = (segmento->tabla_de_paginas->elements_count* TAM_PAG) - sizeof(heapmetadata);
 		ptr_metadata->ocupado = false;
@@ -190,7 +181,7 @@ segmentmetadata* buscar_metadata_de_segmento_segun(uint32_t offset, segment* seg
 		ptr_seg_metadata->posicion_inicial = offset;
 		list_add(segmento->metadatas, ptr_seg_metadata);
 	} else {
-		ptr_seg_metadata = (segmentmetadata*) list_find(segmento->metadatas,
+		ptr_seg_metadata = (segmentheapmetadata*) list_find(segmento->metadatas,
 				_direccion_de_metadata);
 	}
 
@@ -198,7 +189,7 @@ segmentmetadata* buscar_metadata_de_segmento_segun(uint32_t offset, segment* seg
 }
 
 void expandir_segmento(segment *segmento,int tam){
-	segmentmetadata *paux_seg_metadata = (segmentmetadata*)list_get(segmento->metadatas,(segmento->metadatas->elements_count-1));
+	segmentheapmetadata *paux_seg_metadata = (segmentheapmetadata*)list_get(segmento->metadatas,(segmento->metadatas->elements_count-1));
 	heapmetadata *paux_metadata = paux_seg_metadata->metadata;
 	int cant_pag;
 	if(!paux_metadata->ocupado)
@@ -208,7 +199,7 @@ void expandir_segmento(segment *segmento,int tam){
 
 	agregar_paginas(segmento->tabla_de_paginas,cant_pag);
 	if(paux_metadata->ocupado){ //El ultimo metadata es de ocupado. Se deberia agregar uno nuevo de libre
-		segmentmetadata *seg_libre = (segmentmetadata*)malloc(sizeof(segmentmetadata));
+		segmentheapmetadata *seg_libre = (segmentheapmetadata*)malloc(sizeof(segmentheapmetadata));
 		heapmetadata *libre = (heapmetadata*) malloc(sizeof(heapmetadata));
 		(*libre).ocupado=false;
 		(*libre).bytes=cant_pag*TAM_PAG-sizeof(heapmetadata);
@@ -219,7 +210,7 @@ void expandir_segmento(segment *segmento,int tam){
 		paux_metadata->bytes+=cant_pag*TAM_PAG;
 }
 
-bool metadatas_fusionables(segmentmetadata *paux_seg_metadata, segmentmetadata *ptr_seg_metadata) {
+bool metadatas_fusionables(segmentheapmetadata *paux_seg_metadata, segmentheapmetadata *ptr_seg_metadata) {
 	heapmetadata *paux_metadata = paux_seg_metadata->metadata;
 	heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
 	if (ptr_seg_metadata->posicion_inicial + ptr_metadata->bytes
@@ -234,12 +225,12 @@ bool metadatas_fusionables(segmentmetadata *paux_seg_metadata, segmentmetadata *
 	return false;
 }
 
-segmentmetadata* buscar_metadata_para_anidar(t_list *metadatas,
-		segmentmetadata *ptr_seg_metadata) {
+segmentheapmetadata* buscar_metadata_para_anidar(t_list *metadatas,
+		segmentheapmetadata *ptr_seg_metadata) {
 	heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
 
 	bool _buddy_system_metadatas(void *element) {
-		segmentmetadata *paux_seg_metadata = (segmentmetadata*) element;
+		segmentheapmetadata *paux_seg_metadata = (segmentheapmetadata*) element;
 		if (metadatas_fusionables(paux_seg_metadata, ptr_seg_metadata))
 			return true;
 		return false;
@@ -248,7 +239,7 @@ segmentmetadata* buscar_metadata_para_anidar(t_list *metadatas,
 	return list_find(metadatas, _buddy_system_metadatas);
 }
 
-int index_del_segment_metadata(segmentmetadata *ptr_seg_metadata,
+int index_del_segment_metadata(segmentheapmetadata *ptr_seg_metadata,
 		t_list *metadatas) {
 	segment *ptr_seg_metadata_comparador;
 	for (int index = 0; index < metadatas->elements_count; index++) {
@@ -261,9 +252,9 @@ int index_del_segment_metadata(segmentmetadata *ptr_seg_metadata,
 	return -1;
 }
 
-void buddy_system(segmentmetadata *ptr_seg_metadata, t_list *metadatas) {
+void buddy_system(segmentheapmetadata *ptr_seg_metadata, t_list *metadatas) {
 	heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
-	segmentmetadata *ptr_seg_metadata_libre = buscar_metadata_para_anidar(
+	segmentheapmetadata *ptr_seg_metadata_libre = buscar_metadata_para_anidar(
 			metadatas, ptr_seg_metadata);
 	if (ptr_seg_metadata_libre) {
 		heapmetadata *ptr_metadata_libre = ptr_seg_metadata_libre->metadata;
@@ -277,7 +268,7 @@ void buddy_system(segmentmetadata *ptr_seg_metadata, t_list *metadatas) {
 // Funcion para "debugger"
 void mostrar_metadatas(t_list* metadatas_random) {
 	void _mostrar_por_pantalla(void*element) {
-		segmentmetadata *ptr_seg_metadata = (segmentmetadata*) element;
+		segmentheapmetadata *ptr_seg_metadata = (segmentheapmetadata*) element;
 		heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
 		printf(
 				"-Metadata:\n     - Posicion inicial: %d\n     - Ocupado: %d \n     - Bytes: %d\n",
@@ -290,11 +281,6 @@ void mostrar_metadatas(t_list* metadatas_random) {
 
 void mostrar_metadatas_mmap(t_list* metadatas_random) {
 	void _mostrar_por_pantalla(void*element) {
-		mmapmetadata *ptr_seg_metadata = (mmapmetadata*) element;
-		printf(
-				"-Metadata:\n     - Posicion inicial: %d\n     - Bytes: %d\n",
-				ptr_seg_metadata->posicion_inicial,
-				ptr_seg_metadata->bytes);
 	}
 
 	list_iterate(metadatas_random, &_mostrar_por_pantalla);
@@ -330,7 +316,7 @@ bool direccion_pisa_alguna_metadata(segment *ptr_segmento,
 		uint32_t direccion_pedida, int cantidad_de_bytes) {
 
 	bool _coincide_con_metadata(void* element) {
-		segmentmetadata *ptr_seg_metadata = ((segmentmetadata*) element);
+		segmentheapmetadata *ptr_seg_metadata = ((segmentheapmetadata*) element);
 		uint32_t direccion_seg_metadata = ptr_seg_metadata->posicion_inicial;
 		bool condicionInicial = ((direccion_pedida >= direccion_seg_metadata)
 				&& (direccion_pedida
@@ -345,4 +331,24 @@ bool direccion_pisa_alguna_metadata(segment *ptr_segmento,
 		return true;
 
 	return false;
+}
+
+segment* crear_segmento_heap(int tam, t_list* tabla_de_segmentos){
+	segment *segmento_ptr = (segment*) malloc(sizeof(segment));
+	(*segmento_ptr).tipo = HEAP;
+	(*segmento_ptr).metadatas = list_create();
+	(*segmento_ptr).tamanio=0;
+	(*segmento_ptr).base_logica = calculo_base_logica(segmento_ptr,tabla_de_segmentos);
+	(*segmento_ptr).tabla_de_paginas = crear_tabla_de_paginas(tam);
+	asignar_marcos((*segmento_ptr).tabla_de_paginas);
+	return segmento_ptr;
+}
+
+segment* crear_segmento_map(int tam, t_list* tabla_de_segmentos) {
+	segment *segmento_ptr = (segment*) malloc(sizeof(segment));
+	(*segmento_ptr).tamanio = tam;
+	(*segmento_ptr).metadatas = list_create();
+	(*segmento_ptr).base_logica = calculo_base_logica(segmento_ptr,tabla_de_segmentos);
+	(*segmento_ptr).tipo = MMAP;
+	return segmento_ptr;
 }

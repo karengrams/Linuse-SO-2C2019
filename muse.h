@@ -28,15 +28,15 @@
 #include "virtual-memory/virtual-memory.h"
 
 t_list* PROCESS_TABLE;
-t_list* MAPPED_SHARED_FILES;
-page** PAGINAS_EN_FRAMES; //vector con paginas que estan presentes en frames para clock modificado
+t_list* MAPPED_FILES;
 
-typedef struct mapped_shared_file_t{
-	void *file_mmap;
+typedef struct mapped_file_t{
+	void *file;
 	char *path; // Es la forma mas simple de comparar (creo)
-	t_list *paginas_asignadas;
+	int flag;
+	t_list *paginas_min_asignadas;
 	t_list *procesos; // Con estos sacas los opens y vas viendo que proceso lo tiene abierto
-}__attribute__((packed)) mapped_shared_file;
+}__attribute__((packed)) mapped_file;
 
 typedef struct{
 	int nro_pag;
@@ -54,10 +54,8 @@ uint32_t muse_alloc(t_proceso*, int);
 void muse_free(t_proceso *, uint32_t);
 void* muse_get(t_proceso*, t_list*);
 int muse_cpy(t_proceso* , t_list*);
-void harcodeo_un_poquito_las_cosas(segment*);
-void hardcodeo_para_muse_sync(segment*);
 mmapmetadata* crear_mmapmetadata(char *, size_t , int ,segment* );
-mapped_shared_file* buscar_archivo_abierto(char*);
+mapped_file* buscar_archivo_abierto(char*);
 uint32_t muse_map(t_proceso*,char*, size_t, int);
 int muse_sync(t_proceso* ,uint32_t , size_t );
 int muse_unmap(uint32_t);

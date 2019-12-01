@@ -19,7 +19,7 @@ typedef struct segment_t {
 	segment_type tipo;
 	uint32_t base_logica;
 	int tamanio; //  tam. pedido
-	t_list *metadatas; // Hay dos tipos segmentmetadata o mmapmetadata
+	t_list *metadatas; // Hay dos tipos segmentheapmetadata o mmapmetadata
 	t_list *tabla_de_paginas;
 }__attribute__((packed)) segment;
 
@@ -28,16 +28,14 @@ typedef struct heapmetadata_t{
 	int bytes;
 }__attribute__((packed)) heapmetadata;
 
-typedef struct segmentmetadata_t{
+typedef struct segmentheapmetadata_t{
 	heapmetadata *metadata;
 	uint32_t posicion_inicial;
-}__attribute__((packed)) segmentmetadata;
+}__attribute__((packed)) segmentheapmetadata;
 
 typedef struct mmapmetadata_t{
-	char *path;
-	uint32_t posicion_inicial;
 	void *ptr_file;
-	int bytes;
+	int bytes_del_archivo;
 	int flags;
 }__attribute__((packed)) mmapmetadata;
 
@@ -57,13 +55,15 @@ int espacio_libre(segment *);
 segment* buscar_segmento_dada_una_direccion(uint32_t, t_list*);
 uint32_t obtener_offset_para_tam(segment *, int );
 void expandir_segmento(segment *,int);
-bool metadatas_fusionables(segmentmetadata *, segmentmetadata *);
-segmentmetadata* buscar_metadata_para_anidar(t_list *, segmentmetadata *);
-int index_del_segment_metadata(segmentmetadata *, t_list *);
-void buddy_system(segmentmetadata *, t_list *);
+bool metadatas_fusionables(segmentheapmetadata *, segmentheapmetadata *);
+segmentheapmetadata* buscar_metadata_para_anidar(t_list *, segmentheapmetadata *);
+int index_del_segment_metadata(segmentheapmetadata *, t_list *);
+void buddy_system(segmentheapmetadata *, t_list *);
 void mostrar_metadatas(t_list*);
 void mostrar_metadatas_mmap(t_list*);
 void mostrar_segmentos(t_list *);
 void mostrar_tabla_de_segmentos(t_list*);
+segment* crear_segmento_heap(int, t_list* );
+segment* crear_segmento_map(int,t_list*);
 
 #endif /* muse-segmentacion_h */

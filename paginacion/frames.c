@@ -28,9 +28,11 @@ void inicializar_bitmap() {
 	} else {
 		bytes = aux.quot + 1;
 	}
-	char *punteroABits = (char*) malloc(bytes + 1);
-	BIT_ARRAY_FRAMES = bitarray_create_with_mode(punteroABits, (size_t) bytes,
-			LSB_FIRST);
+	char *punteroABits = (char*) malloc(bytes);
+	BIT_ARRAY_FRAMES = bitarray_create_with_mode(punteroABits, (size_t) bytes,LSB_FIRST);
+	for(int i=0;i<cantidadDeMarcos;i++){
+		bitarray_clean_bit(BIT_ARRAY_FRAMES,i);
+	}
 }
 
 frame* obtener_marco_libre() {
@@ -56,7 +58,7 @@ void asignar_marcos_swap(t_list* tabla_de_pags) {
 	list_iterate(tabla_de_pags, &_asignar_marco_swap);
 }
 
-void escribir_metadata_en_frame(segment* ptr_segmento,segmentmetadata* paux_metadata_ocupado) {
+void escribir_metadata_en_frame(segment* ptr_segmento,segmentheapmetadata* paux_metadata_ocupado) {
 	uint32_t direccionAbsoluta = paux_metadata_ocupado->posicion_inicial+ ptr_segmento->base_logica;
 	int numeroPagina = numero_pagina(ptr_segmento, direccionAbsoluta);
 	int desplazamiento = desplazamiento_en_pagina(ptr_segmento,direccionAbsoluta);
@@ -64,26 +66,21 @@ void escribir_metadata_en_frame(segment* ptr_segmento,segmentmetadata* paux_meta
 	if (TAM_PAG - desplazamiento >= sizeof(heapmetadata)) { //si entra copiamos solo en esa pagina
 		page* pagina = (page*) list_get(ptr_segmento->tabla_de_paginas,numeroPagina);
 		traer_pagina(pagina);
-		frame* ptr_frame_aux = pagina->frame; //Por alguna razon no me dejaba entrar al campo memoria si no hacia esto
+		frame* ptr_frame_aux = (frame*) pagina->frame; //Por alguna razon no me dejaba entrar al campo memoria si no hacia esto
 
 		memcpy(ptr_frame_aux->memoria + desplazamiento,paux_metadata_ocupado->metadata, sizeof(heapmetadata));
 
 	} else { //si no entra lo copiamos de a pedazos
-		page* paginaUno = (page*) list_get(ptr_segmento->tabla_de_paginas,
-				numeroPagina);
-		page* paginaDos = (page*) list_get(ptr_segmento->tabla_de_paginas,
-				numeroPagina + 1);
+		page* paginaUno = (page*) list_get(ptr_segmento->tabla_de_paginas,numeroPagina);
+		page* paginaDos = (page*) list_get(ptr_segmento->tabla_de_paginas,numeroPagina + 1);
 		traer_pagina(paginaUno);
 		traer_pagina(paginaDos);
-		frame* ptr_frame_aux_uno = paginaUno->frame;
-		frame* ptr_frame_aux_dos = paginaDos->frame;
+		frame* ptr_frame_aux_uno = (frame*)paginaUno->frame;
+		frame* ptr_frame_aux_dos = (frame*)paginaDos->frame;
 		int aCopiar = TAM_PAG - desplazamiento;
 
-		memcpy(ptr_frame_aux_uno->memoria + desplazamiento,
-				paux_metadata_ocupado->metadata, aCopiar);
-		memcpy(ptr_frame_aux_dos->memoria,
-				paux_metadata_ocupado->metadata + aCopiar,
-				sizeof(heapmetadata) - aCopiar);
+		memcpy(ptr_frame_aux_uno->memoria + desplazamiento,paux_metadata_ocupado->metadata, aCopiar);
+		memcpy(ptr_frame_aux_dos->memoria,paux_metadata_ocupado->metadata + aCopiar,sizeof(heapmetadata) - aCopiar);
 	}
 
 }
