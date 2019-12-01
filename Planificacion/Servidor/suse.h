@@ -10,6 +10,13 @@
 #include <semaphore.h>
 #include <time.h>
 #include <pthread.h>
+#include <stdbool.h>
+
+typedef enum{
+	JOIN = 1,
+	SEMAPHORE = 2,
+	BLOCKED_READY = 3,
+} t_estado;
 
 typedef enum {
 	DESCONEXION = -1,
@@ -53,7 +60,8 @@ typedef struct{
 
 typedef struct{
 	t_thread* thread;
-	bool motivo; //true cuando esta bloqueado por un semaforo. False cuando esta bloqueado por un tid (suse_join(tid))
+	t_estado estado; //1 bloqueado por suse_join(tid), 2 por suse_wait(semaforo),
+					 //3 ya puede pasar a ready cuando el grado de multiprogramacion lo permita
 	int tid;
 	char* semaforo;
 } __attribute__((packed)) t_blocked;
