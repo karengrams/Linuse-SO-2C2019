@@ -51,4 +51,11 @@ typedef struct{
 	t_thread* thread;
 } __attribute__((packed)) t_execute;
 
+typedef struct{
+	t_thread* thread;
+	bool motivo; //true cuando esta bloqueado por un semaforo. False cuando esta bloqueado por un tid (suse_join(tid))
+	int tid;
+	char* semaforo;
+} __attribute__((packed)) t_blocked;
+
 #endif
