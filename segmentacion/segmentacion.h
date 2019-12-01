@@ -65,5 +65,6 @@ void mostrar_segmentos(t_list *);
 void mostrar_tabla_de_segmentos(t_list*);
 segment* crear_segmento_heap(int, t_list* );
 segment* crear_segmento_map(int,t_list*);
-
+void recalcular_bases_logicas_de_segmentos(t_list *);
+void liberar_recursos_del_segmento(segment*);
 #endif /* muse-segmentacion_h */

@@ -250,16 +250,17 @@ int muse_unmap(t_proceso *proceso,uint32_t direccion){
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion, proceso->tablaDeSegmentos);
 	segmentmmapmetadata *ptr_metadata = (segmentmmapmetadata*)list_get(ptr_segmento->metadatas,0);
 	mapped_file *ptr_mapped_file = buscar_archivo_abierto(ptr_metadata->path);
-//	if(ptr_mapped_file->flag==MAP_PRIVATE){
-//		liberar_recursos_del_segmento(ptr_segmento);
-//		list_remove(proceso->tablaDeSegmentos,posicion_en_tabla_segmento(ptr_segmento,proceso->tablaDeSegmentos));
-//		free(ptr_segmento);
-//	}
+	if(ptr_mapped_file->flag==MAP_PRIVATE && ptr_segmento->tipo==MMAP){
+		liberar_recursos_del_segmento(ptr_segmento);
+		list_remove(proceso->tablaDeSegmentos,posicion_en_tabla_segmento(ptr_segmento,proceso->tablaDeSegmentos));
+		free(ptr_segmento);
+	}
 //
-//	recalcular_bases_logicas_de_segmentos(proceso->tablaDeSegmentos);
+	recalcular_bases_logicas_de_segmentos(proceso->tablaDeSegmentos);
 
 	return 0; // Aca iria un quilombo de cosas, que voy a hacer una vez que tenga bien hecho el swap and stuff
 }
+
 int muse_cpy(t_proceso* proceso, t_list* paqueteRecibido) {
 
 	int cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));

@@ -356,3 +356,27 @@ segment* crear_segmento_map(int tam, t_list* tabla_de_segmentos) {
 	(*segmento_ptr).tipo = MMAP;
 	return segmento_ptr;
 }
+
+
+void recalcular_bases_logicas_de_segmentos(t_list *tabla_de_segmentos){
+	void _recalcular_base_logica(void*element){
+		segment* ptr_segmento = (segment*)element;
+		ptr_segmento->base_logica=calculo_base_logica(ptr_segmento,tabla_de_segmentos);
+	}
+	list_iterate(tabla_de_segmentos,_recalcular_base_logica);
+}
+
+void liberar_recursos_del_segmento(segment*ptr_segmento){
+	void _eliminar_metadatas(void*element){
+		segmentmmapmetadata *ptr_metadata = (segmentmmapmetadata*)element;
+		free(ptr_metadata->path);
+	}
+
+	void _eliminar_paginas(void*element){
+		page*ptr_pagina=(page*)element;
+		free(ptr_pagina);
+	}
+
+	list_destroy_and_destroy_elements(ptr_segmento->metadatas,_eliminar_metadatas);
+	list_destroy_and_destroy_elements(ptr_segmento->tabla_de_paginas,_eliminar_paginas);
+}
