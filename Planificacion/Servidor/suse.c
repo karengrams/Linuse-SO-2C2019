@@ -81,7 +81,9 @@ void crear_thread(int fd, int tid){
 void atenderCliente(void* elemento){
 	int socketCli = *((int*)elemento);
 	t_list* paqueteRecibido = NULL, *colaAAplicarSJF;
+	t_cola_ready* colaReady;
 	t_execute* hiloEnEjecucion;
+	t_thread* hilaAEjecutar;
 	int tid;
 
 	while(1){
@@ -105,11 +107,17 @@ void atenderCliente(void* elemento){
 				t_cola_ready* elemento = (t_cola_ready*)elem;
 				return elemento->socket_fd == socketCli;
 			}
-			colaAAplicarSJF = ((t_cola_ready*)list_find(colaREADY, &_mismo_fd))->lista_threads;
-			hiloEnEjecucion = (t_execute*)list_find(listaEXEC, &_mismo_fd);
+			colaReady = (t_cola_ready*)list_find(colaREADY, &_mismo_fd); //buscamos la lista ready de este proceso
+			colaAAplicarSJF = colaReady->lista_threads;
+			hiloEnEjecucion = (t_execute*)list_find(listaEXEC, &_mismo_fd); //buscamos el hilo en ejecucion de este proceso
 
+			hiloAEjecutar = algoritmo_SJF(colaAAplicarSJF); //Que esta funcion haga el remove de la cola de ready y lo retorne
+			swap_threads(hiloEnEjecucion, hiloAEjecutar); //mueve el hiloEnEjecucion a ready y el hiloAEjecutar a execute
+
+			send(socketCli, &(hiloAEjecutar->tid), sizeof(int), 0); //mandamos el tid del hilo que pusimos a ejecutar
 
 			break;
+
 		case SUSE_CLOSE:
 			break;
 		case SUSE_JOIN:
