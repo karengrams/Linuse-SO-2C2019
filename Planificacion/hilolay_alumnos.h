@@ -2,6 +2,10 @@
 #ifndef hilolay_alumnos_h__
 	#define hilolay_alumnos_h__
 
+
+#include "hilolay_internal.h"
+#include "utils_cli.c"
+
 	typedef struct hilolay_operations {
 		int (*suse_create) (int);
 		int (*suse_schedule_next) (void);
