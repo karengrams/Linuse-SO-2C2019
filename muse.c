@@ -80,6 +80,9 @@ uint32_t muse_alloc(t_proceso* proceso,int tam){
 	paux_metadata_ocupado->ocupado=true;
 	ptr_segmento->tamanio+=tam;
 	escribir_metadata_en_frame(ptr_segmento, paux_seg_metadata_ocupado);
+
+	proceso->totalMemoriaPedida += tam;
+
 	return ptr_segmento->base_logica+offset+sizeof(heapmetadata);
 }
 
@@ -88,6 +91,9 @@ void muse_free(t_proceso *proceso, uint32_t direccion) {
 	if(ptr_segmento->tipo==HEAP){
 		segmentheapmetadata *ptr_seg_metadata = buscar_metadata_para_liberar(direccion - ptr_segmento->base_logica, ptr_segmento);
 		if (ptr_seg_metadata) {
+
+			proceso->totalMemoriaLiberada =+ ptr_seg_metadata->metadata->bytes; //sumo la cant de bytes liberados
+
 			heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
 			ptr_metadata->ocupado = false;
 			buddy_system(ptr_seg_metadata, ptr_segmento->metadatas);
@@ -309,6 +315,71 @@ int muse_cpy(t_proceso* proceso, t_list* paqueteRecibido) {
 	}
 	return 0;
 }
+
+
+
+//FUNCIONES PARA EL CALCULO DE LAS METRICAS!
+
+segment* ultimo_segmento_heap(t_proceso* proceso){
+
+	bool _segmentos_heap(void* elemento){
+		segment* segmento = (segment*)elemento;
+		return segmento->tipo == HEAP;
+	}
+
+	t_list* list_de_heap = list_filter(proceso->tablaDeSegmentos, &_segmentos_heap);
+	segment* ultimoHeap = list_get(list_de_heap, list_size(list_de_heap)-1);
+	return ultimoHeap;
+}
+
+int memoria_libre_en_segmento(segment* segmento){
+	int seed = 0;
+	bool _metadata_free(void* elemento){
+		heapmetadata* metadata = (heapmetadata*)elemento;
+		return !metadata->ocupado;
+	}
+	t_list* metadatasFree = list_filter(segmento->metadatas, &_metadata_free);
+
+	void* _suma_bytes(void* seed, void*elemento){
+		heapmetadata* metadata = (heapmetadata*)elemento;
+		int* seedSum = (int*)seed;
+		int suma = metadata->bytes + *(seedSum);
+		memcpy(seed, &suma, sizeof(int));
+		return seed;
+	}
+	return *((int*)list_fold(metadatasFree, &seed, &_suma_bytes));
+}
+
+int cantidad_total_de_segmentos_en_sistema(){
+	int seed = 0;
+
+	void* suma_segmentos(void* seed, void* element){
+		t_proceso* proceso = (t_proceso*)element;
+		int* seedSum = (int*)seed;
+		int segments = list_size(proceso->tablaDeSegmentos);
+		int suma = segments + *(seedSum);
+		memcpy(seed, &suma, sizeof(int));
+		return seed;
+
+	}
+
+	return *((int*)list_fold(PROCESS_TABLE, &seed, &suma_segmentos));
+}
+
+int suma_frames_libres(){
+	int max = bitarray_get_max_bit(BIT_ARRAY_FRAMES);
+	int contador = 0;
+	for(int i=0; i<max;i++){
+		if(!bitarray_test_bit(BIT_ARRAY_FRAMES, i))
+			contador++;
+	}
+	return contador;
+}
+
+int memory_leaks_proceso(t_proceso* proceso){
+	return proceso->totalMemoriaPedida - proceso->totalMemoriaLiberada;
+}
+
 
 
 int main(void) {

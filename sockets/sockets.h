@@ -32,6 +32,8 @@ t_list* MAPPED_SHARED_FILES;
 typedef struct{
 	int id;
 	char* ip;
+	int totalMemoriaPedida;
+	int totalMemoriaLiberada;
 	t_list* tablaDeSegmentos;
 } t_proceso;
 
