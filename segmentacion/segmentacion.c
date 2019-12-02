@@ -130,8 +130,7 @@ int tamanio_segmento(segment* segmento) {
 	return ((list_size(segmento->tabla_de_paginas)) * (TAM_PAG));
 }
 
-segment* buscar_segmento_dada_una_direccion(uint32_t direccion,
-		t_list*tabla_de_segmentos) {
+segment* buscar_segmento_dada_una_direccion(uint32_t direccion,t_list*tabla_de_segmentos) {
 	bool _esta_dentro_del_limite(void *element) {
 		segment *ptr_segmento = (segment*) element;
 		return ptr_segmento->base_logica <= direccion

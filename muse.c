@@ -217,6 +217,7 @@ mapped_file* buscar_archivo_abierto(char*path){
 }
 
 int muse_sync(t_proceso* proceso,uint32_t direccion, size_t length){
+	// TODO fijarse que pasa si el archivo ya se hizo unmap y se le quiere hacer sync
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion, proceso->tablaDeSegmentos);
 	segmentmmapmetadata *ptr_metadata = (segmentmmapmetadata*) list_get(ptr_segmento->metadatas,0);
 	mapped_file *ptr_mapped_file=buscar_archivo_abierto(ptr_metadata->path);
@@ -254,10 +255,10 @@ int muse_unmap(t_proceso *proceso,uint32_t direccion){
 		liberar_recursos_del_segmento(ptr_segmento);
 		list_remove(proceso->tablaDeSegmentos,posicion_en_tabla_segmento(ptr_segmento,proceso->tablaDeSegmentos));
 		free(ptr_segmento);
+		munmap(ptr_mapped_file->file,ptr_metadata->tam_mappeado);
 	}
 //
 	recalcular_bases_logicas_de_segmentos(proceso->tablaDeSegmentos);
-
 	return 0; // Aca iria un quilombo de cosas, que voy a hacer una vez que tenga bien hecho el swap and stuff
 }
 
@@ -354,15 +355,3 @@ int main(void) {
 
 	return 0;
 }
-
-void hardcodeo_para_muse_sync(segment* segmento_map){
-	void _modificar_marcos(void *element){
-		page* ptr_pagina = (page*)element;
-		traer_pagina(ptr_pagina);
-		frame* ptr_marco = ptr_pagina->frame;
-		memcpy(ptr_marco->memoria,"Hola, estamos probando a ver si funciona muse_sync",TAM_PAG);
-	}
-
-	list_iterate(segmento_map->tabla_de_paginas,_modificar_marcos);
-}
-

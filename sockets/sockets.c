@@ -233,7 +233,8 @@ void atender_cliente(fd_set* master, int socketCli){
 			send(socketCli, &cod_error, sizeof(int), 0);
 		break;
 		case MUSE_CLOSE:
-			mostrar_segmentos(cliente_a_atender->tablaDeSegmentos);
+//			mostrar_tabla_de_segmentos(cliente_a_atender->tablaDeSegmentos);
+//			mostrar_segmentos(cliente_a_atender->tablaDeSegmentos);
 //			liberar_proceso(cliente_a_atender);
 			FD_CLR(socketCli, master);
 			close(socketCli);
@@ -247,7 +248,7 @@ void atender_cliente(fd_set* master, int socketCli){
 			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
 				//TODO: Magia de SEGMENTACION PAGINADA
 		break;
-		case MUSE_GET:
+		case MUSE_GET: // TODO: ver caso de que se pase del limite
 			cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
 			buffer = muse_get(cliente_a_atender, paqueteRecibido);
 			if (buffer == NULL){
@@ -284,12 +285,7 @@ void atender_cliente(fd_set* master, int socketCli){
 		case MUSE_UNMAP:
 			id_cliente = *((int*)list_get(paqueteRecibido, 0));
 			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
-
-			printf("MUSE_UNMAP, el proceso %d de la ip %s quiere unmappear la direccion %x de memoria \n",
-						id_cliente, ipCli, direccion_pedida);
-
-				//Magia de MUSE
-
+			muse_unmap(cliente_a_atender,direccion_pedida);
 			send(socketCli, &cod_error, sizeof(int), 0);
 		break;
 		}

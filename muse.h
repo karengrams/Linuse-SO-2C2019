@@ -34,6 +34,7 @@ t_list* MAPPED_FILES;
 typedef struct mapped_file_t{
 	void *file;
 	char *path; // Es la forma mas simple de comparar (creo)
+	int tam_archivo;
 	int flag;
 	t_list *paginas_min_asignadas;
 	t_list *procesos; // Con estos sacas los opens y vas viendo que proceso lo tiene abierto
@@ -60,6 +61,5 @@ uint32_t muse_map(t_proceso*,char*, size_t, int);
 int muse_sync(t_proceso* ,uint32_t , size_t );
 int muse_unmap(t_proceso*,uint32_t);
 int main();
-void hardcodeo_para_muse_sync(segment* segmento_map);
 
 #endif /* MUSE_H_ */
