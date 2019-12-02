@@ -95,7 +95,7 @@ void atenderCliente(void* elemento){
 	t_list* paqueteRecibido = NULL, *colaAAplicarSJF;
 	t_cola_ready* colaReady;
 	t_execute* hiloEnEjecucion;
-	t_thread* hilaAEjecutar;
+	t_thread* hiloAEjecutar;
 	int tid;
 
 	while(1){
@@ -145,6 +145,13 @@ void atenderCliente(void* elemento){
 
 
 
+//void planificador_mediano_plazo(){
+//	while(podemos_agregar_hilos_a_ready()){
+//
+//	}
+//} ESTE HILO VA A MOVER LOS HILOS DESDE NEW A READY
+
+
 int main(){
 	CONFIG = config_create("suse.config");
 	colaNEW = list_create();
@@ -156,12 +163,13 @@ int main(){
 
 
 
-	pthread_t hilo;
+	pthread_t hiloAtencion, hiloPlanif;
 	int socketEscucha = iniciar_servidor(puerto_listen(),"127.0.0.1");
 	int cliente;
 
+	pthread_create(&hiloPlanif, NULL, &planificador_mediano_plazo, NULL);
 	while(1){
 		cliente = esperar_cliente(socketEscucha);
-		pthread_create(&hilo, NULL, atenderCliente, &cliente);
+		pthread_create(&hiloAtencion, NULL, &atenderCliente, &cliente);
 	}
 }
