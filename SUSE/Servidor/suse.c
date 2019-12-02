@@ -143,13 +143,52 @@ void atenderCliente(void* elemento){
 }
 
 
+void move_de_new_a_ready(){
 
+	if(colaNEW->elements_count){ //Si hay elementos que agregar en new
+		t_thread* hilo = list_remove(colaNEW, 0);
+		int socket = hilo->socket_fd;
 
-//void planificador_mediano_plazo(){
-//	while(podemos_agregar_hilos_a_ready()){
-//
-//	}
-//} ESTE HILO VA A MOVER LOS HILOS DESDE NEW A READY
+		bool _mismo_fd(void* elem){
+			t_cola_ready* elemento = (t_cola_ready*)elem;
+			return elemento->socket_fd == socket;
+		}
+		t_cola_ready* colaReady = (t_cola_ready*)list_find(colaREADY, &_mismo_fd);
+		list_add(colaReady->lista_threads, hilo);
+	}
+}
+
+void* hay_blocked_ready(){
+	bool _esta_blocked_ready(void* elem){
+		t_blocked* hilo = (t_blocked*)elem;
+		return hilo->estado == BLOCKED_READY;
+	}
+	return list_find(listaBLOCKED, &_esta_blocked_ready);
+}
+
+void planificador_mediano_plazo(){
+	while(1){
+		if(podemos_agregar_hilos_a_ready()){
+
+			t_blocked* hilo = (t_blocked*)hay_blocked_ready();
+
+			if(hilo != NULL){
+				int socket = hilo->thread->socket_fd;
+
+				bool _mismo_fd(void* elem){
+					t_cola_ready* elemento = (t_cola_ready*)elem;
+					return elemento->socket_fd == socket;
+				}
+				t_cola_ready* colaReady = (t_cola_ready*)list_find(colaREADY, &_mismo_fd);
+				list_add(colaReady->lista_threads, hilo);
+			} else {
+				move_de_new_a_ready();
+			}
+
+		}
+	}
+}
+//ESTE HILO VA A MOVER LOS HILOS DESDE NEW A READY
 
 
 int main(){
