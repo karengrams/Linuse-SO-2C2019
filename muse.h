@@ -61,5 +61,10 @@ uint32_t muse_map(t_proceso*,char*, size_t, int);
 int muse_sync(t_proceso* ,uint32_t , size_t );
 int muse_unmap(t_proceso*,uint32_t);
 int main();
+segment* ultimo_segmento_heap(t_proceso*);
+int memoria_libre_en_segmento(segment*);
+int cantidad_total_de_segmentos_en_sistema();
+int suma_frames_libres();
+int memory_leaks_proceso(t_proceso*);
 
 #endif /* MUSE_H_ */

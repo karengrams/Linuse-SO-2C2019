@@ -316,8 +316,6 @@ int muse_cpy(t_proceso* proceso, t_list* paqueteRecibido) {
 	return 0;
 }
 
-
-
 //FUNCIONES PARA EL CALCULO DE LAS METRICAS!
 
 segment* ultimo_segmento_heap(t_proceso* proceso){
@@ -380,8 +378,6 @@ int memory_leaks_proceso(t_proceso* proceso){
 	return proceso->totalMemoriaPedida - proceso->totalMemoriaLiberada;
 }
 
-
-
 int main(void) {
 	t_config* config = leer_config();
 	TAM_PAG = leer_del_config("PAGE_SIZE", config);
@@ -393,7 +389,6 @@ int main(void) {
 	inicializar_tabla_archivos_compartidos();
 	inicializar_bitmap_swap(leer_del_config("SWAP_SIZE",config),TAM_PAG);
 	inicializar_memoria_virtual(leer_del_config("SWAP_SIZE",config));
-
 
 //	Arranca a atender clientes
 	fd_set master;
