@@ -28,11 +28,6 @@ typedef enum {
 	SUSE_SIGNAL = 6,
 } op_code;
 
-//	t_thread newThread(int);
-//	t_thread findThread(int, t_list*);
-//	int removeThreadFromList(int, t_list*);
-//	int moveThread(int, t_list*, t_list*);
-//
 
 typedef struct {
 	int socket_fd;

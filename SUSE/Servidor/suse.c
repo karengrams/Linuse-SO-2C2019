@@ -47,7 +47,19 @@ bool podemos_agregar_hilos_a_ready(){
 }
 
 
+int rafaga_estimada(void* elem){
+	t_thread* hilo = (t_thread*) elem;
+	return (alpha_sjf()*hilo->ultima_rafaga + (1-alpha_sjf())*hilo->ultima_estimacion);
+}
 
+bool _menor_rafaga_estimada(void* elem, void* elem2){
+	return rafaga_estimada(elem) < rafaga_estimada(elem2);
+}
+
+t_thread* algoritmo_SJF(t_list* lista){
+	list_sort(lista, &_menor_rafaga_estimada);
+	return (t_thread*)list_remove(lista, 0);
+}
 
 
 void crear_entrada_en_cola_ready(int fd){
