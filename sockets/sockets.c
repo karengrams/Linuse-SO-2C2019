@@ -161,8 +161,7 @@ t_list* recibir_paquete(int socket_cliente){
 t_proceso* crear_proceso(int id, char* ip){
 	t_proceso* proceso = (t_proceso*)malloc(sizeof(t_proceso));
 	proceso->id = id;
-	proceso->ip = (char*)malloc(sizeof(char) * 16);
-	strcpy(proceso->ip, ip);
+	proceso->ip = string_duplicate(ip);
 	proceso->tablaDeSegmentos = list_create();
 	return proceso;
 }
@@ -177,27 +176,6 @@ t_proceso* buscar_proceso(t_list* paqueteRecibido, char* ipCliente){
 
 	return list_find(PROCESS_TABLE, mismoipid);
 
-}
-
-int posicion_en_lista_proceso(t_proceso* elemento){
-	t_proceso* comparador = malloc(sizeof(t_proceso));
-
-	for (int index = 0; index < PROCESS_TABLE->elements_count; index++) {
-		comparador = list_get(PROCESS_TABLE, index);
-		if (memcmp(elemento, comparador, sizeof(t_proceso)) == 0) { //Si son iguales devuelve 0
-			free(comparador);
-			return index;
-		}
-	}
-	free(comparador);
-	return -1; //Si no esta devuelve -1
-}
-
-void liberar_proceso(t_proceso* proceso){
-	list_remove(PROCESS_TABLE, posicion_en_lista_proceso(proceso));
-	//liberar_segmentos(proceso->tablaDeSegmentos);
-	free(proceso->ip);
-	free(proceso);
 }
 
 void admitir_nuevo_cliente(fd_set *master, int* fdmax, int socketEs){

@@ -23,15 +23,38 @@ int leer_del_config(char* valor, t_config* archivo_config) {
 }
 
 void liberacion_de_recursos(void*mem, t_config *config){
-	config_destroy(config);
-	free(mem);
-	void _destroy_element(void *elemento) {
+
+	void _liberar_proceso(void*element){
+		t_proceso *ptr_proceso = (t_proceso*) element;
+		muse_close(ptr_proceso);
+	}
+
+	void _liberar_frame(void *elemento) {
 		frame *marco = (frame*) elemento;
 		free(marco);
 	}
-	list_destroy_and_destroy_elements(FRAMES_TABLE, &_destroy_element);
+
+	void _liberar_archivos_mappeados(void*element){
+		mapped_file *file = (mapped_file*)element;
+		munmap(file->file,file->tam_archivo);
+		free(file->path);
+		list_destroy(file->procesos);
+		list_destroy(file->paginas_min_asignadas);
+		free(file);
+	}
+
+	munmap(VIRTUAL_MEMORY,leer_del_config("SWAP_SIZE",config));
+	list_destroy_and_destroy_elements(PROCESS_TABLE,&_liberar_proceso);
+	list_destroy_and_destroy_elements(FRAMES_TABLE, &_liberar_frame);
+	list_destroy_and_destroy_elements(MAPPED_FILES, &_liberar_archivos_mappeados);
+
+	config_destroy(config);
 	free(BIT_ARRAY_FRAMES->bitarray);
+	free(BIT_ARRAY_SWAP->bitarray);
+	free(PAGINAS_EN_FRAMES);
+	free(mem);
 	bitarray_destroy(BIT_ARRAY_FRAMES);
+	bitarray_destroy(BIT_ARRAY_SWAP);
 }
 
 int muse_init(t_proceso* cliente_a_atender, char* ipCliente, int id){
@@ -43,6 +66,17 @@ int muse_init(t_proceso* cliente_a_atender, char* ipCliente, int id){
 		list_add(PROCESS_TABLE, procesoNuevo); //Si no existe lo creamos y agregamos
 		return 0;
 	}
+}
+
+void muse_close(t_proceso* proceso){
+	liberar_tabla_de_segmentos(proceso->tablaDeSegmentos);
+	bool _mismo_id (void*element){
+		t_proceso *otroproceso = (t_proceso*)element;
+		return (otroproceso->id == proceso->id);
+	}
+	list_remove_by_condition(PROCESS_TABLE,_mismo_id);
+	free(proceso->ip);
+	free(proceso);
 }
 
 uint32_t muse_alloc(t_proceso* proceso,int tam){
@@ -160,6 +194,7 @@ uint32_t muse_map(t_proceso*proceso, char*path, size_t length, int flags){
 		ptr_mapped_file_metadata->file=file_mmap;
 		ptr_mapped_file_metadata->path=string_duplicate(path);
 		ptr_mapped_file_metadata->procesos=list_create();
+		ptr_mapped_file_metadata->nro_file=MAPPED_FILES->elements_count;
 		list_add(ptr_mapped_file_metadata->procesos,proceso);
 		list_add(MAPPED_FILES,ptr_mapped_file_metadata);
 		asignar_marcos_swap(segmento_mmap->tabla_de_paginas);
@@ -189,6 +224,7 @@ uint32_t muse_map(t_proceso*proceso, char*path, size_t length, int flags){
 		ptr_metadata->path=string_duplicate(path);
 		list_add(segmento_mmap->metadatas,ptr_metadata);
 		ptr_mapped_file_metadata = (mapped_file*) malloc(sizeof(mapped_file));
+		ptr_mapped_file_metadata->nro_file=MAPPED_FILES->elements_count;
 		ptr_mapped_file_metadata->paginas_min_asignadas=crear_tabla_de_paginas(statfile.st_size);
 		ptr_mapped_file_metadata->flag=flags;
 		ptr_mapped_file_metadata->file=file_mmap;
@@ -257,14 +293,16 @@ int muse_unmap(t_proceso *proceso,uint32_t direccion){
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion, proceso->tablaDeSegmentos);
 	segmentmmapmetadata *ptr_metadata = (segmentmmapmetadata*)list_get(ptr_segmento->metadatas,0);
 	mapped_file *ptr_mapped_file = buscar_archivo_abierto(ptr_metadata->path);
-	if(ptr_mapped_file->flag==MAP_PRIVATE && ptr_segmento->tipo==MMAP){
-		liberar_recursos_del_segmento(ptr_segmento);
-		list_remove(proceso->tablaDeSegmentos,posicion_en_tabla_segmento(ptr_segmento,proceso->tablaDeSegmentos));
-		free(ptr_segmento);
+	if(ptr_segmento->tipo==MMAP && ptr_mapped_file->flag==MAP_PRIVATE){
+		list_remove(proceso->tablaDeSegmentos,ptr_segmento->nro_segmento);
 		munmap(ptr_mapped_file->file,ptr_metadata->tam_mappeado);
+		free(ptr_mapped_file->path);
+//		list_destroy(ptr_mapped_file->procesos);
+//		list_destroy(ptr_mapped_file->paginas_min_asignadas);
+		recalcular_bases_logicas_de_segmentos(proceso->tablaDeSegmentos);
+		liberar_recursos_del_segmento(ptr_segmento);
 	}
 //
-	recalcular_bases_logicas_de_segmentos(proceso->tablaDeSegmentos);
 	return 0; // Aca iria un quilombo de cosas, que voy a hacer una vez que tenga bien hecho el swap and stuff
 }
 
@@ -315,8 +353,6 @@ int muse_cpy(t_proceso* proceso, t_list* paqueteRecibido) {
 	}
 	return 0;
 }
-
-//FUNCIONES PARA EL CALCULO DE LAS METRICAS!
 
 segment* ultimo_segmento_heap(t_proceso* proceso){
 

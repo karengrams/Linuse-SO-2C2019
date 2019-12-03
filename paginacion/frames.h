@@ -3,11 +3,10 @@
 #define NO_FRAME -1
 #include <commons/collections/list.h>
 #include <commons/bitarray.h>
+#include "../segmentacion/segmentacion.h"
 #include "paginacion.h"
 #include <stdint.h>
 #include <stdbool.h>
-#include "../segmentacion/segmentacion.h"
-#include "paginacion.h"
 
 typedef struct frame_t frame;
 

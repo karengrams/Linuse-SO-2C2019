@@ -16,6 +16,7 @@ typedef enum segment_type_t {
 } segment_type;
 
 typedef struct segment_t {
+	int nro_segmento;
 	segment_type tipo;
 	uint32_t base_logica;
 	int tamanio; //  tam. pedido
@@ -34,7 +35,6 @@ typedef struct segmentheapmetadata_t{
 }__attribute__((packed)) segmentheapmetadata;
 
 typedef struct segmentmmapmetadata_t{
-	void *ptr_file;
 	char *path;
 	int tam_mappeado;
 }__attribute__((packed)) segmentmmapmetadata;
@@ -47,7 +47,6 @@ segment* buscar_segmento_heap_expandible_para_tam(t_list*, int);
 bool segmento_de_tipo_heap_y_expandible(int, t_list*, void*);
 bool segmento_de_tipo_heap_y_con_espacio(int, void*);
 bool tiene_espacio_suficiente(int ,void*);
-int posicion_en_tabla_segmento(segment*, t_list*);
 uint32_t limite_segmento(segment*);
 bool segmento_puede_agrandarse(segment*, int, t_list*);
 int numero_pagina(segment*, uint32_t);
@@ -67,4 +66,5 @@ segment* crear_segmento_heap(int, t_list* );
 segment* crear_segmento_map(int,t_list*);
 void recalcular_bases_logicas_de_segmentos(t_list *);
 void liberar_recursos_del_segmento(segment*);
+void liberar_tabla_de_segmentos(t_list*);
 #endif /* muse-segmentacion_h */

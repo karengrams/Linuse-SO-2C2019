@@ -24,6 +24,7 @@
 #include "../paginacion/paginacion.h"
 #include "../paginacion/frames.h"
 #include "../segmentacion/segmentacion.h"
+
 #define ERROR -1;
 
 t_list* PROCESS_TABLE;
@@ -74,10 +75,8 @@ void* recibir_buffer(int*, int);
 t_list* recibir_paquete(int);
 t_proceso* crear_proceso(int, char*);
 t_proceso* buscar_proceso(t_list*, char*);
-int posicion_en_lista_proceso(t_proceso*);
 void liberar_proceso(t_proceso*);
 void admitir_nuevo_cliente(fd_set*, int*, int);
 void atender_cliente(fd_set*, int);
-
 
 #endif /* SOCKETS_SOCKETS_H_ */

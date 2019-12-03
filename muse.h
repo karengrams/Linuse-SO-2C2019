@@ -32,6 +32,7 @@ t_list* PROCESS_TABLE;
 t_list* MAPPED_FILES;
 
 typedef struct mapped_file_t{
+	int nro_file;
 	void *file;
 	char *path; // Es la forma mas simple de comparar (creo)
 	int tam_archivo;
@@ -52,6 +53,7 @@ t_config* leer_config();
 void liberacion_de_recursos(void*,t_config*);
 int leer_del_config(char*, t_config*);
 int muse_init(t_proceso*, char*, int);
+void muse_close(t_proceso*);
 uint32_t muse_alloc(t_proceso*, int);
 void muse_free(t_proceso *, uint32_t);
 void* muse_get(t_proceso*, t_list*);

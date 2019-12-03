@@ -16,17 +16,21 @@ t_list* crear_tabla_de_paginas(int tam) {
 
 	for (int i = 0; i < cantidadDePaginas; i++) {
 		pagina = crear_pagina();
+		pagina->nro_frame=i;
 		list_add(lista, pagina);
 	}
 	asignar_marcos(lista);
 	return lista;
 }
 
-void agregar_paginas(t_list* tabla_de_paginas, int cantidadDePaginas) {
+void agregar_paginas(t_list* tabla_de_paginas, int cantidadDePaginas,int index) {
 	page *pagina;
+	int index_pag=index;
 	for (int i = 0; i < cantidadDePaginas; i++) {
 		pagina = crear_pagina();
 		asignar_marco(pagina);
+		pagina->nro_pagina=index;
+		index++;
 		list_add(tabla_de_paginas, pagina);
 	}
 }
@@ -66,16 +70,16 @@ void asignar_marco_en_swap(page* pag){
 	pag->bit_modificado = false;
 }
 
-int posicion_en_tabla_paginas(page* elemento, t_list *tabla_de_paginas) {
-	page *comparador;
-	for (int index = 0; index < tabla_de_paginas->elements_count; index++) {
-		comparador = list_get(tabla_de_paginas, index);
-		if (!memcmp(elemento, comparador, sizeof(page))) { //Si son iguales devuelve 0
-			return index;
-		}
-	}
-	return -1;
-}
+//int posicion_en_tabla_paginas(page* elemento, t_list *tabla_de_paginas) {
+//	page *comparador;
+//	for (int index = 0; index < tabla_de_paginas->elements_count; index++) {
+//		comparador = list_get(tabla_de_paginas, index);
+//		if (!memcmp(elemento, comparador, sizeof(page))) { //Si son iguales devuelve 0
+//			return index;
+//		}
+//	}
+//	return -1;
+//}
 
 void swap_pages(page* victima, page* paginaPedida){
 	//datos de la victima
@@ -180,7 +184,7 @@ void escribir_en_archivo_swap(void *file, t_list *tabla_de_paginas, size_t tam){
 	bool archivo_completo=false;
 	void _escribir_en_frame_de_swap (void *element){
 		page *ptr_pagina = (page*)element;
-		int pag_pos = posicion_en_tabla_paginas(ptr_pagina,tabla_de_paginas);
+		int pag_pos = ptr_pagina->nro_pagina;
 		int posicion_en_swap = TAM_PAG * ptr_pagina->nro_frame;
 		if(offset >0 && archivo_completo){
 			padding = malloc(TAM_PAG);

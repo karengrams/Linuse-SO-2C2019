@@ -15,13 +15,13 @@ segment* crear_segmento(segment_type tipo, int tam, t_list* tabla_de_segmentos) 
 		segmento_ptr=crear_segmento_heap(tam,tabla_de_segmentos);
 	else
 		segmento_ptr=crear_segmento_map(tam,tabla_de_segmentos);
+
 	return segmento_ptr;
 }
 
 uint32_t calculo_base_logica(segment *segmento_ptr, t_list *tabla_de_segmentos) {
-	int pos_seg = posicion_en_tabla_segmento(segmento_ptr, tabla_de_segmentos);
-	segment* segmento_anterior = (segment*) list_get(tabla_de_segmentos,
-			pos_seg - 1);
+	int pos_seg = segmento_ptr->nro_segmento;
+	segment* segmento_anterior = (segment*) list_get(tabla_de_segmentos,pos_seg - 1);
 	if (!segmento_anterior) {
 		return 0; // Si no hay ningun segmento atras
 	}
@@ -77,23 +77,12 @@ bool tiene_espacio_suficiente(int tam, void*element) {
 	return ((ptr_seg_metadata->metadata->bytes) >= (tam + sizeof(heapmetadata)) || (ptr_seg_metadata->metadata->bytes) >= tam) && !ptr_seg_metadata->metadata->ocupado;
 }
 
-int posicion_en_tabla_segmento(segment* elemento, t_list *tabla_de_segmentos) {
-	segment *comparador;
-	for (int index = 0; index < tabla_de_segmentos->elements_count; index++) {
-		comparador = list_get(tabla_de_segmentos, index);
-		if (!memcmp(elemento, comparador, sizeof(segment))) { //Si son iguales devuelve 0
-			return index;
-		}
-	}
-	return -1;
-}
-
 uint32_t limite_segmento(segment* segmento) {
 	return (segmento->base_logica+ list_size(segmento->tabla_de_paginas) * TAM_PAG) - 1;
 }
 
 bool segmento_puede_agrandarse(segment* segmento, int valorPedido,t_list*tabla_de_segmentos) {
-	int pos_seg = posicion_en_tabla_segmento(segmento, tabla_de_segmentos);
+	int pos_seg = segmento->nro_segmento;
 	int paginasNecesarias;
 	segment *siguiente = (segment*) list_get(tabla_de_segmentos, (pos_seg + 1)); // TODO: si el segmento se libera, se toma un segmento inexistente?
 
@@ -198,7 +187,7 @@ void expandir_segmento(segment *segmento,int tam){
 	else
 		cant_pag = paginas_necesarias(tam+sizeof(heapmetadata));
 
-	agregar_paginas(segmento->tabla_de_paginas,cant_pag);
+	agregar_paginas(segmento->tabla_de_paginas,cant_pag,segmento->tabla_de_paginas->elements_count);
 	if(paux_metadata->ocupado){ //El ultimo metadata es de ocupado. Se deberia agregar uno nuevo de libre
 		segmentheapmetadata *seg_libre = (segmentheapmetadata*)malloc(sizeof(segmentheapmetadata));
 		heapmetadata *libre = (heapmetadata*) malloc(sizeof(heapmetadata));
@@ -291,7 +280,7 @@ void mostrar_segmentos(t_list *tabla_de_segmentos) {
 	void _mostrar_segmentos(void *element) {
 		segment *ptr_segmento = (segment*) element;
 		printf("\n\n-Segmento nro.%d\n -Cantidad de paginas del segmento: %d\n",
-				posicion_en_tabla_segmento(ptr_segmento, tabla_de_segmentos),
+				ptr_segmento->nro_segmento,
 				ptr_segmento->tabla_de_paginas->elements_count);
 		if((*ptr_segmento).tipo==HEAP)
 			mostrar_metadatas(ptr_segmento->metadatas);
@@ -306,11 +295,20 @@ void mostrar_tabla_de_segmentos(t_list *tabla_de_segmentos) {
 		segment *ptr_segmento = (segment*) element;
 		printf(
 				"Segmento nro. %d\n     -Base logica:%u\n     -Limite:%u\n     -Tam.%d\n",
-				posicion_en_tabla_segmento(ptr_segmento, tabla_de_segmentos),
+				ptr_segmento->nro_segmento,
 				ptr_segmento->base_logica, limite_segmento(ptr_segmento),
 				ptr_segmento->tamanio);
+		mostrar_paginas(ptr_segmento);
 	}
 	list_iterate(tabla_de_segmentos, _mostrar_estructura_segmento);
+}
+
+void mostrar_paginas(segment*segmento){
+	void _mostrar_paginas(void*element){
+		page* pagina = (page*)element;
+		printf("Nro. de pagina %d\n    - Frame asignado:%d\n    - Bit de presencia:%d\n",pagina->nro_pagina,pagina->nro_frame,pagina->bit_presencia);
+	}
+	list_iterate(segmento->tabla_de_paginas,_mostrar_paginas);
 }
 
 bool direccion_pisa_alguna_metadata(segment *ptr_segmento,
@@ -336,6 +334,7 @@ bool direccion_pisa_alguna_metadata(segment *ptr_segmento,
 
 segment* crear_segmento_heap(int tam, t_list* tabla_de_segmentos){
 	segment *segmento_ptr = (segment*) malloc(sizeof(segment));
+	(*segmento_ptr).nro_segmento=tabla_de_segmentos->elements_count;
 	list_add(tabla_de_segmentos, segmento_ptr);
 	(*segmento_ptr).tipo = HEAP;
 	(*segmento_ptr).metadatas = list_create();
@@ -348,6 +347,7 @@ segment* crear_segmento_heap(int tam, t_list* tabla_de_segmentos){
 
 segment* crear_segmento_map(int tam, t_list* tabla_de_segmentos) {
 	segment *segmento_ptr = (segment*) malloc(sizeof(segment));
+	(*segmento_ptr).nro_segmento=tabla_de_segmentos->elements_count;
 	list_add(tabla_de_segmentos, segmento_ptr);
 	(*segmento_ptr).tamanio = tam;
 	(*segmento_ptr).metadatas = list_create();
@@ -358,24 +358,47 @@ segment* crear_segmento_map(int tam, t_list* tabla_de_segmentos) {
 
 
 void recalcular_bases_logicas_de_segmentos(t_list *tabla_de_segmentos){
+	int index=0;
 	void _recalcular_base_logica(void*element){
 		segment* ptr_segmento = (segment*)element;
+		ptr_segmento->nro_segmento=index;
 		ptr_segmento->base_logica=calculo_base_logica(ptr_segmento,tabla_de_segmentos);
+		index++;
 	}
 	list_iterate(tabla_de_segmentos,_recalcular_base_logica);
 }
 
+
+
 void liberar_recursos_del_segmento(segment*ptr_segmento){
 	void _eliminar_metadatas(void*element){
-		segmentmmapmetadata *ptr_metadata = (segmentmmapmetadata*)element;
-		free(ptr_metadata->path);
+		if(ptr_segmento->tipo==HEAP){
+			segmentheapmetadata *ptr_heap_metadata = (segmentheapmetadata*)element;
+			free(ptr_heap_metadata->metadata);
+			free(ptr_heap_metadata);
+		}else{
+			segmentmmapmetadata *ptr_map_metadata = (segmentmmapmetadata*)element;
+			free(ptr_map_metadata->path);
+			free(ptr_map_metadata);
+		}
 	}
 
 	void _eliminar_paginas(void*element){
-		page*ptr_pagina=(page*)element;
+		page* *ptr_pagina = (page*)element;
 		free(ptr_pagina);
 	}
 
-	list_destroy_and_destroy_elements(ptr_segmento->metadatas,_eliminar_metadatas);
-	list_destroy_and_destroy_elements(ptr_segmento->tabla_de_paginas,_eliminar_paginas);
+	list_destroy_and_destroy_elements(ptr_segmento->tabla_de_paginas,&_eliminar_paginas);
+	list_destroy_and_destroy_elements(ptr_segmento->metadatas,&_eliminar_metadatas);
+	free(ptr_segmento);
+}
+
+void liberar_tabla_de_segmentos(t_list* tabla_de_segmentos){
+
+	void _liberar_segmento(void*element){
+		segment*ptr_segmento = (segment*)element;
+		liberar_recursos_del_segmento(ptr_segmento);
+	}
+
+	list_destroy_and_destroy_elements(tabla_de_segmentos,&_liberar_segmento);
 }
