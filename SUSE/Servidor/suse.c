@@ -123,18 +123,9 @@ void buscar_hilos_blockeados_por_este(tid){ //probablemente no haya o haya solo 
 	list_iterate(listaBloqueados, &_cambiar_a_blocked_ready);
 }
 
-void buscar_y_pasarlo_a_exit(int fd, int tid){ //Este codigo quedo asquerosamente feo
+void buscar_y_pasarlo_a_exit(int fd){ //Este codigo quedo asquerosamente feo
 
 	t_thread* hilo ;
-
-	bool _mismo_tid(void* elem){
-		t_thread* hilo = (t_thread*)elem;
-		return hilo->tid == tid;
-	}
-	bool _mismo_tid_y_fd(void* elem){
-		t_thread* hilo = (t_thread*)elem;
-		return ((hilo->tid == tid) && (hilo->socket_fd == fd));
-	}
 
 	bool _mismo_fd(void* elem){
 		t_cola_ready* elemento = (t_cola_ready*)elem;
@@ -143,44 +134,12 @@ void buscar_y_pasarlo_a_exit(int fd, int tid){ //Este codigo quedo asquerosament
 
 	t_execute* execution = list_find(listaEXEC, &_mismo_fd);//lo buscamos en exec
 
-	if(_mismo_tid(execution)){ //Lo mas probable es que este en exec al momento de suse_close
-		hilo = execution->thread;
-		hilo->tiempo_total_en_exec =+ time(0) - hilo->tiempo_en_cola_actual;
-		execution->thread = NULL;
-		list_add(listaEXIT, hilo);
-		return;
-	}
-
-	t_cola_ready* nodoReady = list_find(colaREADY, &_mismo_fd);
-	hilo = (t_thread*)list_remove_by_condition(nodoReady->lista_threads, &_mismo_tid); //buscamos si esta en ready
-	//Si esta lo remueve, sino devuelve NULL
-
-	if(hilo!=NULL){
-		hilo->tiempo_total_en_ready =+ time(0) - hilo->tiempo_en_cola_actual;
-		list_add(listaEXIT, hilo);
-		return;
-	}
-
-	hilo = (t_thread*)list_remove_by_condition(colaNEW, &_mismo_tid_y_fd); //lo buscamos en new(?
-
-	if(hilo!=NULL){
-		list_add(listaEXIT, hilo);
-		return;
-	}
-
-	bool _mismo_tid_blocked(void* elem){
-		t_blocked* nodo = (t_blocked*)elem;
-		return nodo->tid == tid;
-	}
-
-	hilo = (t_thread*)list_remove_by_condition(listaBLOCKED, &_mismo_tid_blocked); //y lo buscamos en blocked
-
-	if(!hilo)
-		printf("ERROR, SE LLAMO A SUSE_CLOSE POR UN ULT INEXISTENTE\n");
-
+	hilo = execution->thread;
+	hilo->tiempo_total_en_exec =+ time(0) - hilo->tiempo_en_cola_actual;
+	execution->thread = NULL;
 	list_add(listaEXIT, hilo);
-	return;
-}
+
+	}
 
 
 
@@ -194,7 +153,23 @@ bool tid_ya_esta_en_exit(int tid, int fd){
 	return list_any_satisfy(listaEXIT, &_mismo_tidfd);
 }
 
+void buscar_y_pasarlo_a_blocked(int fd,int tid){
+	t_thread* hilo ;
 
+		bool _mismo_fd(void* elem){
+			t_cola_ready* elemento = (t_cola_ready*)elem;
+			return elemento->socket_fd == fd;
+		}
+
+		t_execute* execution = list_find(listaEXEC, &_mismo_fd);//lo buscamos en exec
+
+		hilo = execution->thread;
+		hilo->tiempo_total_en_exec =+ time(0) - hilo->tiempo_en_cola_actual;
+		execution->thread = NULL;
+		t_blocked* blocked = crear_entrada_blocked(hilo, JOIN, &tid);
+		list_add(listaBLOCKED, blocked);
+
+}
 
 
 //HILO DE ATENCION A CLIENTES, UN HILO POR CADA SOCKET CONECTADO
@@ -243,7 +218,7 @@ void atenderCliente(void* elemento){
 		case SUSE_CLOSE:
 			paqueteRecibido = recibir_paquete(socketCli);
 			tid = *((int*)paqueteRecibido->head->data);
-			buscar_y_pasarlo_a_exit(socketCli, tid);
+			buscar_y_pasarlo_a_exit(socketCli); //Agarra el ult que esta en la cola exe de el socket y lo pasa a exit
 			buscar_hilos_blockeados_por_este(tid);
 			break;
 
@@ -252,9 +227,7 @@ void atenderCliente(void* elemento){
 			tid = *((int*)paqueteRecibido->head->data);
 
 			if(!tid_ya_esta_en_exit(tid, socketCli)){ //puede pasar que el thread al cual le hacen join ya termino
-				buscar_y_pasarlo_a_blocked(socketCli, tid,0); //IDEM buscar_y_pasarlo_a_exit(socketCli, tid); el tid
-																//corresponde a la causa del bloqueo, el 0 es el tid del proceso padre
-																// el cual asumo es el unico que puede llamar a suse join.
+				buscar_y_pasarlo_a_blocked(socketCli, tid);//Agarra el ult que esta en la cola exe de el socket y lo pasa a blocked por join con ese tid
 			}
 
 			break;
