@@ -21,7 +21,24 @@ int alpha_sjf(){
 	return config_get_int_value(CONFIG, "ALPHA_SJF");
 }
 
+t_blocked* crear_entrada_blocked(t_thread* hilo, t_estado estado, void* razonBlock){
+	int tid = 0;
+	char* semaforo = NULL;
 
+		if(estado==JOIN){
+			tid = *((int*)razonBlock);
+		} else {
+			semaforo = malloc(strlen(razonBlock)+1);
+			memcpy(semaforo, razonBlock, strlen(razonBlock)+1);
+			}
+
+	t_blocked* entrada = malloc(sizeof(t_blocked));
+	entrada->thread = hilo;
+	entrada->estado = estado;
+	entrada->semaforo = semaforo;
+	entrada->tid = tid;
+	return entrada;
+}
 
 //FUNCIONES AUXILIARES DE SUSE_CREATE
 
@@ -166,6 +183,20 @@ void buscar_y_pasarlo_a_exit(int fd, int tid){ //Este codigo quedo asquerosament
 }
 
 
+
+//FUNCIONES AUXILIARES SUSE_JOIN
+bool tid_ya_esta_en_exit(int tid, int fd){
+	bool _mismo_tidfd(void*elem){
+		t_thread* hilo = (t_thread*)elem;
+		return ((hilo->socket_fd) == (fd && hilo->tid == tid));
+	}
+
+	return list_any_satisfy(listaEXIT, &_mismo_tidfd);
+}
+
+
+
+
 //HILO DE ATENCION A CLIENTES, UN HILO POR CADA SOCKET CONECTADO
 
 void atenderCliente(void* elemento){
@@ -217,7 +248,18 @@ void atenderCliente(void* elemento){
 			break;
 
 		case SUSE_JOIN:
+			paqueteRecibido = recibir_paquete(socketCli);
+			tid = *((int*)paqueteRecibido->head->data);
+
+			if(!tid_ya_esta_en_exit(tid, socketCli)){ //puede pasar que el thread al cual le hacen join ya termino
+				buscar_y_pasarlo_a_blocked(socketCli, tid,0); //IDEM buscar_y_pasarlo_a_exit(socketCli, tid); el tid
+																//corresponde a la causa del bloqueo, el 0 es el tid del proceso padre
+																// el cual asumo es el unico que puede llamar a suse join.
+			}
+
 			break;
+
+
 		case SUSE_SIGNAL:
 			break;
 		case SUSE_WAIT:
