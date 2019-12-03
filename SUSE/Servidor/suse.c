@@ -1,3 +1,6 @@
+#include <time.h>
+#include <signal.h>
+#include <sys/time.h>
 #include "suse.h"
 #include "utils.c"
 
@@ -9,6 +12,21 @@ t_list* listaBLOCKED;
 t_config* CONFIG;
 
 
+
+//FUNCIONES DEL CONFIG
+char** valores_iniciales_semaforos(){
+	return config_get_array_value(CONFIG, "SEM_INIT");
+}
+char** valores_maximos_semaforos(){
+	return config_get_array_value(CONFIG, "SEM_MAX");
+}
+char** ids_semaforos(){
+	return config_get_array_value(CONFIG, "SEM_IDS");
+}
+
+int timerLog(){
+	return config_get_int_value(CONFIG, "METRICS_TIMER");
+}
 char* puerto_listen(){
 	return config_get_string_value(CONFIG, "LISTEN_PORT");
 }
@@ -21,24 +39,24 @@ int alpha_sjf(){
 	return config_get_int_value(CONFIG, "ALPHA_SJF");
 }
 
-t_blocked* crear_entrada_blocked(t_thread* hilo, t_estado estado, void* razonBlock){
-	int tid = 0;
-	char* semaforo = NULL;
 
-		if(estado==JOIN){
-			tid = *((int*)razonBlock);
-		} else {
-			semaforo = malloc(strlen(razonBlock)+1);
-			memcpy(semaforo, razonBlock, strlen(razonBlock)+1);
-			}
 
-	t_blocked* entrada = malloc(sizeof(t_blocked));
-	entrada->thread = hilo;
-	entrada->estado = estado;
-	entrada->semaforo = semaforo;
-	entrada->tid = tid;
-	return entrada;
+//FUNCIONES DE LOS LOGS
+void escribir_logs(int motivo){
+	if (motivo == 0){
+		//loggear "Finalizo hilo"
+	} else {
+		//loggear "Timer"
+	}
+
+	//Logs posta
 }
+
+void escribirLog(int signal){
+	escribir_logs(1);
+}
+
+
 
 //FUNCIONES AUXILIARES DE SUSE_CREATE
 
@@ -144,6 +162,25 @@ void buscar_y_pasarlo_a_exit(int fd){ //Este codigo quedo asquerosamente feo
 
 
 //FUNCIONES AUXILIARES SUSE_JOIN
+t_blocked* crear_entrada_blocked(t_thread* hilo, t_estado estado, void* razonBlock){
+	int tid = 0;
+	char* semaforo = NULL;
+
+		if(estado==JOIN){
+			tid = *((int*)razonBlock);
+		} else {
+			semaforo = malloc(strlen(razonBlock)+1);
+			memcpy(semaforo, razonBlock, strlen(razonBlock)+1);
+			}
+
+	t_blocked* entrada = malloc(sizeof(t_blocked));
+	entrada->thread = hilo;
+	entrada->estado = estado;
+	entrada->semaforo = semaforo;
+	entrada->tid = tid;
+	return entrada;
+}
+
 bool tid_ya_esta_en_exit(int tid, int fd){
 	bool _mismo_tidfd(void*elem){
 		t_thread* hilo = (t_thread*)elem;
@@ -220,6 +257,7 @@ void atenderCliente(void* elemento){
 			tid = *((int*)paqueteRecibido->head->data);
 			buscar_y_pasarlo_a_exit(socketCli); //Agarra el ult que esta en la cola exe de el socket y lo pasa a exit
 			buscar_hilos_blockeados_por_este(tid);
+			escribir_logs(0);
 			break;
 
 		case SUSE_JOIN:
@@ -229,9 +267,7 @@ void atenderCliente(void* elemento){
 			if(!tid_ya_esta_en_exit(tid, socketCli)){ //puede pasar que el thread al cual le hacen join ya termino
 				buscar_y_pasarlo_a_blocked(socketCli, tid);//Agarra el ult que esta en la cola exe de el socket y lo pasa a blocked por join con ese tid
 			}
-
 			break;
-
 
 		case SUSE_SIGNAL:
 			break;
@@ -290,7 +326,7 @@ void* hay_blocked_ready(){
 		t_blocked* hilo = (t_blocked*)elem;
 		return hilo->estado == BLOCKED_READY;
 	}
-	return list_find(listaBLOCKED, &_esta_blocked_ready);
+	return list_remove_by_condition(listaBLOCKED, &_esta_blocked_ready);
 }
 
 //ESTE HILO VA A MOVER LOS HILOS DESDE NEW O BLOCKED A READY
@@ -331,9 +367,25 @@ int main(){
 	listaEXEC = list_create();
 
 
+	signal(SIGALRM, &escribirLog);
+	struct itimerval intervalo;
+	struct timeval tiempoInicial;
+	struct timeval inter;
+
+	tiempoInicial.tv_sec = timerLog();
+	tiempoInicial.tv_usec = 0;
+
+	inter.tv_sec = timerLog();
+	inter.tv_usec = 0;
+
+	intervalo.it_value = tiempoInicial;
+	intervalo.it_interval = inter;
+
 
 
 	pthread_t hiloAtencion, hiloPlanif;
+
+
 	int socketEscucha = iniciar_servidor(puerto_listen(),"127.0.0.1");
 	int cliente;
 
