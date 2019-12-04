@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include "sockets/sockets.h"
-#include "muse.h"
+#include "structures.h"
 #include <sys/mman.h>
 
     /**

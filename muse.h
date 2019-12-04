@@ -27,7 +27,6 @@
 #include "segmentacion/segmentacion.h"
 #include "paginacion/frames.h"
 #include "paginacion/paginacion.h"
-#include "sockets/sockets.h"
 #include "virtual-memory/virtual-memory.h"
 #include "structures.h"
 
@@ -35,7 +34,6 @@ t_list* PROCESS_TABLE;
 t_list* MAPPED_FILES;
 
 t_config* config;
-
 
 void inicializar_tabla_procesos();
 void inicializar_tabla_archivos_compartidos();

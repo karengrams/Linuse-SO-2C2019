@@ -22,9 +22,7 @@
 #include <stdbool.h>
 #include <commons/bitarray.h>
 #include "../muse.h"
-#include "../paginacion/paginacion.h"
-#include "../paginacion/frames.h"
-#include "../segmentacion/segmentacion.h"
+#include "../libMuse.h"
 #include "../structures.h"
 
 #define ERROR -1;
@@ -34,6 +32,7 @@ int recibir_operacion(int);
 void* recibir_buffer(int*, int);
 t_list* recibir_paquete(int);
 int iniciar_socket(char*, char*);
+
 // Siguen sirviendo las de abajo? No lo se. Lo veremos en el proximo cap
 void ipCliente(int, char*);
 int crear_conexion(char *, char*);
@@ -47,6 +46,5 @@ t_proceso* crear_proceso(int, char*);
 t_proceso* buscar_proceso(t_list*, char*);
 void liberar_proceso(t_proceso*);
 void admitir_nuevo_cliente(fd_set*, int*, int);
-void atender_cliente(void*);
 
 #endif /* SOCKETS_SOCKETS_H_ */
