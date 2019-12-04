@@ -17,6 +17,11 @@ int* SEM_MAX;
 char** SEM_IDS;
 
 //FUNCIONES DEL CONFIG
+bool _not_null(void* elem){
+	t_execute* elemento = (t_execute*) elem;
+	return (elemento->thread != NULL);
+}
+
 int tamanio_vector(char** array){
 	char* a = array[0];
 	int i = 0;
@@ -95,7 +100,7 @@ void loggear_semaforos(void){
 void* _suma_tiempos_ejecucion(void* seed, void*elem){
 	int inicial = *((int*) seed);
 	t_thread* hilo = (t_thread*)elem;
-	inicial= inicial +  time() - hilo->tiempo_creacion;
+	inicial= inicial +  time(0) - hilo->tiempo_creacion;
 	memcpy(seed, &inicial, sizeof(int));
 	return seed;
 }
@@ -104,7 +109,7 @@ void* _suma_tiempos_ejecucion_blocked(void* seed, void* elem){
 	int inicial = *((int*) seed);
 	t_blocked* block = (t_blocked*)elem;
 	t_thread* hilo = block->thread;
-	inicial= inicial + time() - hilo->tiempo_creacion;
+	inicial= inicial + time(0) - hilo->tiempo_creacion;
 	memcpy(seed, &inicial, sizeof(int));
 	return seed;
 }
@@ -154,19 +159,19 @@ void loggear_procesos(void){
 		list_fold(listaBlocked, &semilla, &_suma_tiempos_ejecucion_blocked);
 
 		if(execute->thread!= NULL)
-			semilla = semilla + time() - execute->thread->tiempo_creacion;
+			semilla = semilla + time(0) - execute->thread->tiempo_creacion;
 
 
 		void loggear_threads(void* elem){
 			t_thread* hilo = (t_thread*)elem;
-			int tiempoEjecucion = time()-hilo->tiempo_creacion;
+			int tiempoEjecucion = time(0)-hilo->tiempo_creacion;
 			log_info(LOG, "Hilo %d: \ntiempo de ejecucion: %d \ntiempo de espera: %d \ntiempo de uso de CPU: %f \nporcentaje "
 								"tiempo de ejecucion: %d\n", hilo->tid , tiempoEjecucion , hilo->tiempo_total_en_ready, hilo->tiempo_total_en_exec, tiempoEjecucion/semilla);
 		}
 		void loggear_blockeds(void* elem){
 					t_blocked* block = (t_blocked*)elem;
 					t_thread* hilo = block->thread;
-					int tiempoEjecucion = time()-hilo->tiempo_creacion;
+					int tiempoEjecucion = time(0)-hilo->tiempo_creacion;
 					log_info(LOG, "Hilo %d: \ntiempo de ejecucion: %d \ntiempo de espera: %d \ntiempo de uso de CPU: %f \nporcentaje "
 										"tiempo de ejecucion: %d\n", hilo->tid , tiempoEjecucion , hilo->tiempo_total_en_ready, hilo->tiempo_total_en_exec, tiempoEjecucion/semilla);
 				}
@@ -179,7 +184,7 @@ void loggear_procesos(void){
 
 		if(execute->thread!= NULL){
 			t_thread* hilo = execute->thread;
-			int tiempoEjecucion = time()-hilo->tiempo_creacion;
+			int tiempoEjecucion = time(0)-hilo->tiempo_creacion;
 			log_info(LOG, "Hilo %d: \ntiempo de ejecucion: %d \ntiempo de espera: %d \ntiempo de uso de CPU: %f \nporcentaje "
 			"tiempo de ejecucion: %d\n", hilo->tid , tiempoEjecucion , hilo->tiempo_total_en_ready, hilo->tiempo_total_en_exec, tiempoEjecucion/semilla);
 			}
@@ -197,7 +202,6 @@ void escribir_logs(int motivo, int socket){
 	log_info(LOG, "Grado actual de multiprogramacion: %d\n", total_hilos_en_ready_y_exec());
 	loggear_semaforos();
 	loggear_procesos();
-	loggear_threads();
 }
 
 void escribirLog(int signal){
@@ -273,7 +277,7 @@ t_thread* algoritmo_SJF(t_list* lista){
 
 
 //FUNCIONES AUXILIARES DEL SUSE_CLOSE
-void buscar_hilos_blockeados_por_este(tid){ //probablemente no haya o haya solo uno que sea el proceso padre....
+void buscar_hilos_blockeados_por_este(int tid){ //probablemente no haya o haya solo uno que sea el proceso padre....
 
 	bool _blocked_por_tid(void* elem){
 		t_blocked* elemento = (t_blocked*)elem;
@@ -474,10 +478,6 @@ void atenderCliente(void* elemento){
 
 
 //FUNCIONES AUXILIARES DEL PLANIFICADOR DE LARGO PLAZO
-bool _not_null(void* elem){
-	t_execute* elemento = (t_execute*) elem;
-	return (elemento->thread != NULL);
-}
 
 bool podemos_agregar_hilos_a_ready(){
 	return total_hilos_en_ready_y_exec() < grado_de_multiprogramacion_maximo();
