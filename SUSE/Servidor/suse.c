@@ -10,6 +10,7 @@ t_list* listaEXEC;
 t_list* listaEXIT;
 t_list* listaBLOCKED;
 t_config* CONFIG;
+t_log* LOG;
 
 int* SEM_VALOR;
 int* SEM_MAX;
@@ -67,18 +68,140 @@ int alpha_sjf(){
 
 
 //FUNCIONES DE LOS LOGS
-void escribir_logs(int motivo){
-	if (motivo == 0){
-		//loggear "Finalizo hilo"
+void* _suma_hilos(void* seed, void* elem){
+	int inicial = *((int*) seed);
+	t_cola_ready* elemento = (t_cola_ready*) elem;
+	inicial =+ list_size(elemento->lista_threads);
+	memcpy(seed, &inicial, sizeof(int));
+	return seed;
+}
+
+int total_hilos_en_ready_y_exec(){
+	int seed = 0;
+	int ready = *((int*)list_fold(colaREADY,&seed, &_suma_hilos));
+	int exec = list_size(list_filter(listaEXEC, &_not_null));
+	return ready+exec;
+}
+
+
+
+void loggear_semaforos(void){
+	for(int i = 0 ; i<tamanio_vector(SEM_IDS); i++){
+		log_info(LOG, "Valor del semaforo %s: %d\n", SEM_IDS[i], SEM_VALOR[i]);
+	}
+}
+
+
+void* _suma_tiempos_ejecucion(void* seed, void*elem){
+	int inicial = *((int*) seed);
+	t_thread* hilo = (t_thread*)elem;
+	inicial= inicial +  time() - hilo->tiempo_creacion;
+	memcpy(seed, &inicial, sizeof(int));
+	return seed;
+}
+
+void* _suma_tiempos_ejecucion_blocked(void* seed, void* elem){
+	int inicial = *((int*) seed);
+	t_blocked* block = (t_blocked*)elem;
+	t_thread* hilo = block->thread;
+	inicial= inicial + time() - hilo->tiempo_creacion;
+	memcpy(seed, &inicial, sizeof(int));
+	return seed;
+}
+
+
+
+
+void loggear_procesos(void){
+	for(int i=0; i<list_size(colaREADY); i++){
+		t_cola_ready* ready = list_get(colaREADY, i);
+		int hiloEjecutando = 0;
+		int fd = ready->socket_fd;
+
+			bool _mismo_fd_en_new(void* elem){
+					t_thread* hilo = (t_thread*)elem;
+					return hilo->socket_fd == fd;
+				}
+			bool _mismo_fd_en_blocked(void* elem){
+					t_blocked* hilo = (t_blocked*)elem;
+					t_thread* coso = hilo->thread;
+					return  coso->socket_fd == fd;
+				}
+			bool _mismo_fd_en_exec(void* elem){
+					t_execute* hilo = (t_execute*)elem;
+					return hilo->socket_fd == fd;
+				}
+		t_list* listaNew = list_filter(colaNEW, &_mismo_fd_en_new);
+		t_list* listaBlocked = list_filter(listaBLOCKED, &_mismo_fd_en_blocked);
+		t_execute* execute = list_find(listaEXEC, &_mismo_fd_en_exec);
+		t_list* listaExit = list_filter(listaEXIT, &_mismo_fd_en_new);
+
+		if(execute->thread != NULL)
+			 hiloEjecutando = 1;
+
+
+		log_info(LOG, "Socket %d:\n", fd);
+		log_info(LOG, "Hilos en cola NEW: %d", list_size(listaNew));
+		log_info(LOG, "Hilos en cola READY: %d", list_size(ready->lista_threads));
+		log_info(LOG, "Hilos en cola BLOCKED: %d", list_size(listaBlocked));
+		log_info(LOG, "Hilos en cola RUN: %d", hiloEjecutando);
+		log_info(LOG, "Hilos en cola EXIT: %d", list_size(listaExit));
+
+		int semilla = 0;
+		list_fold(listaNew, &semilla, &_suma_tiempos_ejecucion);
+		list_fold(ready->lista_threads, &semilla, &_suma_tiempos_ejecucion);
+		list_fold(listaExit, &semilla, &_suma_tiempos_ejecucion);
+		list_fold(listaBlocked, &semilla, &_suma_tiempos_ejecucion_blocked);
+
+		if(execute->thread!= NULL)
+			semilla = semilla + time() - execute->thread->tiempo_creacion;
+
+
+		void loggear_threads(void* elem){
+			t_thread* hilo = (t_thread*)elem;
+			int tiempoEjecucion = time()-hilo->tiempo_creacion;
+			log_info(LOG, "Hilo %d: \ntiempo de ejecucion: %d \ntiempo de espera: %d \ntiempo de uso de CPU: %f \nporcentaje "
+								"tiempo de ejecucion: %d\n", hilo->tid , tiempoEjecucion , hilo->tiempo_total_en_ready, hilo->tiempo_total_en_exec, tiempoEjecucion/semilla);
+		}
+		void loggear_blockeds(void* elem){
+					t_blocked* block = (t_blocked*)elem;
+					t_thread* hilo = block->thread;
+					int tiempoEjecucion = time()-hilo->tiempo_creacion;
+					log_info(LOG, "Hilo %d: \ntiempo de ejecucion: %d \ntiempo de espera: %d \ntiempo de uso de CPU: %f \nporcentaje "
+										"tiempo de ejecucion: %d\n", hilo->tid , tiempoEjecucion , hilo->tiempo_total_en_ready, hilo->tiempo_total_en_exec, tiempoEjecucion/semilla);
+				}
+
+
+		list_iterate(listaNew, &loggear_threads);
+		list_iterate(listaExit, &loggear_threads);
+		list_iterate(ready->lista_threads, &loggear_threads);
+		list_iterate(listaBlocked, &loggear_blockeds);
+
+		if(execute->thread!= NULL){
+			t_thread* hilo = execute->thread;
+			int tiempoEjecucion = time()-hilo->tiempo_creacion;
+			log_info(LOG, "Hilo %d: \ntiempo de ejecucion: %d \ntiempo de espera: %d \ntiempo de uso de CPU: %f \nporcentaje "
+			"tiempo de ejecucion: %d\n", hilo->tid , tiempoEjecucion , hilo->tiempo_total_en_ready, hilo->tiempo_total_en_exec, tiempoEjecucion/semilla);
+			}
+	}
+}
+
+
+void escribir_logs(int motivo, int socket){
+	if (motivo == -1){
+		log_info(LOG, "Timer log \n");
 	} else {
-		//loggear "Timer"
+		log_info(LOG, "Finalizo el hilo %d del socket %d\n", motivo, socket);
 	}
 
-	//Logs posta
+	log_info(LOG, "Grado actual de multiprogramacion: %d\n", total_hilos_en_ready_y_exec());
+	loggear_semaforos();
+	loggear_procesos();
+	loggear_threads();
 }
 
 void escribirLog(int signal){
-	escribir_logs(1);
+	escribir_logs(-1, -1);
 }
 
 
@@ -289,7 +412,7 @@ void atenderCliente(void* elemento){
 			tid = *((int*)paqueteRecibido->head->data);
 			if(!tid){ //si el tid es 0 es el programa principal
 				crear_entrada_en_cola_ready(socketCli);
-				crear_entrada_en_lista_execute(socketCli);
+				crear_entrada_en_lista_execute(socketCli); //Esto podria ir afuera del while, despues veo donde me conviene
 			}
 				crear_thread(socketCli, tid);
 
@@ -314,7 +437,7 @@ void atenderCliente(void* elemento){
 			tid = *((int*)paqueteRecibido->head->data);
 			buscar_y_pasarlo_a_exit(socketCli); //Agarra el ult que esta en la cola exe de el socket y lo pasa a exit
 			buscar_hilos_blockeados_por_este(tid);
-			escribir_logs(0);
+			escribir_logs(tid, socketCli);
 			break;
 
 		case SUSE_JOIN:
@@ -354,21 +477,6 @@ void atenderCliente(void* elemento){
 bool _not_null(void* elem){
 	t_execute* elemento = (t_execute*) elem;
 	return (elemento->thread != NULL);
-}
-
-void* _suma_hilos(void* seed, void* elem){
-	int inicial = *((int*) seed);
-	t_cola_ready* elemento = (t_cola_ready*) elem;
-	inicial =+ list_size(elemento->lista_threads);
-	memcpy(seed, &inicial, sizeof(int));
-	return seed;
-}
-
-int total_hilos_en_ready_y_exec(){
-	int seed = 0;
-	int ready = *((int*)list_fold(colaREADY,&seed, &_suma_hilos));
-	int exec = list_size(list_filter(listaEXEC, &_not_null));
-	return ready+exec;
 }
 
 bool podemos_agregar_hilos_a_ready(){
@@ -431,6 +539,9 @@ void planificador_largo_plazo(){
 int main(){
 	//INICIAMOS VARIABLES GLOBALES
 	CONFIG = config_create("suse.config");
+
+	LOG = log_create("suse.log", "SUSE", true, LOG_LEVEL_INFO);
+
 
 	colaNEW = list_create();
 	listaEXIT = list_create();
