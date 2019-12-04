@@ -138,6 +138,7 @@ void muse_free(t_proceso *proceso, uint32_t direccion) {
 				for(int i=1;i<=cantidad_extra_de_memoria_en_pags;i++){
 				void _liberar_pagina(void*element){
 					page*ptr_pagina = (page*)element;
+					bitarray_set_bit(BIT_ARRAY_FRAMES,ptr_pagina->nro_frame);
 					free(ptr_pagina);
 				}
 
@@ -145,19 +146,15 @@ void muse_free(t_proceso *proceso, uint32_t direccion) {
 			}
 
 			ptr_ultimo_metadata->bytes-=(cantidad_extra_de_memoria_en_pags*TAM_PAG);
+			escribir_metadata_en_frame(ptr_segmento, ptr_ultimo_seg_metadata);
 
 		}
 		if(ptr_segmento->tabla_de_paginas->elements_count==1 && ptr_segmento->metadatas->elements_count==1){
 			eliminar_segmento_de_tabla(proceso->tablaDeSegmentos,ptr_segmento);
 		}
-		printf("Tabla de segmentos del proceso:\n");
-		mostrar_segmentos(proceso->tablaDeSegmentos);
 	}
 	else
 		raise(SIGABRT);
-
-	// CUando es la ultima pagina que esta vacia completamente, hay que fijarse de eliminarla
-
 }
 
 void* muse_get(t_proceso* proceso, t_list* paqueteRecibido){

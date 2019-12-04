@@ -379,7 +379,11 @@ void liberar_recursos_del_segmento(segment*ptr_segmento){
 	}
 
 	void _eliminar_paginas(void*element){
-		page* *ptr_pagina = (page*)element;
+		page* ptr_pagina = (page*)element;
+		if(ptr_pagina->bit_presencia)
+			bitarray_set_bit(BIT_ARRAY_FRAMES,ptr_pagina->nro_frame);
+		else
+			bitarray_set_bit(BIT_ARRAY_SWAP,ptr_pagina->nro_frame);
 		free(ptr_pagina);
 	}
 
