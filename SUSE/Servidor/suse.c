@@ -31,7 +31,6 @@ int* pasar_a_vector_de_int(char** array){
 	int* vector = (int*)malloc(longitud*sizeof(int));
 
 	for(int i=0; i<longitud; i++){
-		printf("%d\n", atoi(array[i]));
 		vector[i] = (atoi(array[i]));
 	}
 
@@ -278,6 +277,11 @@ void atenderCliente(void* elemento){
 	while(1){
 		int cod_op = recibir_operacion(socketCli);
 
+		bool _mismo_fd(void* elem){
+			t_cola_ready* elemento = (t_cola_ready*)elem;
+			return elemento->socket_fd == socketCli;
+		}
+
 		switch(cod_op){
 
 		case SUSE_INIT:
@@ -292,10 +296,7 @@ void atenderCliente(void* elemento){
 			break;
 
 		case SUSE_SCHEDULE:
-			bool _mismo_fd(void* elem){
-				t_cola_ready* elemento = (t_cola_ready*)elem;
-				return elemento->socket_fd == socketCli;
-			}
+
 			nodoReady = (t_cola_ready*)list_find(colaREADY, &_mismo_fd); //buscamos la lista ready de este proceso
 			colaAAplicarSJF = nodoReady->lista_threads;
 			nodoEnEjecucion = (t_execute*)list_find(listaEXEC, &_mismo_fd); //buscamos el hilo en ejecucion de este proceso
@@ -430,6 +431,7 @@ void planificador_largo_plazo(){
 int main(){
 	//INICIAMOS VARIABLES GLOBALES
 	CONFIG = config_create("suse.config");
+
 	colaNEW = list_create();
 	listaEXIT = list_create();
 	listaBLOCKED = list_create();
