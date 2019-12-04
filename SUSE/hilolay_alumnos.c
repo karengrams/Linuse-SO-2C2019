@@ -37,12 +37,16 @@ int suse_join(int tid){
 }
 
 int suse_wait(int tid, char* idSemaforo){
+	int exito;
+
 	t_paquete* paquete = crear_paquete(SUSE_WAIT);
 	agregar_a_paquete(paquete, &tid, sizeof(int));
 	agregar_a_paquete(paquete, idSemaforo, (strlen(idSemaforo)+1));
 	enviar_paquete(paquete, SOCKET);
 	eliminar_paquete(paquete);
-	return 0;
+
+	recv(SOCKET, &exito, sizeof(int), 0);
+	return exito;
 }
 
 int suse_signal(int tid, char* idSemaforo){

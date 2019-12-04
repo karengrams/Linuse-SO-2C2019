@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <commons/log.h>
+#include <commons/config.h>
 #include <commons/collections/list.h>
 #include <pthread.h>
 #include <semaphore.h>
@@ -54,8 +55,7 @@ typedef struct{
 	t_thread* thread;
 	t_estado estado; //1 bloqueado por suse_join(tid), 2 por suse_wait(semaforo),
 					 //3 ya puede pasar a ready cuando el grado de multiprogramacion lo permita
-	int tid;
-	char* semaforo;
+	int tid; //Valor del tid en caso de join, valor de la posicion del vector de semaforos en caso de wait
 } __attribute__((packed)) t_blocked;
 
 #endif

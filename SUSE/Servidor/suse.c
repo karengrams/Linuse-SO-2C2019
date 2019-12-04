@@ -11,15 +11,41 @@ t_list* listaEXIT;
 t_list* listaBLOCKED;
 t_config* CONFIG;
 
-
+int* SEM_VALOR;
+int* SEM_MAX;
+char** SEM_IDS;
 
 //FUNCIONES DEL CONFIG
-char** valores_iniciales_semaforos(){
-	return config_get_array_value(CONFIG, "SEM_INIT");
+int tamanio_vector(char** array){
+	char* a = array[0];
+	int i = 0;
+	while(a!=NULL){
+		i++;
+		a = array[i];
+	}
+	return i;
 }
-char** valores_maximos_semaforos(){
-	return config_get_array_value(CONFIG, "SEM_MAX");
+
+int* pasar_a_vector_de_int(char** array){
+	int longitud = tamanio_vector(array);
+	int* vector = (int*)malloc(longitud*sizeof(int));
+
+	for(int i=0; i<longitud; i++){
+		printf("%d\n", atoi(array[i]));
+		vector[i] = (atoi(array[i]));
+	}
+
+	return vector;
 }
+
+int* valores_iniciales_semaforos(){
+	return pasar_a_vector_de_int(config_get_array_value(CONFIG, "SEM_INIT"));
+}
+
+int* valores_maximos_semaforos(){
+	return pasar_a_vector_de_int(config_get_array_value(CONFIG, "SEM_MAX"));
+}
+
 char** ids_semaforos(){
 	return config_get_array_value(CONFIG, "SEM_IDS");
 }
@@ -162,35 +188,25 @@ void buscar_y_pasarlo_a_exit(int fd){ //Este codigo quedo asquerosamente feo
 
 
 //FUNCIONES AUXILIARES SUSE_JOIN
-t_blocked* crear_entrada_blocked(t_thread* hilo, t_estado estado, void* razonBlock){
-	int tid = 0;
-	char* semaforo = NULL;
-
-		if(estado==JOIN){
-			tid = *((int*)razonBlock);
-		} else {
-			semaforo = malloc(strlen(razonBlock)+1);
-			memcpy(semaforo, razonBlock, strlen(razonBlock)+1);
-			}
+t_blocked* crear_entrada_blocked(t_thread* hilo, t_estado estado, int razonBlock){
 
 	t_blocked* entrada = malloc(sizeof(t_blocked));
 	entrada->thread = hilo;
 	entrada->estado = estado;
-	entrada->semaforo = semaforo;
-	entrada->tid = tid;
+	entrada->tid = razonBlock;
 	return entrada;
 }
 
 bool tid_ya_esta_en_exit(int tid, int fd){
 	bool _mismo_tidfd(void*elem){
 		t_thread* hilo = (t_thread*)elem;
-		return ((hilo->socket_fd) == (fd && hilo->tid == tid));
+		return ((hilo->socket_fd == fd) && (hilo->tid == tid));
 	}
 
 	return list_any_satisfy(listaEXIT, &_mismo_tidfd);
 }
 
-void buscar_y_pasarlo_a_blocked(int fd,int tid){
+void buscar_y_pasarlo_a_blocked(int fd,int razon, t_estado estado){
 	t_thread* hilo ;
 
 		bool _mismo_fd(void* elem){
@@ -203,11 +219,50 @@ void buscar_y_pasarlo_a_blocked(int fd,int tid){
 		hilo = execution->thread;
 		hilo->tiempo_total_en_exec =+ time(0) - hilo->tiempo_en_cola_actual;
 		execution->thread = NULL;
-		t_blocked* blocked = crear_entrada_blocked(hilo, JOIN, &tid);
+		t_blocked* blocked = crear_entrada_blocked(hilo, estado, razon);
 		list_add(listaBLOCKED, blocked);
 
 }
 
+//FUNCIONES AUXILIARES DE WAIT Y SIGNAL
+
+int posicion_en_vector(char* nombre, char** array){
+	int longitud = tamanio_vector(array);
+
+	for(int i=0; i<longitud; i++){
+		if(!strcmp(nombre, array[i]))
+			return i;
+	}
+	return -1;
+}
+
+int hacer_signal(int posicion){
+	if(SEM_VALOR[posicion]<SEM_MAX[posicion]){
+		SEM_VALOR[posicion]++;
+
+		if(SEM_VALOR[posicion]<=0){	//Hay threads bloqueados por este semaforo
+				bool _blocked_por_sem(void* elem){
+					t_blocked* blocked = (t_blocked*)elem;
+					return ((blocked->estado == SEMAPHORE) && (blocked->tid == posicion));
+				}
+			t_blocked* hilo = list_find(listaBLOCKED, &_blocked_por_sem); //buscamos el primer blockeado
+			hilo->estado = BLOCKED_READY; // y lo ponemos como blocked ready
+		}
+		return 1;
+	} else { //Caso raro, no hacer nada?
+		return 0;
+	}
+}
+
+int hacer_wait(int posicion, int fd){
+	if(SEM_VALOR[posicion]>0){ //Si es mayor a 0 lo toma
+		SEM_VALOR[posicion]--;
+		return 1;
+	} else { //Si es menor o igual a 0, lo debe decrementar y bloquearse (buscar la cola exe del fd y desplazar ese thread)
+		buscar_y_pasarlo_a_blocked(fd, posicion, SEMAPHORE);
+		return 0;
+	}
+}
 
 //HILO DE ATENCION A CLIENTES, UN HILO POR CADA SOCKET CONECTADO
 
@@ -217,7 +272,8 @@ void atenderCliente(void* elemento){
 	t_cola_ready* nodoReady;
 	t_execute* nodoEnEjecucion;
 	t_thread* hiloAEjecutar;
-	int tid;
+	int tid, posicionEnArray, error;
+	char* nombreSemaforo;
 
 	while(1){
 		int cod_op = recibir_operacion(socketCli);
@@ -265,13 +321,26 @@ void atenderCliente(void* elemento){
 			tid = *((int*)paqueteRecibido->head->data);
 
 			if(!tid_ya_esta_en_exit(tid, socketCli)){ //puede pasar que el thread al cual le hacen join ya termino
-				buscar_y_pasarlo_a_blocked(socketCli, tid);//Agarra el ult que esta en la cola exe de el socket y lo pasa a blocked por join con ese tid
+				buscar_y_pasarlo_a_blocked(socketCli, tid, JOIN);//Agarra el ult que esta en la cola exe de el socket y lo pasa a blocked por join con ese tid
 			}
 			break;
 
 		case SUSE_SIGNAL:
+			paqueteRecibido = recibir_paquete(socketCli);
+			tid = *((int*)list_get(paqueteRecibido, 0));
+			nombreSemaforo = list_get(paqueteRecibido,1);
+
+			posicionEnArray = posicion_en_vector(nombreSemaforo, SEM_IDS);
+			error = hacer_signal(posicionEnArray);
 			break;
+
 		case SUSE_WAIT:
+			paqueteRecibido = recibir_paquete(socketCli);
+			tid = *((int*)list_get(paqueteRecibido, 0));
+			nombreSemaforo = list_get(paqueteRecibido,1);
+
+			posicionEnArray = posicion_en_vector(nombreSemaforo, SEM_IDS);
+			error = hacer_wait(posicionEnArray, socketCli);
 			break;
 		}
 	}
@@ -359,6 +428,7 @@ void planificador_largo_plazo(){
 
 
 int main(){
+	//INICIAMOS VARIABLES GLOBALES
 	CONFIG = config_create("suse.config");
 	colaNEW = list_create();
 	listaEXIT = list_create();
@@ -366,7 +436,11 @@ int main(){
 	colaREADY = list_create();
 	listaEXEC = list_create();
 
+	SEM_IDS = ids_semaforos();
+	SEM_VALOR = valores_iniciales_semaforos();
+	SEM_MAX = valores_maximos_semaforos();
 
+	//ALARMA PARA LOGS
 	signal(SIGALRM, &escribirLog);
 	struct itimerval intervalo;
 	struct timeval tiempoInicial;
@@ -382,11 +456,11 @@ int main(){
 	intervalo.it_interval = inter;
 
 
-
+	//CREAMOS HILOS DE PLANIF Y ATENCION
 	pthread_t hiloAtencion, hiloPlanif;
 
 
-	int socketEscucha = iniciar_servidor(puerto_listen(),"127.0.0.1");
+	int socketEscucha = iniciar_servidor("127.0.0.1", puerto_listen());
 	int cliente;
 
 	pthread_create(&hiloPlanif, NULL, &planificador_largo_plazo, NULL);
