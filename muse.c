@@ -277,14 +277,16 @@ mapped_file* buscar_archivo_abierto(char*path){
 }
 
 int muse_sync(t_proceso* proceso,uint32_t direccion, size_t length){
-	// TODO fijarse que pasa si el archivo ya se hizo unmap y se le quiere hacer sync
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion, proceso->tablaDeSegmentos);
 	segmentmmapmetadata *ptr_metadata = (segmentmmapmetadata*) list_get(ptr_segmento->metadatas,0);
 	mapped_file *ptr_mapped_file=buscar_archivo_abierto(ptr_metadata->path);
 	void *file;
-	if(direccion + length > limite_segmento(ptr_segmento) || !ptr_segmento || ptr_segmento->tipo!=MMAP)
-		return -1; // Se fue de limite o no existe tal segmento
-	else if(ptr_mapped_file){
+	if(direccion + length > limite_segmento(ptr_segmento))
+	     raise(SIGSEGV);
+	if(!ptr_segmento || ptr_segmento->tipo!=MMAP)
+		raise(SIGABRT);
+
+	if(ptr_mapped_file){
 		int nro_pag = div(direccion-ptr_segmento->base_logica,TAM_PAG).quot;
 		int offset_pag = div(direccion-ptr_segmento->base_logica,TAM_PAG).rem;
 		size_t bytes_sincronizados = 0;
@@ -303,8 +305,9 @@ int muse_sync(t_proceso* proceso,uint32_t direccion, size_t length){
 			bytes_sincronizados+=bytes_a_copiar;
 			offset_pag=0; // Si la primera vez esta parado en el medio o casi al final y se puede, se posiciona ahi, despues ya no
 		}
-	}
-	return 0;
+		return 0;
+	}else
+		return -1;
 }
 
 int muse_unmap(t_proceso *proceso,uint32_t direccion){
@@ -338,7 +341,7 @@ int muse_cpy(t_proceso* proceso, t_list* paqueteRecibido) {
 
 	if (!ptr_segmento || (direccion_pedida + cantidad_de_bytes)> limite_segmento(ptr_segmento)) {
 		free(buffer_a_copiar);
-		return -1; //ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO.
+		raise(SIGSEGV);//ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO.
 		//O SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
 	}
 
