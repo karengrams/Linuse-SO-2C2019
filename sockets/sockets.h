@@ -27,11 +27,16 @@
 
 #define ERROR -1;
 
+
+typedef struct sockaddr_in SA_IN;
+typedef struct sockaddr SA;
+
+
 int esperar_cliente(int);
 int recibir_operacion(int);
 void* recibir_buffer(int*, int);
 t_list* recibir_paquete(int);
-int iniciar_socket(char*, char*);
+int iniciar_socket(char*,char*);
 
 // Siguen sirviendo las de abajo? No lo se. Lo veremos en el proximo cap
 void ipCliente(int, char*);

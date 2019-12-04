@@ -6,7 +6,7 @@ int main(){
 	void* cosas = malloc(50);
 	void* recibir = malloc(265);
 	int id = getpid();
-	muse_init(id, "127.0.0.1",9163);
+	muse_init(id, "127.0.0.1",9165);
 	uint32_t my_memory = muse_alloc(35);
 	uint32_t my_other_memory = muse_alloc(5);
 	uint32_t my_other_other_memory = muse_alloc(50);

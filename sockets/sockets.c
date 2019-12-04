@@ -9,9 +9,7 @@
 int esperar_cliente(int socket_servidor){
 	struct sockaddr_in dir_cliente;
 	int tam_direccion = sizeof(struct sockaddr_in);
-
 	int socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion);
-
 	return socket_cliente;
 }
 
@@ -55,8 +53,17 @@ t_list* recibir_paquete(int socket_cliente){
 	return NULL;
 }
 
-int iniciar_socket(char* ip, char* puerto){
-	int socket_servidor;
+int iniciar_socket(char* ip, char* port){
+	int server_socket;
+//	SA_IN server_addr;
+//
+//	server_socket = socket(AF_INET,SOCK_STREAM,0);
+//	server_addr.sin_family=AF_INET;
+//	server_addr.sin_addr.s_addr=INADDR_ANY;
+//	server_addr.sin_port=htons(port);
+//
+//	bind(server_socket,(SA*)&server_addr,sizeof(server_addr));
+//	listen(server_socket,SOMAXCONN);
 
     struct addrinfo hints, *servinfo, *p;
 
@@ -65,25 +72,25 @@ int iniciar_socket(char* ip, char* puerto){
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
 
-    getaddrinfo(ip, puerto, &hints, &servinfo);
+    getaddrinfo(ip, port, &hints, &servinfo);
 
     for (p=servinfo; p != NULL; p = p->ai_next)
     {
-        if ((socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1)
+        if ((server_socket = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1)
             continue;
 
-        if (bind(socket_servidor, p->ai_addr, p->ai_addrlen) == -1) {
-            close(socket_servidor);
+        if (bind(server_socket, p->ai_addr, p->ai_addrlen) == -1){
+            close(server_socket);
             continue;
         }
         break;
     }
 
-	listen(socket_servidor, SOMAXCONN);
+	listen(server_socket, SOMAXCONN);
 
     freeaddrinfo(servinfo);
 
-    return socket_servidor;
+    return server_socket;
 }
 
 

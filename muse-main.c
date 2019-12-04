@@ -20,7 +20,7 @@ void atender_cliente(void *element){
 	while(1){
 
     	int cod_op = recibir_operacion(socketCli);
-
+    	printf("Se ha solicitado la operacion nro. %d por el socket %d\n",cod_op,socketCli);
     	if(cod_op!=DESCONEXION){
     		paqueteRecibido = recibir_paquete(socketCli);
     		cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
@@ -32,6 +32,7 @@ void atender_cliente(void *element){
     		break;
     		case MUSE_CLOSE:
     			museclose(cliente_a_atender);
+    			//close(socketCli);
     		break;
     		case MUSE_ALLOC:
     			direccion = musealloc(cliente_a_atender, *((int*)list_get(paqueteRecibido,1)));
@@ -104,14 +105,19 @@ int main(void) {
 	inicializar_bitmap_swap(leer_del_config("SWAP_SIZE",config),TAM_PAG);
 	inicializar_memoria_virtual(leer_del_config("SWAP_SIZE",config));
 
-	int server_socket,client_socket;
-	pthread_t hilo_de_atencion;
+	signal(SIGINT,liberacion_de_recursos);
 
-	server_socket=iniciar_socket("127.0.0.1",config_get_string_value(config,"LISTER_PORT"));
+
+	int server_socket,client_socket,addr_size;
+	pthread_t hilo_de_atencion;
+	SA_IN client_addr;
+
+	server_socket=iniciar_socket("127.0.0.1",config_get_string_value(config,"LISTEN_PORT"));
 
 	while(true){
 		printf("Waiting for connections...\n");
 		client_socket=esperar_cliente(server_socket);
+//		client_socket=(server_socket,(SA*)&client_addr,(socklen_t*)&addr_size);
 		printf("Connected!\n");
 		pthread_create(&hilo_de_atencion, NULL, &atender_cliente, &client_socket);
 

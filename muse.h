@@ -32,7 +32,6 @@
 
 t_list* PROCESS_TABLE;
 t_list* MAPPED_FILES;
-
 t_config* config;
 
 void inicializar_tabla_procesos();
@@ -43,7 +42,7 @@ void liberacion_de_recursos(int);
 int leer_del_config(char*, t_config*);
 int museinit(t_proceso*, char*, int);
 void museclose(t_proceso*);
-uint32_t museAlloc(t_proceso*, int);
+uint32_t musealloc(t_proceso*, int);
 void musefree(t_proceso *, uint32_t);
 void* museget(t_proceso*, t_list*);
 int musecpy(t_proceso* , t_list*);

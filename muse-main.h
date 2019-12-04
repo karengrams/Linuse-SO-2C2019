@@ -11,6 +11,7 @@
 #include "sockets/sockets.h"
 #include "virtual-memory/virtual-memory.h"
 #include "structures.h"
+#include <signal.h>
 #include <sys/socket.h>
 #include <stdbool.h>
 #include <pthread.h>
