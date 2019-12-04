@@ -29,6 +29,12 @@
 
 #define ERROR -1;
 
+int esperar_cliente(int);
+int recibir_operacion(int);
+void* recibir_buffer(int*, int);
+t_list* recibir_paquete(int);
+int iniciar_socket(char*, char*);
+// Siguen sirviendo las de abajo? No lo se. Lo veremos en el proximo cap
 void ipCliente(int, char*);
 int crear_conexion(char *, char*);
 void crear_buffer(t_paquete*);
@@ -37,14 +43,10 @@ void agregar_a_paquete(t_paquete*, void*, int);
 void* serializar_paquete(t_paquete* , int);
 void enviar_paquete(t_paquete*, int);
 void eliminar_paquete(t_paquete*);
-int iniciar_socket_escucha(char*, char*);
-int recibir_operacion(int);
-void* recibir_buffer(int*, int);
-t_list* recibir_paquete(int);
 t_proceso* crear_proceso(int, char*);
 t_proceso* buscar_proceso(t_list*, char*);
 void liberar_proceso(t_proceso*);
 void admitir_nuevo_cliente(fd_set*, int*, int);
-void atender_cliente(fd_set*, int);
+void atender_cliente(void*);
 
 #endif /* SOCKETS_SOCKETS_H_ */

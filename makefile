@@ -4,7 +4,7 @@ HEADER	= muse.h segmentacion/segmentacion.h paginacion/paginacion.h paginacion/f
 OUT	= muse
 CC	 = gcc
 FLAGS	 = -g -c -Wall
-LFLAGS	 = -lcommons -lm
+LFLAGS	 = -lcommons -lm -lpthread
 
 all: $(OBJS)
 	$(CC) -g $(OBJS) -o $(OUT) $(LFLAGS)

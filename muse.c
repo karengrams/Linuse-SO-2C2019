@@ -1,5 +1,7 @@
 #include "muse.h"
+
 #define ERROR -1;
+
 
 int main(void) {
 	config = leer_config();
@@ -13,35 +15,49 @@ int main(void) {
 	inicializar_bitmap_swap(leer_del_config("SWAP_SIZE",config),TAM_PAG);
 	inicializar_memoria_virtual(leer_del_config("SWAP_SIZE",config));
 
-//	Arranca a atender clientes
-	fd_set master;
-	fd_set read_fds;
-	int fdmax;
-	FD_ZERO(&master);
-	FD_ZERO(&read_fds);
-	int socketEs = iniciar_socket_escucha("127.0.0.1",config_get_string_value(config, "LISTEN_PORT"));
+	int server_socket,client_socket;
+	pthread_t hilo_de_atencion;
 
-	FD_SET(socketEs, &master);
-	fdmax = socketEs;
+	server_socket=iniciar_socket("127.0.0.1",config_get_string_value(config,"LISTER_PORT"));
 
-	signal(SIGINT,liberacion_de_recursos);
+	while(true){
+		printf("Waiting for connections...\n");
+		client_socket=esperar_cliente(server_socket);
+		printf("Connected!\n");
+		pthread_create(&hilo_de_atencion, NULL, &atender_cliente, &client_socket);
 
-
-	while (1) {
-
-		read_fds = master;
-		select(fdmax + 1, &read_fds, NULL, NULL, NULL); // @suppress("Symbol is not resolved")
-
-		for (int i = 0; i <= fdmax; i++) {
-			if (FD_ISSET(i, &read_fds)) {
-				if (i == socketEs) {
-					admitir_nuevo_cliente(&master, &fdmax, i);
-				} else {
-					atender_cliente(&master, i);
-				}
-			}
-		}
 	}
+
+//	Comunicacion con select
+//	Arranca a atender clientes
+//	fd_set master;
+//	fd_set read_fds;
+//	int fdmax;
+//	FD_ZERO(&master);
+//	FD_ZERO(&read_fds);
+//	int socketEs = iniciar_socket("127.0.0.1",config_get_string_value(config, "LISTEN_PORT"));
+//
+//	FD_SET(socketEs, &master);
+//	fdmax = socketEs;
+//
+//	signal(SIGINT,liberacion_de_recursos);
+//
+//
+//	while (1) {
+//
+//		read_fds = master;
+//		select(fdmax + 1, &read_fds, NULL, NULL, NULL); // @suppress("Symbol is not resolved")
+//
+//		for (int i = 0; i <= fdmax; i++) {
+//			if (FD_ISSET(i, &read_fds)) {
+//				if (i == socketEs) {
+//					admitir_nuevo_cliente(&master, &fdmax, i);
+//				} else {
+//					atender_cliente(&master, i);
+//				}
+//			}
+//		}
+//	}
 	return 0;
 }
 

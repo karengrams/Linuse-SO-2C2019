@@ -6,6 +6,88 @@
  */
 #include "sockets.h"
 
+int esperar_cliente(int socket_servidor){
+	struct sockaddr_in dir_cliente;
+	int tam_direccion = sizeof(struct sockaddr_in);
+
+	int socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion);
+
+	return socket_cliente;
+}
+
+int recibir_operacion(int socket_cliente){
+	int cod_op;
+	if(recv(socket_cliente, &cod_op, sizeof(int), MSG_WAITALL) != 0)
+		return cod_op;
+	else{
+		close(socket_cliente);
+		return -1;
+	}
+}
+
+void* recibir_buffer(int* size, int socket_cliente){
+	void * buffer;
+	recv(socket_cliente, size, sizeof(int), MSG_WAITALL);
+	buffer = malloc(*size);
+	recv(socket_cliente, buffer, *size, MSG_WAITALL);
+	return buffer;
+}
+
+t_list* recibir_paquete(int socket_cliente){
+	int size;
+	int desplazamiento = 0;
+	void * buffer;
+	t_list* valores = list_create();
+	int tamanio;
+
+	buffer = recibir_buffer(&size, socket_cliente);
+	while(desplazamiento < size)
+	{
+		memcpy(&tamanio, buffer + desplazamiento, sizeof(int));
+		desplazamiento+=sizeof(int);
+		char* valor = malloc(tamanio);
+		memcpy(valor, buffer+desplazamiento, tamanio);
+		desplazamiento+=tamanio;
+		list_add(valores, valor);
+	}
+	free(buffer);
+	return valores;
+	return NULL;
+}
+
+int iniciar_socket(char* ip, char* puerto){
+	int socket_servidor;
+
+    struct addrinfo hints, *servinfo, *p;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+
+    getaddrinfo(ip, puerto, &hints, &servinfo);
+
+    for (p=servinfo; p != NULL; p = p->ai_next)
+    {
+        if ((socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1)
+            continue;
+
+        if (bind(socket_servidor, p->ai_addr, p->ai_addrlen) == -1) {
+            close(socket_servidor);
+            continue;
+        }
+        break;
+    }
+
+	listen(socket_servidor, SOMAXCONN);
+
+    freeaddrinfo(servinfo);
+
+    return socket_servidor;
+}
+
+
+
 void ipCliente(int socketCli, char* ipCli){
 		struct sockaddr_in addr;
 		socklen_t addr_size = sizeof(struct sockaddr_in);
@@ -88,76 +170,6 @@ void eliminar_paquete(t_paquete* paquete){
 	free(paquete);
 }
 
-int iniciar_socket_escucha(char* ip, char* puerto){
-	int socket_servidor;
-
-    struct addrinfo hints, *servinfo, *p;
-
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
-
-    getaddrinfo(ip, puerto, &hints, &servinfo);
-
-    for (p=servinfo; p != NULL; p = p->ai_next)
-    {
-        if ((socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1)
-            continue;
-
-        if (bind(socket_servidor, p->ai_addr, p->ai_addrlen) == -1) {
-            close(socket_servidor);
-            continue;
-        }
-        break;
-    }
-
-	listen(socket_servidor, SOMAXCONN);
-
-    freeaddrinfo(servinfo);
-
-    return socket_servidor;
-}
-
-int recibir_operacion(int socket_cliente){
-	int cod_op;
-	int error = recv(socket_cliente, &cod_op, sizeof(int), MSG_WAITALL);
-
-	if(error == 0)
-			return error;
-
-	return cod_op;
-	}
-
-void* recibir_buffer(int* size, int socket_cliente){
-	void * buffer;
-
-	recv(socket_cliente, size, sizeof(int), MSG_WAITALL);
-	buffer = malloc(*size);
-	recv(socket_cliente, buffer, *size, MSG_WAITALL);
-	return buffer;
-}
-
-t_list* recibir_paquete(int socket_cliente){
-	int size;
-	int desplazamiento = 0;
-	void * buffer;
-	t_list* valores = list_create();
-	int tamanio;
-
-	buffer = recibir_buffer(&size, socket_cliente);
-	while(desplazamiento < size){
-		memcpy(&tamanio, buffer + desplazamiento, sizeof(int));
-		desplazamiento+=sizeof(int);
-		char* valor = (char*)malloc(tamanio);
-		memcpy(valor, buffer+desplazamiento, tamanio);
-		desplazamiento+=tamanio;
-		list_add(valores, valor);
-	}
-	free(buffer);
-	return valores;
-}
-
 t_proceso* crear_proceso(int id, char* ip){
 	t_proceso* proceso = (t_proceso*)malloc(sizeof(t_proceso));
 	proceso->id = id;
@@ -187,7 +199,7 @@ void admitir_nuevo_cliente(fd_set *master, int* fdmax, int socketEs){
              printf("Nuevo cliente de la ip %s en el socket %d\n", inet_ntoa(remoteaddr.sin_addr), newfd);
 }
 
-void atender_cliente(fd_set* master, int socketCli){
+void atender_cliente(void *element){
 	t_paquete* paquete_respuesta = NULL;
 	int cod_error;
 	int id_cliente, cantidad_de_bytes, flags;
@@ -196,75 +208,76 @@ void atender_cliente(fd_set* master, int socketCli){
 	uint32_t direccion_pedida, direccion;
 	t_list* paqueteRecibido = NULL;
 	char* ipCli = (char*)malloc(sizeof(char)*20);
+	int socketCli = *((int*)element);
 	ipCliente(socketCli, ipCli);
+	while(1){
 
-	int cod_op = recibir_operacion(socketCli);
-	printf("Codigo operacion %d\n", cod_op);
+    	int cod_op = recibir_operacion(socketCli);
 
-	if(cod_op!=DESCONEXION){
-		paqueteRecibido = recibir_paquete(socketCli);
-		cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
-		switch(cod_op){
-		case MUSE_INIT:
-			id_cliente = *((int*)list_get(paqueteRecibido, 0));
-			cod_error = museinit(cliente_a_atender, ipCli, id_cliente);
-			send(socketCli, &cod_error, sizeof(int), 0);
-		break;
-		case MUSE_CLOSE:
-			museclose(cliente_a_atender);
-			FD_CLR(socketCli, master);
-			close(socketCli);
-		break;
-		case MUSE_ALLOC:
-			direccion = musealloc(cliente_a_atender, *((int*)list_get(paqueteRecibido,1)));
-			send(socketCli, &direccion, sizeof(uint32_t), 0);
-		break;
-		case MUSE_FREE:
-			id_cliente = *((int*)list_get(paqueteRecibido, 0));
-			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
-			musefree(cliente_a_atender,direccion_pedida);
-		break;
-		case MUSE_GET: // TODO: ver caso de que se pase del limite
-			cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
-			buffer = museget(cliente_a_atender, paqueteRecibido);
-			if (buffer == NULL){
-				cod_error = -1;
-				send(socketCli, &cod_error, sizeof(int), 0);
-			} else {
-				paquete_respuesta = crear_paquete(10);
-				agregar_a_paquete(paquete_respuesta, buffer, cantidad_de_bytes);
-				enviar_paquete(paquete_respuesta, socketCli);
-				eliminar_paquete(paquete_respuesta);
-			}
-		break;
-		case MUSE_CPY:
-				cod_error = musecpy(cliente_a_atender, paqueteRecibido);
-				send(socketCli, &cod_error, sizeof(int), 0);
-		break;
-		case MUSE_MAP:
-			id_cliente = *((int*)list_get(paqueteRecibido, 0));
-			buffer = (char*)malloc(sizeof((char*)list_get(paqueteRecibido,1)));
-			strcpy(buffer, (char*)list_get(paqueteRecibido,1));
-			cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 2)); //este seria el length a mappear
-			flags = *((int*)list_get(paqueteRecibido, 3));
-			direccion = musemap(cliente_a_atender,buffer,cantidad_de_bytes,flags);
-			send(socketCli, &direccion, sizeof(uint32_t), 0);
-		break;
-		case MUSE_SYNC:
-			id_cliente = *((int*)list_get(paqueteRecibido, 0));
-			cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1)); //cantidad de bytes a guardar en el archivo
-			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 2)); //direccion a partir de la cual hacer el sync
-			musesync(cliente_a_atender,direccion_pedida,(size_t)cantidad_de_bytes);
+    	if(cod_op!=DESCONEXION){
+    		paqueteRecibido = recibir_paquete(socketCli);
+    		cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
+    		switch(cod_op){
+    		case MUSE_INIT:
+    			id_cliente = *((int*)list_get(paqueteRecibido, 0));
+    			cod_error = museinit(cliente_a_atender, ipCli, id_cliente);
+    			send(socketCli, &cod_error, sizeof(int), 0);
+    		break;
+    		case MUSE_CLOSE:
+    			museclose(cliente_a_atender);
+    		break;
+    		case MUSE_ALLOC:
+    			direccion = musealloc(cliente_a_atender, *((int*)list_get(paqueteRecibido,1)));
+    			send(socketCli, &direccion, sizeof(uint32_t), 0);
+    		break;
+    		case MUSE_FREE:
+    			id_cliente = *((int*)list_get(paqueteRecibido, 0));
+    			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
+    			musefree(cliente_a_atender,direccion_pedida);
+    		break;
+    		case MUSE_GET: // TODO: ver caso de que se pase del limite
+    			cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
+    			buffer = museget(cliente_a_atender, paqueteRecibido);
+    			if (buffer == NULL){
+    				cod_error = -1;
+    				send(socketCli, &cod_error, sizeof(int), 0);
+    			} else {
+    				paquete_respuesta = crear_paquete(10);
+    				agregar_a_paquete(paquete_respuesta, buffer, cantidad_de_bytes);
+    				enviar_paquete(paquete_respuesta, socketCli);
+    				eliminar_paquete(paquete_respuesta);
+    			}
+    		break;
+    		case MUSE_CPY:
+    				cod_error = musecpy(cliente_a_atender, paqueteRecibido);
+    				send(socketCli, &cod_error, sizeof(int), 0);
+    		break;
+    		case MUSE_MAP:
+    			id_cliente = *((int*)list_get(paqueteRecibido, 0));
+    			buffer = (char*)malloc(sizeof((char*)list_get(paqueteRecibido,1)));
+    			strcpy(buffer, (char*)list_get(paqueteRecibido,1));
+    			cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 2)); //este seria el length a mappear
+    			flags = *((int*)list_get(paqueteRecibido, 3));
+    			direccion = musemap(cliente_a_atender,buffer,cantidad_de_bytes,flags);
+    			send(socketCli, &direccion, sizeof(uint32_t), 0);
+    		break;
+    		case MUSE_SYNC:
+    			id_cliente = *((int*)list_get(paqueteRecibido, 0));
+    			cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1)); //cantidad de bytes a guardar en el archivo
+    			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 2)); //direccion a partir de la cual hacer el sync
+    			musesync(cliente_a_atender,direccion_pedida,(size_t)cantidad_de_bytes);
 
-			send(socketCli, &cod_error, sizeof(int), 0);
-		break;
-		case MUSE_UNMAP:
-			id_cliente = *((int*)list_get(paqueteRecibido, 0));
-			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
-			museunmap(cliente_a_atender,direccion_pedida);
-			send(socketCli, &cod_error, sizeof(int), 0);
-		break;
-		}
+    			send(socketCli, &cod_error, sizeof(int), 0);
+    		break;
+    		case MUSE_UNMAP:
+    			id_cliente = *((int*)list_get(paqueteRecibido, 0));
+    			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
+    			museunmap(cliente_a_atender,direccion_pedida);
+    			send(socketCli, &cod_error, sizeof(int), 0);
+    		break;
+    		}
+    	}
+
 	}
 	free(ipCli);
 	free(buffer);
