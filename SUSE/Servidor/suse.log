@@ -1,0 +1,28 @@
+[INFO] 19:41:05:103 suse.c/(6780:6780): Valor del semaforo A: 0
+
+[INFO] 19:41:05:105 suse.c/(6780:6780): Valor del semaforo B: 1
+
+[INFO] 19:43:54:756 suse.c/(6943:6943): Timer log 
+
+[INFO] 19:43:54:757 suse.c/(6943:6943): Grado actual de multiprogramacion: 0
+
+[INFO] 19:43:54:757 suse.c/(6943:6943): Valor del semaforo A: 0
+
+[INFO] 19:43:54:757 suse.c/(6943:6943): Valor del semaforo B: 1
+
+[INFO] 19:43:59:756 suse.c/(6943:6943): Timer log 
+
+[INFO] 19:43:59:757 suse.c/(6943:6943): Grado actual de multiprogramacion: 0
+
+[INFO] 19:43:59:757 suse.c/(6943:6943): Valor del semaforo A: 0
+
+[INFO] 19:43:59:757 suse.c/(6943:6943): Valor del semaforo B: 1
+
+[INFO] 19:44:04:756 suse.c/(6943:6943): Timer log 
+
+[INFO] 19:44:04:757 suse.c/(6943:6943): Grado actual de multiprogramacion: 0
+
+[INFO] 19:44:04:757 suse.c/(6943:6943): Valor del semaforo A: 0
+
+[INFO] 19:44:04:757 suse.c/(6943:6943): Valor del semaforo B: 1
+

@@ -166,14 +166,14 @@ void loggear_procesos(void){
 			t_thread* hilo = (t_thread*)elem;
 			int tiempoEjecucion = time(0)-hilo->tiempo_creacion;
 			log_info(LOG, "Hilo %d: \ntiempo de ejecucion: %d \ntiempo de espera: %d \ntiempo de uso de CPU: %f \nporcentaje "
-								"tiempo de ejecucion: %d\n", hilo->tid , tiempoEjecucion , hilo->tiempo_total_en_ready, hilo->tiempo_total_en_exec, tiempoEjecucion/semilla);
+			"tiempo de ejecucion: %d\n", hilo->tid , tiempoEjecucion*1000 , (hilo->tiempo_total_en_ready)*1000, (hilo->tiempo_total_en_exec)*1000, tiempoEjecucion/semilla);
 		}
 		void loggear_blockeds(void* elem){
 					t_blocked* block = (t_blocked*)elem;
 					t_thread* hilo = block->thread;
 					int tiempoEjecucion = time(0)-hilo->tiempo_creacion;
 					log_info(LOG, "Hilo %d: \ntiempo de ejecucion: %d \ntiempo de espera: %d \ntiempo de uso de CPU: %f \nporcentaje "
-										"tiempo de ejecucion: %d\n", hilo->tid , tiempoEjecucion , hilo->tiempo_total_en_ready, hilo->tiempo_total_en_exec, tiempoEjecucion/semilla);
+					"tiempo de ejecucion: %d\n", hilo->tid , tiempoEjecucion*1000 , (hilo->tiempo_total_en_ready)*1000, (hilo->tiempo_total_en_exec)*1000, tiempoEjecucion/semilla);
 				}
 
 
@@ -186,7 +186,7 @@ void loggear_procesos(void){
 			t_thread* hilo = execute->thread;
 			int tiempoEjecucion = time(0)-hilo->tiempo_creacion;
 			log_info(LOG, "Hilo %d: \ntiempo de ejecucion: %d \ntiempo de espera: %d \ntiempo de uso de CPU: %f \nporcentaje "
-			"tiempo de ejecucion: %d\n", hilo->tid , tiempoEjecucion , hilo->tiempo_total_en_ready, hilo->tiempo_total_en_exec, tiempoEjecucion/semilla);
+			"tiempo de ejecucion: %d\n", hilo->tid , tiempoEjecucion*1000 , (hilo->tiempo_total_en_ready)*1000, (hilo->tiempo_total_en_exec)*1000, tiempoEjecucion/semilla);
 			}
 	}
 }
@@ -540,7 +540,7 @@ int main(){
 	//INICIAMOS VARIABLES GLOBALES
 	CONFIG = config_create("suse.config");
 
-	LOG = log_create("suse.log", "SUSE", true, LOG_LEVEL_INFO);
+	LOG = log_create("suse.log", "suse.c", true, LOG_LEVEL_INFO);
 
 
 	colaNEW = list_create();
@@ -557,17 +557,14 @@ int main(){
 	signal(SIGALRM, &escribirLog);
 	struct itimerval intervalo;
 	struct timeval tiempoInicial;
-	struct timeval inter;
+
 
 	tiempoInicial.tv_sec = timerLog();
 	tiempoInicial.tv_usec = 0;
 
-	inter.tv_sec = timerLog();
-	inter.tv_usec = 0;
-
 	intervalo.it_value = tiempoInicial;
-	intervalo.it_interval = inter;
-
+	intervalo.it_interval = tiempoInicial;
+	setitimer(ITIMER_REAL, &intervalo, NULL);
 
 	//CREAMOS HILOS DE PLANIF Y ATENCION
 	pthread_t hiloAtencion, hiloPlanif;
