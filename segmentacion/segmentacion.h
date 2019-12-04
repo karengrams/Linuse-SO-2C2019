@@ -67,4 +67,5 @@ segment* crear_segmento_map(int,t_list*);
 void recalcular_bases_logicas_de_segmentos(t_list *);
 void liberar_recursos_del_segmento(segment*);
 void liberar_tabla_de_segmentos(t_list*);
+void eliminar_segmento_de_tabla(t_list*,segment*);
 #endif /* muse-segmentacion_h */

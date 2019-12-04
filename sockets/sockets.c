@@ -211,9 +211,7 @@ void atender_cliente(fd_set* master, int socketCli){
 			send(socketCli, &cod_error, sizeof(int), 0);
 		break;
 		case MUSE_CLOSE:
-//			mostrar_tabla_de_segmentos(cliente_a_atender->tablaDeSegmentos);
-//			mostrar_segmentos(cliente_a_atender->tablaDeSegmentos);
-//			liberar_proceso(cliente_a_atender);
+			muse_close(cliente_a_atender);
 			FD_CLR(socketCli, master);
 			close(socketCli);
 		break;
@@ -224,7 +222,7 @@ void atender_cliente(fd_set* master, int socketCli){
 		case MUSE_FREE:
 			id_cliente = *((int*)list_get(paqueteRecibido, 0));
 			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
-				//TODO: Magia de SEGMENTACION PAGINADA
+			muse_free(cliente_a_atender,direccion_pedida);
 		break;
 		case MUSE_GET: // TODO: ver caso de que se pase del limite
 			cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));

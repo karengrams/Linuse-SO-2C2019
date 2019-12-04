@@ -60,7 +60,6 @@ void liberacion_de_recursos(void*mem, t_config *config){
 int muse_init(t_proceso* cliente_a_atender, char* ipCliente, int id){
 	if (cliente_a_atender != NULL) {
 		return ERROR; //YA EXISTE EN NUESTRA TABLA ERROR
-
 	} else {
 		t_proceso* procesoNuevo = crear_proceso(id, ipCliente);
 		list_add(PROCESS_TABLE, procesoNuevo); //Si no existe lo creamos y agregamos
@@ -92,7 +91,6 @@ uint32_t muse_alloc(t_proceso* proceso,int tam){
 			ptr_segmento=crear_segmento(HEAP,tam+sizeof(heapmetadata),tabla_de_segmento);
 
 	}
-
 	offset = obtener_offset_para_tam(ptr_segmento,tam);
 
 	segmentheapmetadata *paux_seg_metadata_ocupado=buscar_metadata_de_segmento_segun(offset,ptr_segmento);
@@ -122,18 +120,41 @@ uint32_t muse_alloc(t_proceso* proceso,int tam){
 
 void muse_free(t_proceso *proceso, uint32_t direccion) {
 	segment *ptr_segmento = buscar_segmento_dada_una_direccion(direccion,proceso->tablaDeSegmentos);
-	if(ptr_segmento->tipo==HEAP){
+	if(ptr_segmento && ptr_segmento->tipo==HEAP){
 		segmentheapmetadata *ptr_seg_metadata = buscar_metadata_para_liberar(direccion - ptr_segmento->base_logica, ptr_segmento);
 		if (ptr_seg_metadata) {
-
 			proceso->totalMemoriaLiberada =+ ptr_seg_metadata->metadata->bytes; //sumo la cant de bytes liberados
-
 			heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
 			ptr_metadata->ocupado = false;
 			buddy_system(ptr_seg_metadata, ptr_segmento->metadatas);
 			escribir_metadata_en_frame(ptr_segmento, ptr_seg_metadata);
 		}
+
+		segmentheapmetadata *ptr_ultimo_seg_metadata = (segmentheapmetadata*)list_get(ptr_segmento->metadatas,ptr_segmento->metadatas->elements_count-1);
+		heapmetadata *ptr_ultimo_metadata = (heapmetadata*)ptr_ultimo_seg_metadata->metadata;
+		if(ptr_ultimo_seg_metadata->metadata->bytes>TAM_PAG){
+			int cantidad_extra_de_memoria_en_pags = floor(ptr_ultimo_seg_metadata->metadata->bytes/TAM_PAG);
+
+				for(int i=1;i<=cantidad_extra_de_memoria_en_pags;i++){
+				void _liberar_pagina(void*element){
+					page*ptr_pagina = (page*)element;
+					free(ptr_pagina);
+				}
+
+				list_remove_and_destroy_element(ptr_segmento->tabla_de_paginas,ptr_segmento->tabla_de_paginas->elements_count-i,_liberar_pagina);
+			}
+
+			ptr_ultimo_metadata->bytes-=(cantidad_extra_de_memoria_en_pags*TAM_PAG);
+
+		}
+		if(ptr_segmento->tabla_de_paginas->elements_count==1 && ptr_segmento->metadatas->elements_count==1){
+			eliminar_segmento_de_tabla(proceso->tablaDeSegmentos,ptr_segmento);
+		}
+		printf("Tabla de segmentos del proceso:\n");
+		mostrar_segmentos(proceso->tablaDeSegmentos);
 	}
+	else
+		raise(SIGABRT);
 
 	// CUando es la ultima pagina que esta vacia completamente, hay que fijarse de eliminarla
 
@@ -148,7 +169,7 @@ void* muse_get(t_proceso* proceso, t_list* paqueteRecibido){
 
     if (!ptr_segmento || (direccion + cantidadDeBytes) > limite_segmento(ptr_segmento)) {
       free(buffer);
-      return NULL; //ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO O SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
+      raise(SIGSEGV); //ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO O SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
     }
 
 	int numeroPagina = numero_pagina(ptr_segmento, direccion);

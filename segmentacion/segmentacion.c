@@ -200,28 +200,22 @@ void expandir_segmento(segment *segmento,int tam){
 		paux_metadata->bytes+=cant_pag*TAM_PAG;
 }
 
-bool metadatas_fusionables(segmentheapmetadata *paux_seg_metadata, segmentheapmetadata *ptr_seg_metadata) {
-	heapmetadata *paux_metadata = paux_seg_metadata->metadata;
+bool metadatas_fusionables(segmentheapmetadata *otro_ptr_seg_metadata, segmentheapmetadata *ptr_seg_metadata) {
+	heapmetadata *otro_ptr_metadata = otro_ptr_seg_metadata->metadata;
 	heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
-	if (ptr_seg_metadata->posicion_inicial + ptr_metadata->bytes
-			+ sizeof(heapmetadata) == paux_seg_metadata->posicion_inicial
-			&& !paux_metadata->ocupado)
+	if (otro_ptr_seg_metadata->posicion_inicial + otro_ptr_metadata->bytes+ sizeof(heapmetadata) == ptr_seg_metadata->posicion_inicial && !otro_ptr_metadata->ocupado)
 		return true;
-	if (paux_seg_metadata->posicion_inicial
-			== ptr_seg_metadata->posicion_inicial
-					- paux_seg_metadata->metadata->bytes
-			&& !paux_metadata->ocupado)
+	if (otro_ptr_seg_metadata->posicion_inicial == ptr_seg_metadata->posicion_inicial + sizeof(heapmetadata) +  ptr_metadata->bytes && !otro_ptr_metadata->ocupado)
 		return true;
 	return false;
 }
 
-segmentheapmetadata* buscar_metadata_para_anidar(t_list *metadatas,
-		segmentheapmetadata *ptr_seg_metadata) {
+segmentheapmetadata* buscar_metadata_para_anidar(t_list *metadatas,segmentheapmetadata *ptr_seg_metadata) {
 	heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
 
 	bool _buddy_system_metadatas(void *element) {
-		segmentheapmetadata *paux_seg_metadata = (segmentheapmetadata*) element;
-		if (metadatas_fusionables(paux_seg_metadata, ptr_seg_metadata))
+		segmentheapmetadata *otro_ptr_seg_metadata = (segmentheapmetadata*) element;
+		if (metadatas_fusionables(otro_ptr_seg_metadata, ptr_seg_metadata))
 			return true;
 		return false;
 	}
@@ -229,9 +223,8 @@ segmentheapmetadata* buscar_metadata_para_anidar(t_list *metadatas,
 	return list_find(metadatas, _buddy_system_metadatas);
 }
 
-int index_del_segment_metadata(segmentheapmetadata *ptr_seg_metadata,
-		t_list *metadatas) {
-	segment *ptr_seg_metadata_comparador;
+int index_del_segment_metadata(segmentheapmetadata *ptr_seg_metadata,t_list *metadatas) {
+	segmentheapmetadata *ptr_seg_metadata_comparador;
 	for (int index = 0; index < metadatas->elements_count; index++) {
 		ptr_seg_metadata_comparador = list_get(metadatas, index);
 		if (!memcmp(ptr_seg_metadata, ptr_seg_metadata_comparador,
@@ -244,14 +237,16 @@ int index_del_segment_metadata(segmentheapmetadata *ptr_seg_metadata,
 
 void buddy_system(segmentheapmetadata *ptr_seg_metadata, t_list *metadatas) {
 	heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
-	segmentheapmetadata *ptr_seg_metadata_libre = buscar_metadata_para_anidar(
-			metadatas, ptr_seg_metadata);
-	if (ptr_seg_metadata_libre) {
+	while(buscar_metadata_para_anidar(metadatas, ptr_seg_metadata)){
+		segmentheapmetadata *ptr_seg_metadata_libre = buscar_metadata_para_anidar(metadatas, ptr_seg_metadata);
 		heapmetadata *ptr_metadata_libre = ptr_seg_metadata_libre->metadata;
-		ptr_metadata->bytes += ptr_metadata_libre->bytes;
+		ptr_metadata->bytes += ptr_metadata_libre->bytes+sizeof(heapmetadata);
+		if(ptr_seg_metadata_libre->posicion_inicial<ptr_seg_metadata->posicion_inicial){
+			ptr_seg_metadata->posicion_inicial=ptr_seg_metadata_libre->posicion_inicial;
+		}
+		list_remove(metadatas, index_del_segment_metadata(ptr_seg_metadata_libre, metadatas));
 		free(ptr_metadata_libre);
-		list_remove(metadatas,
-				index_del_segment_metadata(ptr_seg_metadata_libre, metadatas));
+
 	}
 }
 
@@ -401,4 +396,22 @@ void liberar_tabla_de_segmentos(t_list* tabla_de_segmentos){
 	}
 
 	list_destroy_and_destroy_elements(tabla_de_segmentos,&_liberar_segmento);
+}
+
+void eliminar_segmento_de_tabla(t_list*tabla_de_segmentos,segment*segmento){
+	int index = 0;
+	void _liberar_recursos_del_segmento(void *element){
+		segment *segmento = (segment*)element;
+		liberar_recursos_del_segmento(segmento);
+	}
+	list_remove_and_destroy_element(tabla_de_segmentos,segmento->nro_segmento,_liberar_recursos_del_segmento);
+
+	void _recalcular_nro_de_segmentos(void*element){
+		segment *otro_segmento = (segment*)element;
+		otro_segmento->nro_segmento=index;
+		index++;
+	}
+
+	list_iterate(tabla_de_segmentos,_recalcular_nro_de_segmentos);
+
 }
