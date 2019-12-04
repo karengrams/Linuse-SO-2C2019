@@ -211,7 +211,6 @@ bool metadatas_fusionables(segmentheapmetadata *otro_ptr_seg_metadata, segmenthe
 }
 
 segmentheapmetadata* buscar_metadata_para_anidar(t_list *metadatas,segmentheapmetadata *ptr_seg_metadata) {
-	heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
 
 	bool _buddy_system_metadatas(void *element) {
 		segmentheapmetadata *otro_ptr_seg_metadata = (segmentheapmetadata*) element;
@@ -318,7 +317,7 @@ bool direccion_pisa_alguna_metadata(segment *ptr_segmento,
 		bool condicionFinal = (((direccion_pedida + cantidad_de_bytes)
 				> direccion_seg_metadata)
 				&& (direccion_seg_metadata > direccion_pedida));
-		return condicionFinal || condicionFinal;
+		return condicionInicial || condicionFinal;
 	}
 
 	if (list_find(ptr_segmento->metadatas, _coincide_con_metadata))

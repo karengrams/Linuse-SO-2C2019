@@ -30,7 +30,7 @@ void agregar_paginas(t_list* tabla_de_paginas, int cantidadDePaginas,int index) 
 		pagina = crear_pagina();
 		asignar_marco(pagina);
 		pagina->nro_pagina=index;
-		index++;
+		index_pag++;
 		list_add(tabla_de_paginas, pagina);
 	}
 }

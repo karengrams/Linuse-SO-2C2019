@@ -207,26 +207,26 @@ void atender_cliente(fd_set* master, int socketCli){
 		switch(cod_op){
 		case MUSE_INIT:
 			id_cliente = *((int*)list_get(paqueteRecibido, 0));
-			cod_error = muse_init(cliente_a_atender, ipCli, id_cliente);
+			cod_error = museinit(cliente_a_atender, ipCli, id_cliente);
 			send(socketCli, &cod_error, sizeof(int), 0);
 		break;
 		case MUSE_CLOSE:
-			muse_close(cliente_a_atender);
+			museclose(cliente_a_atender);
 			FD_CLR(socketCli, master);
 			close(socketCli);
 		break;
 		case MUSE_ALLOC:
-			direccion = muse_alloc(cliente_a_atender, *((int*)list_get(paqueteRecibido,1)));
+			direccion = musealloc(cliente_a_atender, *((int*)list_get(paqueteRecibido,1)));
 			send(socketCli, &direccion, sizeof(uint32_t), 0);
 		break;
 		case MUSE_FREE:
 			id_cliente = *((int*)list_get(paqueteRecibido, 0));
 			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
-			muse_free(cliente_a_atender,direccion_pedida);
+			musefree(cliente_a_atender,direccion_pedida);
 		break;
 		case MUSE_GET: // TODO: ver caso de que se pase del limite
 			cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
-			buffer = muse_get(cliente_a_atender, paqueteRecibido);
+			buffer = museget(cliente_a_atender, paqueteRecibido);
 			if (buffer == NULL){
 				cod_error = -1;
 				send(socketCli, &cod_error, sizeof(int), 0);
@@ -238,7 +238,7 @@ void atender_cliente(fd_set* master, int socketCli){
 			}
 		break;
 		case MUSE_CPY:
-				cod_error = muse_cpy(cliente_a_atender, paqueteRecibido);
+				cod_error = musecpy(cliente_a_atender, paqueteRecibido);
 				send(socketCli, &cod_error, sizeof(int), 0);
 		break;
 		case MUSE_MAP:
@@ -247,21 +247,21 @@ void atender_cliente(fd_set* master, int socketCli){
 			strcpy(buffer, (char*)list_get(paqueteRecibido,1));
 			cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 2)); //este seria el length a mappear
 			flags = *((int*)list_get(paqueteRecibido, 3));
-			direccion = muse_map(cliente_a_atender,buffer,cantidad_de_bytes,flags);
+			direccion = musemap(cliente_a_atender,buffer,cantidad_de_bytes,flags);
 			send(socketCli, &direccion, sizeof(uint32_t), 0);
 		break;
 		case MUSE_SYNC:
 			id_cliente = *((int*)list_get(paqueteRecibido, 0));
 			cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1)); //cantidad de bytes a guardar en el archivo
 			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 2)); //direccion a partir de la cual hacer el sync
-			muse_sync(cliente_a_atender,direccion_pedida,(size_t)cantidad_de_bytes);
+			musesync(cliente_a_atender,direccion_pedida,(size_t)cantidad_de_bytes);
 
 			send(socketCli, &cod_error, sizeof(int), 0);
 		break;
 		case MUSE_UNMAP:
 			id_cliente = *((int*)list_get(paqueteRecibido, 0));
 			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
-			muse_unmap(cliente_a_atender,direccion_pedida);
+			museunmap(cliente_a_atender,direccion_pedida);
 			send(socketCli, &cod_error, sizeof(int), 0);
 		break;
 		}

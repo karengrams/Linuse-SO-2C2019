@@ -21,45 +21,13 @@
 #include <string.h>
 #include <stdbool.h>
 #include <commons/bitarray.h>
+#include "../muse.h"
 #include "../paginacion/paginacion.h"
 #include "../paginacion/frames.h"
 #include "../segmentacion/segmentacion.h"
+#include "../structures.h"
 
 #define ERROR -1;
-
-t_list* PROCESS_TABLE;
-t_list* MAPPED_SHARED_FILES;
-
-typedef struct{
-	int id;
-	char* ip;
-	int totalMemoriaPedida;
-	int totalMemoriaLiberada;
-	t_list* tablaDeSegmentos;
-} t_proceso;
-
-typedef enum {
-	DESCONEXION = 0,
-	MUSE_INIT = 10,
-	MUSE_ALLOC = 11,
-	MUSE_FREE = 12,
-	MUSE_GET = 13,
-	MUSE_CPY = 14,
-	MUSE_MAP = 15,
-	MUSE_SYNC = 16,
-	MUSE_UNMAP = 17,
-	MUSE_CLOSE = 18,
-} op_code;
-
-typedef struct{
-	int size;
-	void* stream;
-}t_buffer;
-
-typedef struct{
-	op_code codigo_operacion;
-	t_buffer* buffer;
-} t_paquete;
 
 void ipCliente(int, char*);
 int crear_conexion(char *, char*);

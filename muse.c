@@ -1,6 +1,49 @@
 #include "muse.h"
-
 #define ERROR -1;
+
+int main(void) {
+	config = leer_config();
+	TAM_PAG = leer_del_config("PAGE_SIZE", config);
+	inicilizar_tabla_de_frames();
+	memoria = malloc(leer_del_config("MEMORY_SIZE", config));
+	dividir_memoria_en_frames(memoria, TAM_PAG, leer_del_config("MEMORY_SIZE", config));
+	inicializar_bitmap();
+	inicializar_tabla_procesos();
+	inicializar_tabla_archivos_compartidos();
+	inicializar_bitmap_swap(leer_del_config("SWAP_SIZE",config),TAM_PAG);
+	inicializar_memoria_virtual(leer_del_config("SWAP_SIZE",config));
+
+//	Arranca a atender clientes
+	fd_set master;
+	fd_set read_fds;
+	int fdmax;
+	FD_ZERO(&master);
+	FD_ZERO(&read_fds);
+	int socketEs = iniciar_socket_escucha("127.0.0.1",config_get_string_value(config, "LISTEN_PORT"));
+
+	FD_SET(socketEs, &master);
+	fdmax = socketEs;
+
+	signal(SIGINT,liberacion_de_recursos);
+
+
+	while (1) {
+
+		read_fds = master;
+		select(fdmax + 1, &read_fds, NULL, NULL, NULL); // @suppress("Symbol is not resolved")
+
+		for (int i = 0; i <= fdmax; i++) {
+			if (FD_ISSET(i, &read_fds)) {
+				if (i == socketEs) {
+					admitir_nuevo_cliente(&master, &fdmax, i);
+				} else {
+					atender_cliente(&master, i);
+				}
+			}
+		}
+	}
+	return 0;
+}
 
 void inicializar_tabla_procesos(){
 	PROCESS_TABLE = list_create();
@@ -28,7 +71,7 @@ void liberacion_de_recursos(int num){
 
 	void _liberar_proceso(void*element){
 		t_proceso *ptr_proceso = (t_proceso*) element;
-		muse_close(ptr_proceso);
+		museclose(ptr_proceso);
 	}
 
 	void _liberar_frame(void *elemento) {
@@ -60,7 +103,7 @@ void liberacion_de_recursos(int num){
 	raise(SIGTERM);
 }
 
-int muse_init(t_proceso* cliente_a_atender, char* ipCliente, int id){
+int museinit(t_proceso* cliente_a_atender, char* ipCliente, int id){
 	if (cliente_a_atender != NULL) {
 		return ERROR; //YA EXISTE EN NUESTRA TABLA ERROR
 	} else {
@@ -70,7 +113,7 @@ int muse_init(t_proceso* cliente_a_atender, char* ipCliente, int id){
 	}
 }
 
-void muse_close(t_proceso* proceso){
+void museclose(t_proceso* proceso){
 	liberar_tabla_de_segmentos(proceso->tablaDeSegmentos);
 	bool _mismo_id (void*element){
 		t_proceso *otroproceso = (t_proceso*)element;
@@ -81,7 +124,7 @@ void muse_close(t_proceso* proceso){
 	free(proceso);
 }
 
-uint32_t muse_alloc(t_proceso* proceso,int tam){
+uint32_t musealloc(t_proceso* proceso,int tam){
 	uint32_t offset;
 	t_list *tabla_de_segmento = proceso->tablaDeSegmentos;
 	segment *ptr_segmento = buscar_segmento_heap_para_tam(tabla_de_segmento,tam); // Busca segmento de tipo heap con espacio
@@ -121,7 +164,7 @@ uint32_t muse_alloc(t_proceso* proceso,int tam){
 	return ptr_segmento->base_logica+offset+sizeof(heapmetadata);
 }
 
-void muse_free(t_proceso *proceso, uint32_t direccion) {
+void musefree(t_proceso *proceso, uint32_t direccion) {
 	segment *ptr_segmento = buscar_segmento_dada_una_direccion(direccion,proceso->tablaDeSegmentos);
 	if(ptr_segmento && ptr_segmento->tipo==HEAP){
 		segmentheapmetadata *ptr_seg_metadata = buscar_metadata_para_liberar(direccion - ptr_segmento->base_logica, ptr_segmento);
@@ -160,7 +203,7 @@ void muse_free(t_proceso *proceso, uint32_t direccion) {
 		raise(SIGABRT);
 }
 
-void* muse_get(t_proceso* proceso, t_list* paqueteRecibido){
+void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 	int cantidadDeBytes = *((int*) list_get(paqueteRecibido, 1));
 	uint32_t direccion = *((uint32_t*) list_get(paqueteRecibido, 2));
 	void* buffer = malloc(cantidadDeBytes);
@@ -192,7 +235,7 @@ void* muse_get(t_proceso* proceso, t_list* paqueteRecibido){
 	return (buffer);
 }
 
-uint32_t muse_map(t_proceso*proceso, char*path, size_t length, int flags){
+uint32_t musemap(t_proceso*proceso, char*path, size_t length, int flags){
 	int paginas_de_seg;
 	segment *segmento_mmap=crear_segmento(MMAP,length,proceso->tablaDeSegmentos);
 	mapped_file *ptr_mapped_file_metadata;
@@ -279,7 +322,7 @@ mapped_file* buscar_archivo_abierto(char*path){
 	return (mapped_file*)list_find(MAPPED_FILES,_archivo_fue_abierto);
 }
 
-int muse_sync(t_proceso* proceso,uint32_t direccion, size_t length){
+int musesync(t_proceso* proceso,uint32_t direccion, size_t length){
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion, proceso->tablaDeSegmentos);
 	segmentmmapmetadata *ptr_metadata = (segmentmmapmetadata*) list_get(ptr_segmento->metadatas,0);
 	mapped_file *ptr_mapped_file=buscar_archivo_abierto(ptr_metadata->path);
@@ -313,7 +356,7 @@ int muse_sync(t_proceso* proceso,uint32_t direccion, size_t length){
 		return -1;
 }
 
-int muse_unmap(t_proceso *proceso,uint32_t direccion){
+int museunmap(t_proceso *proceso,uint32_t direccion){
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion, proceso->tablaDeSegmentos);
 	segmentmmapmetadata *ptr_metadata = (segmentmmapmetadata*)list_get(ptr_segmento->metadatas,0);
 	mapped_file *ptr_mapped_file = buscar_archivo_abierto(ptr_metadata->path);
@@ -330,7 +373,7 @@ int muse_unmap(t_proceso *proceso,uint32_t direccion){
 	return 0; // Aca iria un quilombo de cosas, que voy a hacer una vez que tenga bien hecho el swap and stuff
 }
 
-int muse_cpy(t_proceso* proceso, t_list* paqueteRecibido) {
+int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {
 
 	int cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
 	uint32_t direccion_pedida = *((uint32_t*) list_get(paqueteRecibido, 3));
@@ -436,53 +479,4 @@ int suma_frames_libres(){
 
 int memory_leaks_proceso(t_proceso* proceso){
 	return proceso->totalMemoriaPedida - proceso->totalMemoriaLiberada;
-}
-
-int main(void) {
-	config = leer_config();
-	TAM_PAG = leer_del_config("PAGE_SIZE", config);
-	inicilizar_tabla_de_frames();
-	memoria = malloc(leer_del_config("MEMORY_SIZE", config));
-	dividir_memoria_en_frames(memoria, TAM_PAG, leer_del_config("MEMORY_SIZE", config));
-	inicializar_bitmap();
-	inicializar_tabla_procesos();
-	inicializar_tabla_archivos_compartidos();
-	inicializar_bitmap_swap(leer_del_config("SWAP_SIZE",config),TAM_PAG);
-	inicializar_memoria_virtual(leer_del_config("SWAP_SIZE",config));
-
-//	Arranca a atender clientes
-	fd_set master;
-	fd_set read_fds;
-	int fdmax;
-	FD_ZERO(&master);
-	FD_ZERO(&read_fds);
-	int socketEs = iniciar_socket_escucha("127.0.0.1",config_get_string_value(config, "LISTEN_PORT"));
-
-	FD_SET(socketEs, &master);
-	fdmax = socketEs;
-
-	signal(SIGINT,liberacion_de_recursos);
-
-
-	while (1) {
-
-		read_fds = master;
-		select(fdmax + 1, &read_fds, NULL, NULL, NULL); // @suppress("Symbol is not resolved")
-
-		for (int i = 0; i <= fdmax; i++) {
-			if (FD_ISSET(i, &read_fds)) {
-				if (i == socketEs) {
-					admitir_nuevo_cliente(&master, &fdmax, i);
-				} else {
-					atender_cliente(&master, i);
-				}
-			}
-		}
-	}
-
-
-
-//	liberacion_de_recursos(memoria, config);
-
-	return 0;
 }
