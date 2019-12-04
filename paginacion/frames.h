@@ -10,6 +10,7 @@
 
 typedef struct frame_t frame;
 
+void* memoria;
 t_list *FRAMES_TABLE;
 t_bitarray *BIT_ARRAY_FRAMES;
 

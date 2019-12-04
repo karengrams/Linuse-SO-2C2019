@@ -32,6 +32,8 @@
 t_list* PROCESS_TABLE;
 t_list* MAPPED_FILES;
 
+t_config* config;
+
 typedef struct mapped_file_t{
 	int nro_file;
 	void *file;
@@ -51,7 +53,7 @@ void inicializar_tabla_procesos();
 void inicializar_tabla_archivos_compartidos();
 void inicializar_memoria_virtual(int);
 t_config* leer_config();
-void liberacion_de_recursos(void*,t_config*);
+void liberacion_de_recursos(int);
 int leer_del_config(char*, t_config*);
 int muse_init(t_proceso*, char*, int);
 void muse_close(t_proceso*);

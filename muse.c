@@ -22,7 +22,9 @@ int leer_del_config(char* valor, t_config* archivo_config) {
 	return config_get_int_value(archivo_config, valor);
 }
 
-void liberacion_de_recursos(void*mem, t_config *config){
+void liberacion_de_recursos(int num){
+
+	printf("Liberando recursos...\n");
 
 	void _liberar_proceso(void*element){
 		t_proceso *ptr_proceso = (t_proceso*) element;
@@ -43,18 +45,19 @@ void liberacion_de_recursos(void*mem, t_config *config){
 		free(file);
 	}
 
-	munmap(VIRTUAL_MEMORY,leer_del_config("SWAP_SIZE",config));
 	list_destroy_and_destroy_elements(PROCESS_TABLE,&_liberar_proceso);
 	list_destroy_and_destroy_elements(FRAMES_TABLE, &_liberar_frame);
 	list_destroy_and_destroy_elements(MAPPED_FILES, &_liberar_archivos_mappeados);
-
-	config_destroy(config);
+	munmap(VIRTUAL_MEMORY,leer_del_config("SWAP_SIZE",config));
 	free(BIT_ARRAY_FRAMES->bitarray);
 	free(BIT_ARRAY_SWAP->bitarray);
 	free(PAGINAS_EN_FRAMES);
-	free(mem);
+	free(memoria);
 	bitarray_destroy(BIT_ARRAY_FRAMES);
 	bitarray_destroy(BIT_ARRAY_SWAP);
+	config_destroy(config);
+	printf("Recursos liberados!\n");
+	raise(SIGTERM);
 }
 
 int muse_init(t_proceso* cliente_a_atender, char* ipCliente, int id){
@@ -282,7 +285,7 @@ int muse_sync(t_proceso* proceso,uint32_t direccion, size_t length){
 	mapped_file *ptr_mapped_file=buscar_archivo_abierto(ptr_metadata->path);
 	void *file;
 	if(direccion + length > limite_segmento(ptr_segmento))
-	     raise(SIGSEGV);
+	    raise(SIGSEGV);
 	if(!ptr_segmento || ptr_segmento->tipo!=MMAP)
 		raise(SIGABRT);
 
@@ -436,10 +439,10 @@ int memory_leaks_proceso(t_proceso* proceso){
 }
 
 int main(void) {
-	t_config* config = leer_config();
+	config = leer_config();
 	TAM_PAG = leer_del_config("PAGE_SIZE", config);
 	inicilizar_tabla_de_frames();
-	void *memoria = malloc(leer_del_config("MEMORY_SIZE", config));
+	memoria = malloc(leer_del_config("MEMORY_SIZE", config));
 	dividir_memoria_en_frames(memoria, TAM_PAG, leer_del_config("MEMORY_SIZE", config));
 	inicializar_bitmap();
 	inicializar_tabla_procesos();
@@ -458,6 +461,9 @@ int main(void) {
 	FD_SET(socketEs, &master);
 	fdmax = socketEs;
 
+	signal(SIGINT,liberacion_de_recursos);
+
+
 	while (1) {
 
 		read_fds = master;
@@ -474,7 +480,9 @@ int main(void) {
 		}
 	}
 
-	liberacion_de_recursos(memoria, config);
+
+
+//	liberacion_de_recursos(memoria, config);
 
 	return 0;
 }
