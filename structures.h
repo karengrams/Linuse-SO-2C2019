@@ -13,6 +13,7 @@
 
 typedef struct buffer t_buffer;
 typedef struct paquete t_paquete;
+typedef struct frame_t frame;
 
 
 typedef enum {
@@ -45,6 +46,12 @@ typedef struct mapped_file_t{
 	t_list *paginas_min_asignadas;
 	t_list *procesos; // Con estos sacas los opens y vas viendo que proceso lo tiene abierto
 }__attribute__((packed)) mapped_file;
+
+struct frame_t{
+	void *memoria;
+	int nro_frame;
+}__attribute__((packed));
+
 
 typedef struct{
 	int nro_pag;

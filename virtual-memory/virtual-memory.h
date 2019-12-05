@@ -15,7 +15,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <commons/bitarray.h>
+#include <semaphore.h>
 
+sem_t mutex_swap_file;
+sem_t mutex_swap;
 t_bitarray *BIT_ARRAY_SWAP;
 void *VIRTUAL_MEMORY;
 

@@ -180,9 +180,9 @@ page* algoritmo_clock_modificado(){
 	return victima;
 }
 
-void escribir_en_archivo_swap(void *file, t_list *tabla_de_paginas, size_t tam){
-	int offset = tam;
-	int tam_archivo = strlen((char*)file);
+void escribir_en_archivo_swap(void *file, t_list *tabla_de_paginas, size_t tam_a_mappear,size_t tam_arch){
+	int offset = tam_a_mappear;
+	int tam_archivo = tam_arch;
 	void *padding;
 	bool archivo_completo=false;
 	void _escribir_en_frame_de_swap (void *element){
@@ -226,9 +226,13 @@ void agregar_paginas_extras(t_list* tabla_de_paginas, int cantidadDePaginas){
 	page *pagina;
 	for (int i = 0; i < cantidadDePaginas; i++) {
 		pagina = crear_pagina();
+		sem_wait(&mutex_swap);
 		asignar_marco_en_swap(pagina);
+		sem_post(&mutex_swap);
 		list_add(tabla_de_paginas, pagina);
+		sem_wait(&mutex_swap_file);
 		escribir_pagina_extra_en_archivo_swap(pagina,tabla_de_paginas);
+		sem_post(&mutex_swap_file);
 	}
 
 }

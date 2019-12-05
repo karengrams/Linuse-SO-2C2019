@@ -31,12 +31,10 @@
 #include "structures.h"
 #include <semaphore.h>
 
-sem_t mutex_swap;
 sem_t mutex_shared;
 sem_t lock_page;
 
 t_list* PROCESS_TABLE;
-t_list* MAPPED_FILES;
 t_config* config;
 
 void mostrar_frames_ocupados();

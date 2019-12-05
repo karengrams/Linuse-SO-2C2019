@@ -10,6 +10,7 @@ void atender_cliente_select(fd_set* master, int socketCli){
 	int cod_error;
 	int id_cliente, cantidad_de_bytes, flags;
 	void* buffer = NULL;
+	void *path;
 	t_proceso* cliente_a_atender = NULL;
 	uint32_t direccion_pedida, direccion;
 	t_list* paqueteRecibido = NULL;
@@ -63,11 +64,10 @@ void atender_cliente_select(fd_set* master, int socketCli){
 		break;
 		case MUSE_MAP:
 			id_cliente = *((int*)list_get(paqueteRecibido, 0));
-			buffer = (char*)malloc(sizeof((char*)list_get(paqueteRecibido,1)));
-			strcpy(buffer, (char*)list_get(paqueteRecibido,1));
+			path = string_duplicate((char*)list_get(paqueteRecibido,1));
 			cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 2)); //este seria el length a mappear
 			flags = *((int*)list_get(paqueteRecibido, 3));
-			direccion = musemap(cliente_a_atender,buffer,cantidad_de_bytes,flags);
+			direccion = musemap(cliente_a_atender,path,cantidad_de_bytes,flags);
 			send(socketCli, &direccion, sizeof(uint32_t), 0);
 		break;
 		case MUSE_SYNC:
@@ -92,7 +92,6 @@ void atender_cliente_select(fd_set* master, int socketCli){
 
 }
 
-
 void atender_cliente(void *element){
 	t_paquete* paquete_respuesta = NULL;
 	int cod_error;
@@ -107,7 +106,7 @@ void atender_cliente(void *element){
 	while(1){
 
     	int cod_op = recibir_operacion(socketCli);
-    	if(cod_op!=DESCONEXION){
+    	if(cod_op>=10 && cod_op<=18){
         	printf("Se ha solicitado la operacion nro. %d por el socket %d\n",cod_op,socketCli);
     		paqueteRecibido = recibir_paquete(socketCli);
     		cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
@@ -124,7 +123,6 @@ void atender_cliente(void *element){
     			museclose(cliente_a_atender);
     			printf("Luego de liberar al proceso...\n");
     			mostrar_frames_ocupados();
-    			close(socketCli);
     		break;
     		case MUSE_ALLOC:
     			direccion = musealloc(cliente_a_atender, *((int*)list_get(paqueteRecibido,1)));
@@ -154,11 +152,10 @@ void atender_cliente(void *element){
     		break;
     		case MUSE_MAP:
     			id_cliente = *((int*)list_get(paqueteRecibido, 0));
-    			buffer = (char*)malloc(sizeof((char*)list_get(paqueteRecibido,1)));
-    			strcpy(buffer, (char*)list_get(paqueteRecibido,1));
+    			char *path = string_duplicate((char*)list_get(paqueteRecibido,1));
     			cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 2)); //este seria el length a mappear
     			flags = *((int*)list_get(paqueteRecibido, 3));
-    			direccion = musemap(cliente_a_atender,buffer,cantidad_de_bytes,flags);
+    			direccion = musemap(cliente_a_atender,path,cantidad_de_bytes,flags);
     			send(socketCli, &direccion, sizeof(uint32_t), 0);
     		break;
     		case MUSE_SYNC:

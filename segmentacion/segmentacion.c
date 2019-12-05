@@ -365,7 +365,7 @@ void recalcular_bases_logicas_de_segmentos(t_list *tabla_de_segmentos){
 
 
 
-void liberar_recursos_del_segmento(segment*ptr_segmento){
+void liberar_recursos_del_segmento(segment*ptr_segmento,t_proceso* proceso){
 	void _eliminar_metadatas(void*element){
 		if(ptr_segmento->tipo==HEAP){
 			segmentheapmetadata *ptr_heap_metadata = (segmentheapmetadata*)element;
@@ -387,28 +387,56 @@ void liberar_recursos_del_segmento(segment*ptr_segmento){
 		free(ptr_pagina);
 	}
 
+	void _eliminar_y_quitar_paginas(void*element){
+		page*ptr_pag = (page*)element;
+		list_remove(ptr_segmento->tabla_de_paginas,ptr_pag->nro_pagina); // La tercera vez muere
+		_eliminar_paginas(element);
+	}
+
+	if(ptr_segmento->tipo==MMAP){
+		segmentmmapmetadata *ptr_metadata = (segmentmmapmetadata*)list_get(ptr_segmento->metadatas,0);
+
+		mapped_file *ptr_mapped_metadata = buscar_archivo_abierto(ptr_metadata->path);
+
+		bool _mismo_id(void*element){
+			t_proceso *otro_proceso = (t_proceso*) element;
+			return otro_proceso->id == proceso->id;
+		}
+
+		list_remove_by_condition(ptr_mapped_metadata->procesos,_mismo_id);
+		if(!ptr_mapped_metadata->procesos->elements_count){
+			munmap(ptr_mapped_metadata->file,ptr_mapped_metadata->tam_archivo);
+			list_iterate(ptr_mapped_metadata->paginas_min_asignadas,_eliminar_y_quitar_paginas);
+			list_destroy(ptr_mapped_metadata->paginas_min_asignadas);
+			list_destroy(ptr_mapped_metadata->procesos);
+			free(ptr_mapped_metadata->path);
+			list_remove(MAPPED_FILES,ptr_mapped_metadata->nro_file);
+			free(ptr_mapped_metadata);
+		}
+	}
+
 	list_destroy_and_destroy_elements(ptr_segmento->tabla_de_paginas,&_eliminar_paginas);
 	list_destroy_and_destroy_elements(ptr_segmento->metadatas,&_eliminar_metadatas);
 	free(ptr_segmento);
 }
 
-void liberar_tabla_de_segmentos(t_list* tabla_de_segmentos){
+void liberar_tabla_de_segmentos(t_proceso *proceso){
 
 	void _liberar_segmento(void*element){
 		segment*ptr_segmento = (segment*)element;
-		liberar_recursos_del_segmento(ptr_segmento);
+		liberar_recursos_del_segmento(ptr_segmento,proceso);
 	}
 
-	list_destroy_and_destroy_elements(tabla_de_segmentos,&_liberar_segmento);
+	list_destroy_and_destroy_elements(proceso->tablaDeSegmentos,&_liberar_segmento);
 }
 
-void eliminar_segmento_de_tabla(t_list*tabla_de_segmentos,segment*segmento){
+void eliminar_segmento_de_tabla(t_proceso*proceso,segment*segmento){
 	int index = 0;
 	void _liberar_recursos_del_segmento(void *element){
 		segment *segmento = (segment*)element;
-		liberar_recursos_del_segmento(segmento);
+		liberar_recursos_del_segmento(segmento,proceso);
 	}
-	list_remove_and_destroy_element(tabla_de_segmentos,segmento->nro_segmento,_liberar_recursos_del_segmento);
+	list_remove_and_destroy_element(proceso->tablaDeSegmentos,segmento->nro_segmento,_liberar_recursos_del_segmento);
 
 	void _recalcular_nro_de_segmentos(void*element){
 		segment *otro_segmento = (segment*)element;
@@ -416,6 +444,14 @@ void eliminar_segmento_de_tabla(t_list*tabla_de_segmentos,segment*segmento){
 		index++;
 	}
 
-	list_iterate(tabla_de_segmentos,_recalcular_nro_de_segmentos);
+	list_iterate(proceso->tablaDeSegmentos,_recalcular_nro_de_segmentos);
 
+}
+
+mapped_file* buscar_archivo_abierto(char*path){
+	bool _archivo_fue_abierto(void *element){
+		mapped_file *ptr_mapped_file = (mapped_file*)element;
+		return !strcmp(path,ptr_mapped_file->path);
+	}
+	return (mapped_file*)list_find(MAPPED_FILES,_archivo_fue_abierto);
 }

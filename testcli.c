@@ -7,24 +7,24 @@ int main(){
 	void* recibir = malloc(265);
 	int id = getpid();
 	muse_init(id, "127.0.0.1",9168);
-	uint32_t my_memory = muse_alloc(35);
-	uint32_t my_other_memory = muse_alloc(5);
-	uint32_t my_other_other_memory = muse_alloc(50);
-	uint32_t my_other_other_other_memory = muse_alloc(10);
-	muse_free(my_other_other_memory);
-	muse_free(my_other_other_other_memory);
-	muse_free(my_other_memory);
-	muse_free(my_memory);
+//	uint32_t my_memory = muse_alloc(35);
+//	uint32_t my_other_memory = muse_alloc(5);
+//	uint32_t my_other_other_memory = muse_alloc(50);
+//	uint32_t my_other_other_other_memory = muse_alloc(10);
+//	muse_free(my_other_other_memory);
+//	muse_free(my_other_other_other_memory);
+//	muse_free(my_other_memory);
+//	muse_free(my_memory);
 //	uint32_t my_other_other_other_other_memory = muse_alloc(100);
 
-//	uint32_t map = muse_map("holi.txt",265,MAP_PRIVATE);
+	uint32_t map = muse_map("stephen.txt",277,MAP_SHARED);
 //	printf("map = %lu\n",map);
 //	muse_sync(map,120);
 //	uint32_t my_other_other_memory = muse_alloc(10);
-	printf("my_memory = %lu\n",my_memory);
-	printf("my_other_memory = %lu\n",my_other_memory);
-	printf("my_other_other_memory = %lu",my_other_other_memory);
-	printf("my_other_other_other_memory = %lu",my_other_other_other_memory);
+//	printf("my_memory = %lu\n",my_memory);
+//	printf("my_other_memory = %lu\n",my_other_memory);
+//	printf("my_other_other_memory = %lu",my_other_other_memory);
+//	printf("my_other_other_other_memory = %lu",my_other_other_other_memory);
 
 //	muse_unmap(map);
 //	muse_cpy(my_memory, "Hola perri, como va?", 21);

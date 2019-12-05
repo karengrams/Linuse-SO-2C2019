@@ -3,6 +3,7 @@
 #include <commons/collections/list.h>
 #include "../paginacion/frames.h"
 #include "../paginacion/paginacion.h"
+#include "../structures.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -10,6 +11,7 @@
 #include <stdbool.h>
 #include <string.h>
 
+t_list* MAPPED_FILES;
 
 typedef enum segment_type_t {
 	HEAP, MMAP,
@@ -65,7 +67,8 @@ void mostrar_tabla_de_segmentos(t_list*);
 segment* crear_segmento_heap(int, t_list* );
 segment* crear_segmento_map(int,t_list*);
 void recalcular_bases_logicas_de_segmentos(t_list *);
-void liberar_recursos_del_segmento(segment*);
-void liberar_tabla_de_segmentos(t_list*);
-void eliminar_segmento_de_tabla(t_list*,segment*);
+void liberar_recursos_del_segmento(segment*,t_proceso*);
+void liberar_tabla_de_segmentos(t_proceso*);
+void eliminar_segmento_de_tabla(t_proceso*,segment*);
+mapped_file* buscar_archivo_abierto(char*);
 #endif /* muse-segmentacion_h */
