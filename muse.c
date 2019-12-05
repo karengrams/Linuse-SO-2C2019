@@ -2,6 +2,13 @@
 
 #define ERROR -1;
 
+void mostrar_frames_ocupados(){
+	for(int i=0;i<bitarray_get_max_bit(BIT_ARRAY_FRAMES);i++){
+		if(bitarray_test_bit(BIT_ARRAY_FRAMES,i))
+			printf("Frame nro. %d ocupado:%d\n",i,bitarray_test_bit(BIT_ARRAY_FRAMES,i));
+	}
+}
+
 void inicializar_tabla_procesos(){
 	PROCESS_TABLE = list_create();
 }
@@ -20,6 +27,20 @@ t_config* leer_config(){
 
 int leer_del_config(char* valor, t_config* archivo_config) {
 	return config_get_int_value(archivo_config, valor);
+}
+
+void inicializar_recursos_de_memoria(){
+	config = leer_config();
+	TAM_PAG = leer_del_config("PAGE_SIZE", config);
+	inicilizar_tabla_de_frames();
+	memoria = malloc(leer_del_config("MEMORY_SIZE", config));
+	dividir_memoria_en_frames(memoria, TAM_PAG, leer_del_config("MEMORY_SIZE", config));
+	inicializar_bitmap();
+	inicializar_tabla_procesos();
+	inicializar_tabla_archivos_compartidos();
+	inicializar_bitmap_swap(leer_del_config("SWAP_SIZE",config),TAM_PAG);
+	inicializar_memoria_virtual(leer_del_config("SWAP_SIZE",config));
+	sem_init(&mutex_frames,0,1);
 }
 
 void liberacion_de_recursos(int num){
@@ -56,6 +77,7 @@ void liberacion_de_recursos(int num){
 	bitarray_destroy(BIT_ARRAY_FRAMES);
 	bitarray_destroy(BIT_ARRAY_SWAP);
 	config_destroy(config);
+	sem_destroy(&mutex_frames);
 	printf("Recursos liberados!\n");
 	raise(SIGTERM);
 }
@@ -141,7 +163,7 @@ void musefree(t_proceso *proceso, uint32_t direccion) {
 				for(int i=1;i<=cantidad_extra_de_memoria_en_pags;i++){
 				void _liberar_pagina(void*element){
 					page*ptr_pagina = (page*)element;
-					bitarray_set_bit(BIT_ARRAY_FRAMES,ptr_pagina->nro_frame);
+					bitarray_clean_bit(BIT_ARRAY_FRAMES,ptr_pagina->nro_frame);
 					free(ptr_pagina);
 				}
 

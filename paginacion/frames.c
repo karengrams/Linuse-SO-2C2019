@@ -41,7 +41,6 @@ frame* obtener_marco_libre() {
 		return !bitarray_test_bit(BIT_ARRAY_FRAMES, nro_de_frame);
 	}
 	return (frame*) list_find(FRAMES_TABLE, &_es_un_marco_libre);
-
 }
 
 void asignar_marcos(t_list* tabla_de_pags) {

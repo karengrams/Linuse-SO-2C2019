@@ -292,6 +292,7 @@ void mostrar_tabla_de_segmentos(t_list *tabla_de_segmentos) {
 				ptr_segmento->nro_segmento,
 				ptr_segmento->base_logica, limite_segmento(ptr_segmento),
 				ptr_segmento->tamanio);
+		printf("     -Paginas del segmento:\n");
 		mostrar_paginas(ptr_segmento);
 	}
 	list_iterate(tabla_de_segmentos, _mostrar_estructura_segmento);
@@ -380,9 +381,9 @@ void liberar_recursos_del_segmento(segment*ptr_segmento){
 	void _eliminar_paginas(void*element){
 		page* ptr_pagina = (page*)element;
 		if(ptr_pagina->bit_presencia)
-			bitarray_set_bit(BIT_ARRAY_FRAMES,ptr_pagina->nro_frame);
+			bitarray_clean_bit(BIT_ARRAY_FRAMES,ptr_pagina->nro_frame);
 		else
-			bitarray_set_bit(BIT_ARRAY_SWAP,ptr_pagina->nro_frame);
+			bitarray_clean_bit(BIT_ARRAY_SWAP,ptr_pagina->nro_frame);
 		free(ptr_pagina);
 	}
 

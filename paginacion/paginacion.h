@@ -8,6 +8,9 @@
 #include <commons/collections/list.h>
 #include <commons/bitarray.h>
 #include <stdint.h>
+#include <semaphore.h>
+
+sem_t mutex_frames;
 
 typedef struct page_t page;
 

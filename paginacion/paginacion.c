@@ -16,10 +16,9 @@ t_list* crear_tabla_de_paginas(int tam) {
 
 	for (int i = 0; i < cantidadDePaginas; i++) {
 		pagina = crear_pagina();
-		pagina->nro_frame=i;
+		pagina->nro_pagina=i;
 		list_add(lista, pagina);
 	}
-	asignar_marcos(lista);
 	return lista;
 }
 
@@ -28,8 +27,8 @@ void agregar_paginas(t_list* tabla_de_paginas, int cantidadDePaginas,int index) 
 	int index_pag=index;
 	for (int i = 0; i < cantidadDePaginas; i++) {
 		pagina = crear_pagina();
+		pagina->nro_pagina=index_pag;
 		asignar_marco(pagina);
-		pagina->nro_pagina=index;
 		index_pag++;
 		list_add(tabla_de_paginas, pagina);
 	}
@@ -45,7 +44,10 @@ int paginas_necesarias(int valorPedido) {
 }
 
 void asignar_marco(page* pag) {
+	sem_wait(&mutex_frames);
 	frame *marco_libre = obtener_marco_libre();
+	printf("Asignando el marco nro. %d a la pagina nro. %d\n",marco_libre->nro_frame,pag->nro_pagina);
+
 	if(!marco_libre){ //si no hay marcos libres buscamos en el swap
 		asignar_marco_en_swap(pag);
 	} else {
@@ -58,6 +60,7 @@ void asignar_marco(page* pag) {
 	}
 
 	PAGINAS_EN_FRAMES[marco_libre->nro_frame] = pag;
+	sem_post(&mutex_frames);
 }
 
 void asignar_marco_en_swap(page* pag){

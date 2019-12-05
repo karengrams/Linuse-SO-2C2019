@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 
+void atender_cliente_select(fd_set* master, int socketCli);
 void atender_cliente(void *);
 
 #endif /* MUSE_MAIN_H_ */

@@ -29,17 +29,24 @@
 #include "paginacion/paginacion.h"
 #include "virtual-memory/virtual-memory.h"
 #include "structures.h"
+#include <semaphore.h>
+
+sem_t mutex_swap;
+sem_t mutex_shared;
+sem_t lock_page;
 
 t_list* PROCESS_TABLE;
 t_list* MAPPED_FILES;
 t_config* config;
 
+void mostrar_frames_ocupados();
 void inicializar_tabla_procesos();
 void inicializar_tabla_archivos_compartidos();
 void inicializar_memoria_virtual(int);
 t_config* leer_config();
 void liberacion_de_recursos(int);
 int leer_del_config(char*, t_config*);
+void inicializar_recursos_de_memoria();
 int museinit(t_proceso*, char*, int);
 void museclose(t_proceso*);
 uint32_t musealloc(t_proceso*, int);
