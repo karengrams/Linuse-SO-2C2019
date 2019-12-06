@@ -18,5 +18,5 @@ gcc prueba.c utils-cli.c hilolay_alumnos.c -lhilolay
 
 ### TODO list:
 -  [ ] Hacer test mas exigentes
--  [ ] Liberar recursos 
+-  [ x] Liberar recursos 
 -  [ ] Hacer makefile?

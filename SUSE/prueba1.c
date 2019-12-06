@@ -4,7 +4,7 @@
 #include <unistd.h>
 
 
-#define CANT_NOTAS 50
+#define CANT_NOTAS 20
 
 struct hilolay_sem_t* solo_hiper_mega_piola;
 struct hilolay_sem_t* afinado;
@@ -13,7 +13,7 @@ int fin = 0;
 void *preparar_solo()
 {
 	int i;
-	for(i = 0;i<10;i++){
+	for(i = 0;i<5;i++){
 		sleep(1);
 		printf("Solo\n");
 		hilolay_yield();
@@ -32,7 +32,7 @@ void *preparar_solo()
 
 void* cosa_Loca(){
 	int i;
-	for(i = 0;i<10;i++){
+	for(i = 0;i<5;i++){
 		sleep(1);
 		printf("caca\n");
 		hilolay_yield();
@@ -60,7 +60,7 @@ int main(void)
 	hilolay_create(&afinador, NULL, &preparar_solo, NULL);
 	sleep(2);
 	hilolay_yield();
-	sleep(15);
+	sleep(2);
 
 	hilolay_create(&cosaLoca, NULL, &cosa_Loca, NULL);
 
