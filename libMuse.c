@@ -42,6 +42,7 @@ uint32_t muse_alloc(uint32_t tam){
 	eliminar_paquete(paquete);
 	//recibir la direccion del MUSE
 	recv(SOCKET, &direccion, sizeof(uint32_t), 0);
+
 	return direccion;
 }
 
@@ -51,7 +52,7 @@ void muse_free(uint32_t dir){
 	agregar_a_paquete(paquete, &dir, sizeof(uint32_t));
 	enviar_paquete(paquete, SOCKET);
 	eliminar_paquete(paquete);
-	//MUSE no responde nada.
+
 }
 
 int muse_get(void* dst, uint32_t src, size_t n){

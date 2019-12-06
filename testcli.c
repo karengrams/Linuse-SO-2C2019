@@ -5,7 +5,7 @@ int main(){
 	void* recibir = malloc(265);
 	void* recibir2 = malloc(265);
 	int id = getpid();
-	muse_init(id, "127.0.0.1",9169);
+	muse_init(id, "127.0.0.1",9170);
 	uint32_t my_memory = muse_alloc(30);
 	uint32_t map = muse_map("stephen.txt",277,MAP_SHARED);
 	printf("map = %lu\n",map);

@@ -388,10 +388,11 @@ int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {
 		//O SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
 	}
 
-	if (direccion_pisa_alguna_metadata(ptr_segmento, direccion_pedida,cantidad_de_bytes)) {
-		free(buffer_a_copiar);
-		return -1;
-	}
+	if(ptr_segmento->tipo==HEAP)
+		if (direccion_pisa_alguna_metadata(ptr_segmento, direccion_pedida,cantidad_de_bytes)) {
+			free(buffer_a_copiar);
+			return -1;
+		}
 
 	int numeroPagina = numero_pagina(ptr_segmento, direccion_pedida);
 	int desplazamientoEnPagina = desplazamiento_en_pagina(ptr_segmento,direccion_pedida);
