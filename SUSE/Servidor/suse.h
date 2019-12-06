@@ -19,15 +19,7 @@ typedef enum{
 	BLOCKED_READY = 3,
 } t_estado;
 
-typedef enum {
-	DESCONEXION = -1,
-	SUSE_INIT = 1,
-	SUSE_SCHEDULE = 2,
-	SUSE_JOIN = 3,
-	SUSE_CLOSE = 4,
-	SUSE_WAIT = 5,
-	SUSE_SIGNAL = 6,
-} op_code;
+
 
 typedef struct{
 	int fd;

@@ -1,5 +1,4 @@
-#include "utils-cli.c"
-#include <commons/config.h>
+#include "utils-cli.h"
 #include "hilolay_alumnos.h"
 
 
@@ -23,7 +22,6 @@ int suse_schedule_next(){
 	send(SOCKET, &codigo, sizeof(int), 0);
 	recv(SOCKET, &tid, sizeof(int), 0);
 
-	printf("Schedule next, ponemos a ejecutar el hilo %d\n", tid);
 	return tid;
 }
 
@@ -45,6 +43,12 @@ int suse_wait(int tid, char* idSemaforo){
 	eliminar_paquete(paquete);
 
 	recv(SOCKET, &exito, sizeof(int), 0);
+
+	if(exito)
+		printf("Semaforo %s tomado\n", idSemaforo);
+
+	if(!exito)
+		printf("Me bloqueo por semaforo %s\n", idSemaforo);
 	return exito;
 }
 
@@ -77,7 +81,7 @@ static struct hilolay_operations hiloops = {
 void hilolay_init(){
 
 	//iniciar conexion con suse
-	SOCKET = crear_conexion("127.0.0.1", "48480"); //De donde sacamos el puerto?
+	SOCKET = crear_conexion("127.0.0.1", getenv("PUERTO")); //De donde sacamos el puerto?
 	init_internal(&hiloops); //esta funcion crea el hilo del programa padre y llama a suse_create
 
 }

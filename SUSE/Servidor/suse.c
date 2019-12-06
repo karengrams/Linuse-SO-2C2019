@@ -2,7 +2,7 @@
 #include <signal.h>
 #include <sys/time.h>
 #include "suse.h"
-#include "utils.c"
+#include "utils.h"
 
 t_list* colaNEW;
 t_list* colaREADY;

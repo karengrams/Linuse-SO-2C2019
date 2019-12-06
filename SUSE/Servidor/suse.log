@@ -1132,3 +1132,159 @@ Tiempo de ejecucion: 43192.000000
 Tiempo de espera: 1039.000000 
 Tiempo de uso de CPU: 19079.000000 
 Porcentaje tiempo de ejecucion: 0.401517
+[INFO] 12:46:36:289 suse.c/(8217:8220): Finalizo el hilo 2 del socket 5
+[INFO] 12:46:36:292 suse.c/(8217:8220): Grado actual de multiprogramacion: 1
+[INFO] 12:46:36:292 suse.c/(8217:8220): Valor del semaforo afinado: 1
+[INFO] 12:46:36:292 suse.c/(8217:8220): Valor del semaforo solo_hiper_mega_piola: 0
+[INFO] 12:46:36:292 suse.c/(8217:8220): Socket 5:
+[INFO] 12:46:36:292 suse.c/(8217:8220): Hilos en cola NEW: 0
+[INFO] 12:46:36:292 suse.c/(8217:8220): Hilos en cola READY: 1
+[INFO] 12:46:36:292 suse.c/(8217:8220): Hilos en cola BLOCKED: 1
+[INFO] 12:46:36:292 suse.c/(8217:8220): Hilos en cola RUN: 0
+[INFO] 12:46:36:292 suse.c/(8217:8220): Hilos en cola EXIT: 1
+
+
+[INFO] 12:46:36:293 suse.c/(8217:8220): 
+Hilo 2: 
+Tiempo de ejecucion: 23236.000000 
+Tiempo de espera: 11211.000000 
+Tiempo de uso de CPU: 12001.000000 
+Porcentaje tiempo de ejecucion: 0.215723
+[INFO] 12:46:36:293 suse.c/(8217:8220): 
+Hilo 1: 
+Tiempo de ejecucion: 41238.000000 
+Tiempo de espera: 29033.000000 
+Tiempo de uso de CPU: 12177.000000 
+Porcentaje tiempo de ejecucion: 0.382854
+[INFO] 12:46:36:293 suse.c/(8217:8220): 
+Hilo 0: 
+Tiempo de ejecucion: 0 
+Tiempo de espera: 1088756928 
+Tiempo de uso de CPU: 1000.000000 
+Porcentaje tiempo de ejecucion: 0
+
+
+
+[INFO] 12:46:36:314 suse.c/(8217:8220): Finalizo el hilo 1 del socket 5
+[INFO] 12:46:36:315 suse.c/(8217:8220): Grado actual de multiprogramacion: 0
+[INFO] 12:46:36:315 suse.c/(8217:8220): Valor del semaforo afinado: 1
+[INFO] 12:46:36:315 suse.c/(8217:8220): Valor del semaforo solo_hiper_mega_piola: 0
+[INFO] 12:46:36:315 suse.c/(8217:8220): Socket 5:
+[INFO] 12:46:36:315 suse.c/(8217:8220): Hilos en cola NEW: 0
+[INFO] 12:46:36:315 suse.c/(8217:8220): Hilos en cola READY: 0
+[INFO] 12:46:36:315 suse.c/(8217:8220): Hilos en cola BLOCKED: 1
+[INFO] 12:46:36:315 suse.c/(8217:8220): Hilos en cola RUN: 0
+[INFO] 12:46:36:316 suse.c/(8217:8220): Hilos en cola EXIT: 2
+
+
+[INFO] 12:46:36:316 suse.c/(8217:8220): 
+Hilo 2: 
+Tiempo de ejecucion: 23259.000000 
+Tiempo de espera: 11211.000000 
+Tiempo de uso de CPU: 12001.000000 
+Porcentaje tiempo de ejecucion: 0.215799
+[INFO] 12:46:36:316 suse.c/(8217:8220): 
+Hilo 1: 
+Tiempo de ejecucion: 41261.000000 
+Tiempo de espera: 29074.000000 
+Tiempo de uso de CPU: 12177.000000 
+Porcentaje tiempo de ejecucion: 0.382823
+[INFO] 12:46:36:316 suse.c/(8217:8220): 
+Hilo 0: 
+Tiempo de ejecucion: 0 
+Tiempo de espera: 1088757664 
+Tiempo de uso de CPU: 1000.000000 
+Porcentaje tiempo de ejecucion: 0
+
+
+
+[INFO] 12:46:36:394 suse.c/(8217:8220): Finalizo el hilo 0 del socket 5
+[INFO] 12:46:36:395 suse.c/(8217:8220): Grado actual de multiprogramacion: 0
+[INFO] 12:46:36:395 suse.c/(8217:8220): Valor del semaforo afinado: 1
+[INFO] 12:46:36:395 suse.c/(8217:8220): Valor del semaforo solo_hiper_mega_piola: 0
+[INFO] 12:46:36:395 suse.c/(8217:8220): Socket 5:
+[INFO] 12:46:36:395 suse.c/(8217:8220): Hilos en cola NEW: 0
+[INFO] 12:46:36:395 suse.c/(8217:8220): Hilos en cola READY: 0
+[INFO] 12:46:36:395 suse.c/(8217:8220): Hilos en cola BLOCKED: 0
+[INFO] 12:46:36:396 suse.c/(8217:8220): Hilos en cola RUN: 0
+[INFO] 12:46:36:396 suse.c/(8217:8220): Hilos en cola EXIT: 3
+
+
+[INFO] 12:46:36:396 suse.c/(8217:8220): 
+Hilo 2: 
+Tiempo de ejecucion: 23339.000000 
+Tiempo de espera: 11211.000000 
+Tiempo de uso de CPU: 12001.000000 
+Porcentaje tiempo de ejecucion: 0.216060
+[INFO] 12:46:36:396 suse.c/(8217:8220): 
+Hilo 1: 
+Tiempo de ejecucion: 41341.000000 
+Tiempo de espera: 29074.000000 
+Tiempo de uso de CPU: 12177.000000 
+Porcentaje tiempo de ejecucion: 0.382713
+[INFO] 12:46:36:397 suse.c/(8217:8220): 
+Hilo 0: 
+Tiempo de ejecucion: 43341.000000 
+Tiempo de espera: 1037.000000 
+Tiempo de uso de CPU: 19077.000000 
+Porcentaje tiempo de ejecucion: 0.401228
+[INFO] 12:46:38:224 suse.c/(8217:8217): Timer log 
+[INFO] 12:46:38:225 suse.c/(8217:8217): Grado actual de multiprogramacion: 0
+[INFO] 12:46:38:225 suse.c/(8217:8217): Valor del semaforo afinado: 1
+[INFO] 12:46:38:225 suse.c/(8217:8217): Valor del semaforo solo_hiper_mega_piola: 0
+[INFO] 12:46:38:225 suse.c/(8217:8217): Socket 5:
+[INFO] 12:46:38:225 suse.c/(8217:8217): Hilos en cola NEW: 0
+[INFO] 12:46:38:225 suse.c/(8217:8217): Hilos en cola READY: 0
+[INFO] 12:46:38:225 suse.c/(8217:8217): Hilos en cola BLOCKED: 0
+[INFO] 12:46:38:225 suse.c/(8217:8217): Hilos en cola RUN: 0
+[INFO] 12:46:38:225 suse.c/(8217:8217): Hilos en cola EXIT: 3
+
+
+[INFO] 12:46:38:225 suse.c/(8217:8217): 
+Hilo 2: 
+Tiempo de ejecucion: 25168.000000 
+Tiempo de espera: 11211.000000 
+Tiempo de uso de CPU: 12001.000000 
+Porcentaje tiempo de ejecucion: 0.221729
+[INFO] 12:46:38:225 suse.c/(8217:8217): 
+Hilo 1: 
+Tiempo de ejecucion: 43170.000000 
+Tiempo de espera: 29074.000000 
+Tiempo de uso de CPU: 12177.000000 
+Porcentaje tiempo de ejecucion: 0.380326
+[INFO] 12:46:38:225 suse.c/(8217:8217): 
+Hilo 0: 
+Tiempo de ejecucion: 45170.000000 
+Tiempo de espera: 1037.000000 
+Tiempo de uso de CPU: 19077.000000 
+Porcentaje tiempo de ejecucion: 0.397946
+[INFO] 12:47:28:224 suse.c/(8217:8217): Timer log 
+[INFO] 12:47:28:229 suse.c/(8217:8217): Grado actual de multiprogramacion: 0
+[INFO] 12:47:28:230 suse.c/(8217:8217): Valor del semaforo afinado: 1
+[INFO] 12:47:28:230 suse.c/(8217:8217): Valor del semaforo solo_hiper_mega_piola: 0
+[INFO] 12:47:28:230 suse.c/(8217:8217): Socket 5:
+[INFO] 12:47:28:230 suse.c/(8217:8217): Hilos en cola NEW: 0
+[INFO] 12:47:28:230 suse.c/(8217:8217): Hilos en cola READY: 0
+[INFO] 12:47:28:230 suse.c/(8217:8217): Hilos en cola BLOCKED: 0
+[INFO] 12:47:28:230 suse.c/(8217:8217): Hilos en cola RUN: 0
+[INFO] 12:47:28:230 suse.c/(8217:8217): Hilos en cola EXIT: 3
+
+
+[INFO] 12:47:28:230 suse.c/(8217:8217): 
+Hilo 2: 
+Tiempo de ejecucion: 75173.000000 
+Tiempo de espera: 11211.000000 
+Tiempo de uso de CPU: 12001.000000 
+Porcentaje tiempo de ejecucion: 0.285262
+[INFO] 12:47:28:230 suse.c/(8217:8217): 
+Hilo 1: 
+Tiempo de ejecucion: 93175.000000 
+Tiempo de espera: 29074.000000 
+Tiempo de uso de CPU: 12177.000000 
+Porcentaje tiempo de ejecucion: 0.353574
+[INFO] 12:47:28:230 suse.c/(8217:8217): 
+Hilo 0: 
+Tiempo de ejecucion: 95175.000000 
+Tiempo de espera: 1037.000000 
+Tiempo de uso de CPU: 19077.000000 
+Porcentaje tiempo de ejecucion: 0.361164

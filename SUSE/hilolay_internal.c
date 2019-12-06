@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include <hilolay/hilolay.h>
-#include "hilolay_alumnos.c"
+#include "hilolay_alumnos.h"
 
 
 // TODO: Check what happens when a thrad is closed
