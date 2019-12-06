@@ -6,7 +6,7 @@ int main(){
 	void* recibir = malloc(265);
 	void* recibir2 = malloc(265);
 	int id = getpid();
-	muse_init(id, "127.0.0.1", 9170);
+	muse_init(id, "127.0.0.1", 9171);
 	uint32_t my_memory = muse_alloc(30);
 	uint32_t map = muse_map("stephen.txt",50,MAP_SHARED);
 	muse_cpy(map, "POR DIOS DONDE SORONGO ROMPEEEEEEE, SINCRO TE ODIO", 50); // Todo: para mi es aca donde muere

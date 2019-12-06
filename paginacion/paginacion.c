@@ -44,8 +44,8 @@ int paginas_necesarias(int valorPedido) {
 }
 
 void asignar_marco(page* pag) {
-	sem_wait(&mutex_frames);
 	frame *marco_libre = obtener_marco_libre();
+	sem_wait(&mutex_frames);
 	if(!marco_libre){ //si no hay marcos libres buscamos en el swap
 		asignar_marco_en_swap(pag);
 	} else {
@@ -111,7 +111,6 @@ void traer_pagina(page* pagina){
 	if (!pagina->bit_presencia){
 		frame *marco_libre = obtener_marco_libre();
 		if(marco_libre){
-			sem_wait(&mutex_frames);
 			memcpy(marco_libre->memoria, VIRTUAL_MEMORY+pagina->nro_frame*TAM_PAG, TAM_PAG); //Swap mappeado como variable global por ahora
 			bitarray_clean_bit(BIT_ARRAY_SWAP,(off_t) pagina->nro_frame);
 			bitarray_set_bit(BIT_ARRAY_FRAMES, (off_t) marco_libre->nro_frame);
@@ -121,15 +120,13 @@ void traer_pagina(page* pagina){
 			pagina->bit_uso = true;
 			pagina->bit_modificado = false;
 			PAGINAS_EN_FRAMES[marco_libre->nro_frame] = pagina;
-			sem_post(&mutex_frames);
 		}else{
 			page* victima = algoritmo_clock_modificado();
 			swap_pages(victima, pagina);
-
 		}
+		sem_post(&mutex_frames);
 	}
 	pagina->bit_uso = true;
-
 }
 
 page* buscar_cero_cero(){
@@ -243,5 +240,15 @@ void agregar_paginas_extras(t_list* tabla_de_paginas, int cantidadDePaginas){
 		escribir_pagina_extra_en_archivo_swap(pagina,tabla_de_paginas);
 		sem_post(&mutex_swap_file);
 	}
-
 }
+
+
+void eliminar_pagina(void*element){
+	page* ptr_pagina = (page*)element;
+	if(ptr_pagina->bit_presencia)
+		bitarray_clean_bit(BIT_ARRAY_FRAMES,ptr_pagina->nro_frame);
+	else
+		bitarray_clean_bit(BIT_ARRAY_SWAP,ptr_pagina->nro_frame);
+	free(ptr_pagina);
+}
+

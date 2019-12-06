@@ -49,6 +49,7 @@ void inicializar_recursos_de_memoria(){
 	sem_init(&mutex_clock_mod,0,1);
 	sem_init(&mutex_write_frame,0,1);
 	sem_init(&mutex_process_list,0,1);
+	sem_init(&binary_free_frame,0,0);
 
 }
 
@@ -96,6 +97,7 @@ void liberacion_de_recursos(int num){
 	sem_destroy(&binary_swap_pages);
 	sem_destroy(&mutex_write_frame);
 	sem_destroy(&mutex_process_list);
+	sem_destroy(&binary_free_frame);
 	printf("Recursos liberados!\n");
 	raise(SIGTERM);
 }
@@ -226,10 +228,9 @@ void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 	int desplazamientoEnBuffer = 0;
 
 
-
 	while (cantidadDeBytes > 0) {
 		page* pagina = (page*)list_get(ptr_segmento->tabla_de_paginas,numeroPagina + auxiliar);
-		traer_pagina(pagina); // TODO: si hay frames libres para aquellas paginas que dan page_fault deberia asignarselos
+		traer_pagina(pagina);
 		frame* marco =(frame*) (pagina->frame);
 		tamanioACopiar = minimo(cantidadDeBytes,(TAM_PAG - desplazamientoEnPagina));
 		memcpy(buffer + desplazamientoEnBuffer,marco->memoria + desplazamientoEnPagina, tamanioACopiar);
@@ -329,23 +330,17 @@ int musesync(t_proceso* proceso,uint32_t direccion, size_t length){
 
 	if(ptr_mapped_file){
 		int nro_pag = div(direccion-ptr_segmento->base_logica,TAM_PAG).quot;
-		int offset_pag = div(direccion-ptr_segmento->base_logica,TAM_PAG).rem;
-		size_t bytes_sincronizados = 0;
-		int bytes_a_copiar=0;
+		int cantidad_de_paginas = div(direccion-ptr_segmento->base_logica+length,TAM_PAG).quot-nro_pag;
+		int paginas_copiadas=0;
 
 		file = ptr_mapped_file->file;
 		sem_wait(&mutex_write_shared_files);
-		for(int i=nro_pag;bytes_sincronizados<length;i++){
+		for(int i=nro_pag;paginas_copiadas<=cantidad_de_paginas;i++){
 			page *ptr_pagina = (page*)list_get(ptr_segmento->tabla_de_paginas,i);
 			traer_pagina(ptr_pagina);
 			frame *ptr_frame = (frame*) ptr_pagina->frame;
-			if(i==nro_pag)
-				bytes_a_copiar=TAM_PAG-offset_pag;
-			else
-				bytes_a_copiar=minimo(TAM_PAG,length-bytes_sincronizados);
-			memcpy(file+direccion-ptr_segmento->base_logica+bytes_sincronizados,ptr_frame->memoria,bytes_a_copiar);
-			bytes_sincronizados+=bytes_a_copiar;
-			offset_pag=0; // Si la primera vez esta parado en el medio o casi al final y se puede, se posiciona ahi, despues ya no
+			memcpy(file+paginas_copiadas*TAM_PAG,ptr_frame->memoria,TAM_PAG);
+			paginas_copiadas++;
 		}
 		sem_post(&mutex_write_shared_files);
 		return 0;
@@ -356,18 +351,14 @@ int musesync(t_proceso* proceso,uint32_t direccion, size_t length){
 int museunmap(t_proceso *proceso,uint32_t direccion){
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion, proceso->tablaDeSegmentos);
 	segmentmmapmetadata *ptr_metadata = (segmentmmapmetadata*)list_get(ptr_segmento->metadatas,0);
-	mapped_file *ptr_mapped_file = buscar_archivo_abierto(ptr_metadata->path);
-	if(ptr_segmento->tipo==MMAP && ptr_mapped_file->flag==MAP_PRIVATE){
-		list_remove(proceso->tablaDeSegmentos,ptr_segmento->nro_segmento);
-		munmap(ptr_mapped_file->file,ptr_metadata->tam_mappeado);
-		free(ptr_mapped_file->path);
-//		list_destroy(ptr_mapped_file->procesos);
-//		list_destroy(ptr_mapped_file->paginas_min_asignadas);
-		recalcular_bases_logicas_de_segmentos(proceso->tablaDeSegmentos);
-		liberar_recursos_del_segmento(ptr_segmento,proceso);
+	mapped_file *ptr_mapped_metadata = buscar_archivo_abierto(ptr_metadata->path);
+
+	if(ptr_mapped_metadata){
+		liberar_recursos_segmento_map(ptr_segmento,proceso);
+		return 0;
 	}
-//
-	return 0; // Aca iria un quilombo de cosas, que voy a hacer una vez que tenga bien hecho el swap and stuff
+	else
+		return -1;
 }
 
 int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {

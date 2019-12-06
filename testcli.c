@@ -5,7 +5,7 @@ int main(){
 	void* recibir = malloc(265);
 	void* recibir2 = malloc(265);
 	int id = getpid();
-	muse_init(id, "127.0.0.1",9170);
+	muse_init(id, "127.0.0.1",9171);
 	uint32_t my_memory = muse_alloc(30);
 	uint32_t map = muse_map("stephen.txt",277,MAP_SHARED);
 	printf("map = %lu\n",map);
@@ -14,6 +14,7 @@ int main(){
 	muse_get(recibir,my_memory,10);
 	muse_cpy(map, "Habia una vaca re loca y pirada que queria aprobar sistemas operativos y no pudo ", 81); 
 	muse_get(recibir2,map,81);
+	muse_sync(map+10,10);
 	printf("muse_get(recibir,my_memory,10)=%s\n", (char*)recibir);
 	printf("muse_get(recibir2,map,81)=%s\n",(char*)recibir2);
 	sleep(9);

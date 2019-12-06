@@ -21,6 +21,7 @@ sem_t mutex_shared;
 sem_t mutex_write_shared_files;
 sem_t mutex_write_frame;
 sem_t mutex_process_list;
+sem_t binary_free_frame;
 
 typedef enum {
 	DESCONEXION = 0,

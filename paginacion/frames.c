@@ -38,9 +38,10 @@ void inicializar_bitmap() {
 frame* obtener_marco_libre() {
 	bool _es_un_marco_libre(void *elemento) {
 		int nro_de_frame = ((frame*) elemento)->nro_frame;
-		return !bitarray_test_bit(BIT_ARRAY_FRAMES, nro_de_frame);
+		int bit = bitarray_test_bit(BIT_ARRAY_FRAMES, nro_de_frame);
+		return !bit;
 	}
-	return (frame*) list_find(FRAMES_TABLE, &_es_un_marco_libre);
+	return(frame*) list_find(FRAMES_TABLE,_es_un_marco_libre);
 }
 
 void asignar_marcos(t_list* tabla_de_pags) {

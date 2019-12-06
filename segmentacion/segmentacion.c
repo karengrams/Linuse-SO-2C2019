@@ -362,14 +362,24 @@ void recalcular_bases_logicas_de_segmentos(t_list *tabla_de_segmentos){
 	list_iterate(tabla_de_segmentos,_recalcular_base_logica);
 }
 
-void liberar_recursos_del_segmento(segment*ptr_segmento,t_proceso* proceso){
-	int cantidad_de_paginas_asignadas = ptr_segmento->tabla_de_paginas->elements_count;
-	int paginas_removidas=0;
-	int cant_pag_compartidas;
 
+void liberar_recursos_segmento_heap(segment*ptr_segmento,t_proceso* proceso){
 
 	void _eliminar_metadatas(void*element){
-		if(ptr_segmento->tipo==HEAP){
+		eliminar_metadatas(element,ptr_segmento);
+	}
+
+	void _eliminar_paginas(void*element){
+		eliminar_pagina(element);
+	}
+
+	list_destroy_and_destroy_elements(ptr_segmento->tabla_de_paginas,_eliminar_paginas);
+	list_destroy_and_destroy_elements(ptr_segmento->metadatas,_eliminar_metadatas);
+
+}
+
+void eliminar_metadatas(void *element,segment*ptr_segmento){
+	if(ptr_segmento->tipo==HEAP){
 			segmentheapmetadata *ptr_heap_metadata = (segmentheapmetadata*)element;
 			free(ptr_heap_metadata->metadata);
 			free(ptr_heap_metadata);
@@ -378,52 +388,69 @@ void liberar_recursos_del_segmento(segment*ptr_segmento,t_proceso* proceso){
 			free(ptr_map_metadata->path);
 			free(ptr_map_metadata);
 		}
+}
+
+void liberar_recursos_segmento_map(segment *ptr_segmento,t_proceso*proceso){
+	segmentmmapmetadata *ptr_metadata = (segmentmmapmetadata*)list_get(ptr_segmento->metadatas,0);
+	mapped_file *ptr_mapped_metadata = buscar_archivo_abierto(ptr_metadata->path);
+
+	bool _mismo_id(void*element){
+		t_proceso *otro_proceso = (t_proceso*) element;
+		return otro_proceso->id == proceso->id;
+	}
+
+	void _eliminar_paginas_compartidas(void*element){
+		page * ptr_pagina = (page*)element;
+		if(ptr_pagina->nro_frame<list_size(ptr_mapped_metadata->paginas_min_asignadas))
+			list_remove(ptr_segmento->tabla_de_paginas,0);
+	}
+
+	void _eliminar_metadatas(void*element){
+		eliminar_metadatas(element,ptr_segmento);
 	}
 
 	void _eliminar_paginas(void*element){
-		page* ptr_pagina = (page*)element;
-		if(ptr_pagina->bit_presencia)
-			bitarray_clean_bit(BIT_ARRAY_FRAMES,ptr_pagina->nro_frame);
-		else
-			bitarray_clean_bit(BIT_ARRAY_SWAP,ptr_pagina->nro_frame);
-		free(ptr_pagina);
+		eliminar_pagina(element);
 	}
 
+	list_remove(proceso->tablaDeSegmentos,ptr_segmento->nro_segmento);
+	recalcular_bases_logicas_de_segmentos(proceso->tablaDeSegmentos);
 
-	if(ptr_segmento->tipo==MMAP){
-		segmentmmapmetadata *ptr_metadata = (segmentmmapmetadata*)list_get(ptr_segmento->metadatas,0);
-		mapped_file *ptr_mapped_metadata = buscar_archivo_abierto(ptr_metadata->path);
+	sem_wait(&mutex_shared_files);
+	list_remove_by_condition(ptr_mapped_metadata->procesos,_mismo_id);
+	list_iterate(ptr_segmento->tabla_de_paginas,_eliminar_paginas_compartidas);
 
-		bool _mismo_id(void*element){
-			t_proceso *otro_proceso = (t_proceso*) element;
-			return otro_proceso->id == proceso->id;
-		}
+	if(!ptr_mapped_metadata->procesos->elements_count && ptr_mapped_metadata->flag==MAP_SHARED){
 
-		void _eliminar_paginas_compartidas(void*element){
-			page * ptr_pagina = (page*)element;
-			if(ptr_pagina->nro_frame<list_size(ptr_mapped_metadata->paginas_min_asignadas))
-				list_remove(ptr_segmento->tabla_de_paginas,0);
-		}
+		munmap(ptr_mapped_metadata->file,ptr_mapped_metadata->tam_archivo);
+		list_destroy_and_destroy_elements(ptr_mapped_metadata->paginas_min_asignadas,_eliminar_paginas);
+		list_destroy(ptr_mapped_metadata->procesos);
+		free(ptr_mapped_metadata->path);
+		list_remove(MAPPED_FILES,ptr_mapped_metadata->nro_file);
+		update_file_number();
+		free(ptr_mapped_metadata);
 
-		sem_wait(&mutex_shared_files);
-		list_remove_by_condition(ptr_mapped_metadata->procesos,_mismo_id);
-		list_iterate(ptr_segmento->tabla_de_paginas,_eliminar_paginas_compartidas);
-		if(!ptr_mapped_metadata->procesos->elements_count){
-			cant_pag_compartidas = list_size(ptr_mapped_metadata->paginas_min_asignadas);
-			munmap(ptr_mapped_metadata->file,ptr_mapped_metadata->tam_archivo);
-			list_destroy_and_destroy_elements(ptr_mapped_metadata->paginas_min_asignadas,_eliminar_paginas);
-			list_destroy(ptr_mapped_metadata->procesos);
-			free(ptr_mapped_metadata->path);
-			list_remove(MAPPED_FILES,ptr_mapped_metadata->nro_file);
-			update_file_number();
-			free(ptr_mapped_metadata);
-		}
-		sem_post(&mutex_shared_files);
+	}else if(ptr_mapped_metadata && ptr_mapped_metadata->flag==MAP_PRIVATE){
+
+		munmap(ptr_mapped_metadata->file,ptr_metadata->tam_mappeado);
+		free(ptr_mapped_metadata->path);
+		list_destroy(ptr_mapped_metadata->procesos);
+		list_destroy(ptr_mapped_metadata->paginas_min_asignadas);
+
 	}
 
-	list_destroy_and_destroy_elements(ptr_segmento->tabla_de_paginas,&_eliminar_paginas);
+	sem_post(&mutex_shared_files);
+	list_destroy_and_destroy_elements(ptr_segmento->tabla_de_paginas,_eliminar_paginas);
+	list_destroy_and_destroy_elements(ptr_segmento->metadatas,_eliminar_metadatas);
+}
 
-	list_destroy_and_destroy_elements(ptr_segmento->metadatas,&_eliminar_metadatas);
+
+
+void liberar_recursos_del_segmento(segment*ptr_segmento,t_proceso* proceso){
+	if(ptr_segmento->tipo==HEAP)
+		liberar_recursos_segmento_heap(ptr_segmento,proceso);
+	else
+		liberar_recursos_segmento_map(ptr_segmento,proceso);
 	free(ptr_segmento);
 }
 
