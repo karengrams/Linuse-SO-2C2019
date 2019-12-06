@@ -118,8 +118,19 @@ void traer_pagina(page* pagina){
 	//y cargamos, si esta en memoria seteamos el bit de uso
 
 	if (!pagina->bit_presencia){
-		page* victima = algoritmo_clock_modificado();
-		swap_pages(victima, pagina);
+		frame *marco_libre = obtener_marco_libre();
+		if(marco_libre){
+			bitarray_set_bit(BIT_ARRAY_FRAMES, (off_t) marco_libre->nro_frame);
+			pagina->frame = marco_libre;
+			pagina->bit_presencia = true;
+			pagina->nro_frame = marco_libre->nro_frame;
+			pagina->bit_uso = true;
+			pagina->bit_modificado = false;
+			PAGINAS_EN_FRAMES[marco_libre->nro_frame] = pagina;
+		}else{
+			page* victima = algoritmo_clock_modificado();
+			swap_pages(victima, pagina);
+		}
 	}
 	pagina->bit_uso = true;
 
@@ -130,7 +141,7 @@ page* buscar_cero_cero(){
 
 		page* pagina = PAGINAS_EN_FRAMES[INDICE_ALGORITMO_CLOCK];
 
-		if((pagina->bit_uso == 0) && (pagina->bit_modificado == 0)){
+		if(pagina && (pagina->bit_uso == 0) && (pagina->bit_modificado == 0)){
 			incrementar_indice();
 			return pagina;
 		}
@@ -146,11 +157,12 @@ page* buscar_cero_uno(){
 
 		page* pagina = PAGINAS_EN_FRAMES[INDICE_ALGORITMO_CLOCK];
 
-		if((pagina->bit_uso == 0)){
+		if(pagina && (pagina->bit_uso == 0)){
 			incrementar_indice();
 			return pagina;
+		}else{
+			pagina->bit_uso = 0; //lo seteamos en 0 y avanzamos
 		}
-		pagina->bit_uso = 0; //lo seteamos en 0 y avanzamos
 		incrementar_indice();
 	}
 	return NULL;

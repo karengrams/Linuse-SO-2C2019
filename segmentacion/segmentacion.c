@@ -84,7 +84,7 @@ uint32_t limite_segmento(segment* segmento) {
 bool segmento_puede_agrandarse(segment* segmento, int valorPedido,t_list*tabla_de_segmentos) {
 	int pos_seg = segmento->nro_segmento;
 	int paginasNecesarias;
-	segment *siguiente = (segment*) list_get(tabla_de_segmentos, (pos_seg + 1)); // TODO: si el segmento se libera, se toma un segmento inexistente?
+	segment *siguiente = (segment*) list_get(tabla_de_segmentos, (pos_seg + 1));
 
 	segmentheapmetadata *ptr_seg_metadata = (segmentheapmetadata*) list_get(segmento->metadatas, segmento->metadatas->elements_count - 1);
 	heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
@@ -114,7 +114,6 @@ int desplazamiento_en_pagina(segment* segmento, uint32_t direccion) {
 	return div(desplazamientoEnSegmento, TAM_PAG).rem;
 }
 
-//TODO: ver caso de error
 int tamanio_segmento(segment* segmento) {
 	return ((list_size(segmento->tabla_de_paginas)) * (TAM_PAG));
 }
@@ -363,9 +362,11 @@ void recalcular_bases_logicas_de_segmentos(t_list *tabla_de_segmentos){
 	list_iterate(tabla_de_segmentos,_recalcular_base_logica);
 }
 
-
-
 void liberar_recursos_del_segmento(segment*ptr_segmento,t_proceso* proceso){
+	int cantidad_de_paginas_asignadas = ptr_segmento->tabla_de_paginas->elements_count;
+	int paginas_removidas=0;
+
+
 	void _eliminar_metadatas(void*element){
 		if(ptr_segmento->tipo==HEAP){
 			segmentheapmetadata *ptr_heap_metadata = (segmentheapmetadata*)element;
@@ -389,13 +390,14 @@ void liberar_recursos_del_segmento(segment*ptr_segmento,t_proceso* proceso){
 
 	void _eliminar_y_quitar_paginas(void*element){
 		page*ptr_pag = (page*)element;
-		list_remove(ptr_segmento->tabla_de_paginas,ptr_pag->nro_pagina); // La tercera vez muere
+		if(cantidad_de_paginas_asignadas>ptr_pag->nro_pagina)
+			list_remove(ptr_segmento->tabla_de_paginas,ptr_pag->nro_pagina-paginas_removidas); // La tercera vez muere
+		paginas_removidas++;
 		_eliminar_paginas(element);
 	}
 
 	if(ptr_segmento->tipo==MMAP){
 		segmentmmapmetadata *ptr_metadata = (segmentmmapmetadata*)list_get(ptr_segmento->metadatas,0);
-
 		mapped_file *ptr_mapped_metadata = buscar_archivo_abierto(ptr_metadata->path);
 
 		bool _mismo_id(void*element){
@@ -405,13 +407,16 @@ void liberar_recursos_del_segmento(segment*ptr_segmento,t_proceso* proceso){
 
 		list_remove_by_condition(ptr_mapped_metadata->procesos,_mismo_id);
 		if(!ptr_mapped_metadata->procesos->elements_count){
+			sem_wait(&mutex_shared_files);
 			munmap(ptr_mapped_metadata->file,ptr_mapped_metadata->tam_archivo);
 			list_iterate(ptr_mapped_metadata->paginas_min_asignadas,_eliminar_y_quitar_paginas);
 			list_destroy(ptr_mapped_metadata->paginas_min_asignadas);
 			list_destroy(ptr_mapped_metadata->procesos);
 			free(ptr_mapped_metadata->path);
 			list_remove(MAPPED_FILES,ptr_mapped_metadata->nro_file);
+			update_file_number();
 			free(ptr_mapped_metadata);
+			sem_post(&mutex_shared_files);
 		}
 	}
 
@@ -454,4 +459,15 @@ mapped_file* buscar_archivo_abierto(char*path){
 		return !strcmp(path,ptr_mapped_file->path);
 	}
 	return (mapped_file*)list_find(MAPPED_FILES,_archivo_fue_abierto);
+}
+
+void update_file_number(){
+	int index = 0;
+	void _update_file_number(void*element){
+		mapped_file*ptr_mapped_file=(mapped_file*)element;
+		ptr_mapped_file->nro_file=0;
+		index++;
+	}
+
+	list_iterate(MAPPED_FILES,_update_file_number);
 }

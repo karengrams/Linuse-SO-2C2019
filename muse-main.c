@@ -107,7 +107,7 @@ void atender_cliente(void *element){
 
     	int cod_op = recibir_operacion(socketCli);
     	if(cod_op>=10 && cod_op<=18){
-        	printf("Se ha solicitado la operacion nro. %d por el socket %d\n",cod_op,socketCli);
+        	printf("\n\nSe ha solicitado la operacion nro. %d por el socket %d\n\n",cod_op,socketCli);
     		paqueteRecibido = recibir_paquete(socketCli);
     		cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
     		switch(cod_op){
@@ -118,10 +118,10 @@ void atender_cliente(void *element){
     			send(socketCli, &cod_error, sizeof(int), 0);
     		break;
     		case MUSE_CLOSE:
-    			printf("Antes de liberar al proceso...\n");
+    			printf("\nAntes de liberar al proceso...\n");
     			mostrar_tabla_de_segmentos(cliente_a_atender->tablaDeSegmentos);
     			museclose(cliente_a_atender);
-    			printf("Luego de liberar al proceso...\n");
+    			printf("\nLuego de liberar al proceso...\n");
     			mostrar_frames_ocupados();
     		break;
     		case MUSE_ALLOC:

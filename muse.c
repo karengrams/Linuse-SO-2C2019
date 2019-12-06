@@ -43,7 +43,8 @@ void inicializar_recursos_de_memoria(){
 	sem_init(&mutex_frames,0,1);
 	sem_init(&mutex_swap,0,1);
 	sem_init(&mutex_swap_file,0,1);
-
+	sem_init(&mutex_shared_files,0,1);
+	sem_init(&mutex_write_shared_files,0,1);
 
 }
 
@@ -84,6 +85,7 @@ void liberacion_de_recursos(int num){
 	sem_destroy(&mutex_frames);
 	sem_destroy(&mutex_swap);
 	sem_destroy(&mutex_swap_file);
+	sem_destroy(&mutex_shared_files);
 
 	printf("Recursos liberados!\n");
 	raise(SIGTERM);
@@ -225,7 +227,7 @@ uint32_t musemap(t_proceso*proceso, char*path, size_t length, int flags){
 	int paginas_de_seg,tam_a_mappear;
 	void *file_mmap;
 	segment *segmento_mmap=crear_segmento(MMAP,length,proceso->tablaDeSegmentos);
-	mapped_file *ptr_mapped_file_metadata;
+	mapped_file *ptr_mapped_file_metadata = buscar_archivo_abierto(path);
 	segmentmmapmetadata *ptr_metadata=(segmentmmapmetadata*)malloc(sizeof(segmentmmapmetadata));
 	int fd = open(path, O_RDWR | O_CREAT, S_IRUSR); // Lo abre para lectura si existe, sino lo crea
 	struct stat statfile;
@@ -237,13 +239,12 @@ uint32_t musemap(t_proceso*proceso, char*path, size_t length, int flags){
 	else
 		tam_a_mappear=statfile.st_size;
 
-	if(flags==MAP_PRIVATE || (flags == MAP_SHARED && !buscar_archivo_abierto(path))){
-
+	if(flags==MAP_PRIVATE || (flags == MAP_SHARED && !ptr_mapped_file_metadata)){
 		file_mmap = mmap(NULL,tam_a_mappear,PROT_READ | PROT_WRITE,MAP_SHARED,fd,0);
 		ptr_metadata->path=string_duplicate(path);
 		ptr_metadata->tam_mappeado=length;
 		list_add(segmento_mmap->metadatas,ptr_metadata);
-
+		sem_wait(&mutex_shared_files);
 		ptr_mapped_file_metadata=(mapped_file*) malloc(sizeof(mapped_file));
 		ptr_mapped_file_metadata->paginas_min_asignadas=crear_tabla_de_paginas(statfile.st_size);
 		ptr_mapped_file_metadata->flag=flags;
@@ -253,6 +254,7 @@ uint32_t musemap(t_proceso*proceso, char*path, size_t length, int flags){
 		ptr_mapped_file_metadata->nro_file=MAPPED_FILES->elements_count;
 		list_add(MAPPED_FILES,ptr_mapped_file_metadata);
 		list_add(ptr_mapped_file_metadata->procesos,proceso);
+		sem_post(&mutex_shared_files);
 
 		sem_wait(&mutex_swap);
 		asignar_marcos_swap(ptr_mapped_file_metadata->paginas_min_asignadas);
@@ -272,8 +274,7 @@ uint32_t musemap(t_proceso*proceso, char*path, size_t length, int flags){
 			segmento_mmap->tabla_de_paginas=list_take(ptr_mapped_file_metadata->paginas_min_asignadas,paginas_de_seg);
 		}
 
-	}else if (flags == MAP_SHARED && buscar_archivo_abierto(path)){
-		ptr_mapped_file_metadata = buscar_archivo_abierto(path);
+	}else if (flags == MAP_SHARED && ptr_mapped_file_metadata && ptr_mapped_file_metadata->flag==MAP_SHARED){
 		ptr_metadata->path=string_duplicate(path);
 		ptr_metadata->tam_mappeado=length;
 		list_add(segmento_mmap->metadatas,ptr_metadata);
@@ -290,6 +291,9 @@ uint32_t musemap(t_proceso*proceso, char*path, size_t length, int flags){
 		if(length==strlen((char*)ptr_mapped_file_metadata->file))
 			segmento_mmap->tabla_de_paginas=ptr_mapped_file_metadata->paginas_min_asignadas;
 	}
+
+	// TODO: cubrir la situacion que se abre un archivo privado, aunque dijo adro que no se fijaban en eso, lo vquiero poner igual
+
 	close(fd);
     return segmento_mmap->base_logica;
 }
@@ -311,6 +315,7 @@ int musesync(t_proceso* proceso,uint32_t direccion, size_t length){
 		int bytes_a_copiar=0;
 
 		file = ptr_mapped_file->file;
+		sem_wait(&mutex_write_shared_files);
 		for(int i=nro_pag;bytes_sincronizados<length;i++){
 			page *ptr_pagina = (page*)list_get(ptr_segmento->tabla_de_paginas,i);
 			traer_pagina(ptr_pagina);
@@ -323,6 +328,7 @@ int musesync(t_proceso* proceso,uint32_t direccion, size_t length){
 			bytes_sincronizados+=bytes_a_copiar;
 			offset_pag=0; // Si la primera vez esta parado en el medio o casi al final y se puede, se posiciona ahi, despues ya no
 		}
+		sem_post(&mutex_write_shared_files);
 		return 0;
 	}else
 		return -1;

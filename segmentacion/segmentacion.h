@@ -10,7 +10,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <semaphore.h>
 
+sem_t mutex_shared_files;
 t_list* MAPPED_FILES;
 
 typedef enum segment_type_t {
@@ -71,4 +73,5 @@ void liberar_recursos_del_segmento(segment*,t_proceso*);
 void liberar_tabla_de_segmentos(t_proceso*);
 void eliminar_segmento_de_tabla(t_proceso*,segment*);
 mapped_file* buscar_archivo_abierto(char*);
+void update_file_number();
 #endif /* muse-segmentacion_h */
