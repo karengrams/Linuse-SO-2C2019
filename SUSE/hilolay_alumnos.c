@@ -1,18 +1,15 @@
+#include "utils-cli.c"
+#include <commons/config.h>
 #include "hilolay_alumnos.h"
-#include "utils-cli.h"
+
+
 
 int SOCKET;
 
 
-void hilolay_init(){
-
-	//iniciar conexion con suse
-	SOCKET = crear_conexion("127.0.0.1", "48480"); //De donde sacamos el puerto?
-	init_internal(main_ops); //esta funcion crea el hilo del programa padre y llama a suse_create
-
-}
 
 int suse_create(int tid){
+
 	t_paquete* paquete = crear_paquete(SUSE_INIT);
 	agregar_a_paquete(paquete, &tid, sizeof(int));
 	enviar_paquete(paquete,SOCKET);
@@ -20,11 +17,13 @@ int suse_create(int tid){
 	return 0;
 }
 
-int suse_schedule(){
+int suse_schedule_next(){
 	int codigo = SUSE_SCHEDULE;
 	int tid;
 	send(SOCKET, &codigo, sizeof(int), 0);
 	recv(SOCKET, &tid, sizeof(int), 0);
+
+	printf("Schedule next, ponemos a ejecutar el hilo %d\n", tid);
 	return tid;
 }
 
@@ -64,4 +63,21 @@ int suse_close(int tid){
 	enviar_paquete(paquete, SOCKET);
 	eliminar_paquete(paquete);
 	return 0;
+}
+
+static struct hilolay_operations hiloops = {
+		.suse_create = &suse_create,
+		.suse_schedule_next = &suse_schedule_next,
+		.suse_join = &suse_join,
+		.suse_close = &suse_close,
+		.suse_wait = &suse_wait,
+		.suse_signal = &suse_signal
+};
+
+void hilolay_init(){
+
+	//iniciar conexion con suse
+	SOCKET = crear_conexion("127.0.0.1", "48480"); //De donde sacamos el puerto?
+	init_internal(&hiloops); //esta funcion crea el hilo del programa padre y llama a suse_create
+
 }

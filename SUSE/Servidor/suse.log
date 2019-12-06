@@ -1,28 +1,499 @@
-[INFO] 19:41:05:103 suse.c/(6780:6780): Valor del semaforo A: 0
 
-[INFO] 19:41:05:105 suse.c/(6780:6780): Valor del semaforo B: 1
-
-[INFO] 19:43:54:756 suse.c/(6943:6943): Timer log 
-
-[INFO] 19:43:54:757 suse.c/(6943:6943): Grado actual de multiprogramacion: 0
-
-[INFO] 19:43:54:757 suse.c/(6943:6943): Valor del semaforo A: 0
-
-[INFO] 19:43:54:757 suse.c/(6943:6943): Valor del semaforo B: 1
-
-[INFO] 19:43:59:756 suse.c/(6943:6943): Timer log 
-
-[INFO] 19:43:59:757 suse.c/(6943:6943): Grado actual de multiprogramacion: 0
-
-[INFO] 19:43:59:757 suse.c/(6943:6943): Valor del semaforo A: 0
-
-[INFO] 19:43:59:757 suse.c/(6943:6943): Valor del semaforo B: 1
-
-[INFO] 19:44:04:756 suse.c/(6943:6943): Timer log 
-
-[INFO] 19:44:04:757 suse.c/(6943:6943): Grado actual de multiprogramacion: 0
-
-[INFO] 19:44:04:757 suse.c/(6943:6943): Valor del semaforo A: 0
-
-[INFO] 19:44:04:757 suse.c/(6943:6943): Valor del semaforo B: 1
-
+[INFO] 20:31:22:979 suse.c/(14177:14177): Valor del semaforo afinado: 1
+[INFO] 20:31:22:983 suse.c/(14177:14177): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 20:31:46:794 suse.c/(14177:14186): Finalizo el hilo 1 del socket 5
+[INFO] 20:31:46:794 suse.c/(14177:14186): Grado actual de multiprogramacion: 0
+[INFO] 20:31:46:795 suse.c/(14177:14186): Valor del semaforo afinado: 1
+[INFO] 20:31:46:795 suse.c/(14177:14186): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 20:31:46:795 suse.c/(14177:14186): Socket 5:
+[INFO] 20:31:46:795 suse.c/(14177:14186): Hilos en cola NEW: 0
+[INFO] 20:31:46:795 suse.c/(14177:14186): Hilos en cola READY: 0
+[INFO] 20:31:46:795 suse.c/(14177:14186): Hilos en cola BLOCKED: 1
+[INFO] 20:31:46:795 suse.c/(14177:14186): Hilos en cola RUN: 0
+[INFO] 20:31:46:795 suse.c/(14177:14186): Hilos en cola EXIT: 1
+[INFO] 20:31:46:795 suse.c/(14177:14186): Hilo 1: 
+tiempo de ejecucion: 20000 
+tiempo de espera: -664311632 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134518018
+[INFO] 20:31:46:796 suse.c/(14177:14186): Hilo 0: 
+tiempo de ejecucion: 20000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134518018
+[INFO] 20:31:46:839 suse.c/(14177:14186): Finalizo el hilo 0 del socket 5
+[INFO] 20:31:46:839 suse.c/(14177:14186): Grado actual de multiprogramacion: 0
+[INFO] 20:31:46:839 suse.c/(14177:14186): Valor del semaforo afinado: 1
+[INFO] 20:31:46:839 suse.c/(14177:14186): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 20:31:46:840 suse.c/(14177:14186): Socket 5:
+[INFO] 20:31:46:840 suse.c/(14177:14186): Hilos en cola NEW: 0
+[INFO] 20:31:46:840 suse.c/(14177:14186): Hilos en cola READY: 0
+[INFO] 20:31:46:840 suse.c/(14177:14186): Hilos en cola BLOCKED: 0
+[INFO] 20:31:46:840 suse.c/(14177:14186): Hilos en cola RUN: 0
+[INFO] 20:31:46:841 suse.c/(14177:14186): Hilos en cola EXIT: 2
+[INFO] 20:31:46:843 suse.c/(14177:14186): Hilo 1: 
+tiempo de ejecucion: 20000 
+tiempo de espera: -664311632 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517904
+[INFO] 20:31:46:844 suse.c/(14177:14186): Hilo 0: 
+tiempo de ejecucion: 20000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517904
+[INFO] 20:32:12:984 suse.c/(14177:14177): Timer log 
+[INFO] 20:32:12:984 suse.c/(14177:14177): Grado actual de multiprogramacion: 0
+[INFO] 20:32:12:984 suse.c/(14177:14177): Valor del semaforo afinado: 1
+[INFO] 20:32:12:984 suse.c/(14177:14177): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 20:32:12:984 suse.c/(14177:14177): Socket 5:
+[INFO] 20:32:12:984 suse.c/(14177:14177): Hilos en cola NEW: 0
+[INFO] 20:32:12:984 suse.c/(14177:14177): Hilos en cola READY: 0
+[INFO] 20:32:12:984 suse.c/(14177:14177): Hilos en cola BLOCKED: 0
+[INFO] 20:32:12:984 suse.c/(14177:14177): Hilos en cola RUN: 0
+[INFO] 20:32:12:985 suse.c/(14177:14177): Hilos en cola EXIT: 2
+[INFO] 20:32:12:985 suse.c/(14177:14177): Hilo 1: 
+tiempo de ejecucion: 46000 
+tiempo de espera: -664311632 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517904
+[INFO] 20:32:12:985 suse.c/(14177:14177): Hilo 0: 
+tiempo de ejecucion: 46000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517904
+[INFO] 20:33:02:984 suse.c/(14177:14177): Timer log 
+[INFO] 20:33:02:985 suse.c/(14177:14177): Grado actual de multiprogramacion: 0
+[INFO] 20:33:02:985 suse.c/(14177:14177): Valor del semaforo afinado: 1
+[INFO] 20:33:02:985 suse.c/(14177:14177): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 20:33:02:986 suse.c/(14177:14177): Socket 5:
+[INFO] 20:33:02:986 suse.c/(14177:14177): Hilos en cola NEW: 0
+[INFO] 20:33:02:986 suse.c/(14177:14177): Hilos en cola READY: 0
+[INFO] 20:33:02:986 suse.c/(14177:14177): Hilos en cola BLOCKED: 0
+[INFO] 20:33:02:986 suse.c/(14177:14177): Hilos en cola RUN: 0
+[INFO] 20:33:02:986 suse.c/(14177:14177): Hilos en cola EXIT: 2
+[INFO] 20:33:02:986 suse.c/(14177:14177): Hilo 1: 
+tiempo de ejecucion: 96000 
+tiempo de espera: -664311632 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517904
+[INFO] 20:33:02:986 suse.c/(14177:14177): Hilo 0: 
+tiempo de ejecucion: 96000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517904
+[INFO] 20:33:52:984 suse.c/(14177:14177): Timer log 
+[INFO] 20:33:52:985 suse.c/(14177:14177): Grado actual de multiprogramacion: 0
+[INFO] 20:33:52:985 suse.c/(14177:14177): Valor del semaforo afinado: 1
+[INFO] 20:33:52:985 suse.c/(14177:14177): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 20:33:52:985 suse.c/(14177:14177): Socket 5:
+[INFO] 20:33:52:985 suse.c/(14177:14177): Hilos en cola NEW: 0
+[INFO] 20:33:52:985 suse.c/(14177:14177): Hilos en cola READY: 0
+[INFO] 20:33:52:985 suse.c/(14177:14177): Hilos en cola BLOCKED: 0
+[INFO] 20:33:52:985 suse.c/(14177:14177): Hilos en cola RUN: 0
+[INFO] 20:33:52:985 suse.c/(14177:14177): Hilos en cola EXIT: 2
+[INFO] 20:33:52:985 suse.c/(14177:14177): Hilo 1: 
+tiempo de ejecucion: 146000 
+tiempo de espera: -664311632 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517904
+[INFO] 20:33:52:985 suse.c/(14177:14177): Hilo 0: 
+tiempo de ejecucion: 146000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517904
+[INFO] 20:34:04:186 suse.c/(14236:14236): Valor del semaforo afinado: 1
+[INFO] 20:34:04:192 suse.c/(14236:14236): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 20:34:54:199 suse.c/(14236:14236): Timer log 
+[INFO] 20:34:54:200 suse.c/(14236:14236): Grado actual de multiprogramacion: 1
+[INFO] 20:34:54:200 suse.c/(14236:14236): Valor del semaforo afinado: 1
+[INFO] 20:34:54:200 suse.c/(14236:14236): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 20:34:54:200 suse.c/(14236:14236): Socket 5:
+[INFO] 20:34:54:200 suse.c/(14236:14236): Hilos en cola NEW: 0
+[INFO] 20:34:54:200 suse.c/(14236:14236): Hilos en cola READY: 0
+[INFO] 20:34:54:200 suse.c/(14236:14236): Hilos en cola BLOCKED: 1
+[INFO] 20:34:54:200 suse.c/(14236:14236): Hilos en cola RUN: 1
+[INFO] 20:34:54:200 suse.c/(14236:14236): Hilos en cola EXIT: 0
+[INFO] 20:34:54:200 suse.c/(14236:14236): Hilo 0: 
+tiempo de ejecucion: 39000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 0
+[INFO] 20:34:54:201 suse.c/(14236:14236): Hilo 1: 
+tiempo de ejecucion: 39000 
+tiempo de espera: -664142632 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 142445616
+[INFO] 20:35:09:832 suse.c/(14236:14249): Finalizo el hilo 1 del socket 5
+[INFO] 20:35:09:832 suse.c/(14236:14249): Grado actual de multiprogramacion: 0
+[INFO] 20:35:09:832 suse.c/(14236:14249): Valor del semaforo afinado: 1
+[INFO] 20:35:09:832 suse.c/(14236:14249): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 20:35:09:832 suse.c/(14236:14249): Socket 5:
+[INFO] 20:35:09:832 suse.c/(14236:14249): Hilos en cola NEW: 0
+[INFO] 20:35:09:832 suse.c/(14236:14249): Hilos en cola READY: 0
+[INFO] 20:35:09:832 suse.c/(14236:14249): Hilos en cola BLOCKED: 1
+[INFO] 20:35:09:832 suse.c/(14236:14249): Hilos en cola RUN: 0
+[INFO] 20:35:09:832 suse.c/(14236:14249): Hilos en cola EXIT: 1
+[INFO] 20:35:09:832 suse.c/(14236:14249): Hilo 1: 
+tiempo de ejecucion: 54000 
+tiempo de espera: -664142632 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134518018
+[INFO] 20:35:09:832 suse.c/(14236:14249): Hilo 0: 
+tiempo de ejecucion: 54000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134518018
+[INFO] 20:35:09:875 suse.c/(14236:14249): Finalizo el hilo 0 del socket 5
+[INFO] 20:35:09:875 suse.c/(14236:14249): Grado actual de multiprogramacion: 0
+[INFO] 20:35:09:875 suse.c/(14236:14249): Valor del semaforo afinado: 1
+[INFO] 20:35:09:875 suse.c/(14236:14249): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 20:35:09:875 suse.c/(14236:14249): Socket 5:
+[INFO] 20:35:09:875 suse.c/(14236:14249): Hilos en cola NEW: 0
+[INFO] 20:35:09:875 suse.c/(14236:14249): Hilos en cola READY: 0
+[INFO] 20:35:09:875 suse.c/(14236:14249): Hilos en cola BLOCKED: 0
+[INFO] 20:35:09:875 suse.c/(14236:14249): Hilos en cola RUN: 0
+[INFO] 20:35:09:875 suse.c/(14236:14249): Hilos en cola EXIT: 2
+[INFO] 20:35:09:876 suse.c/(14236:14249): Hilo 1: 
+tiempo de ejecucion: 54000 
+tiempo de espera: -664142632 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517904
+[INFO] 20:35:09:876 suse.c/(14236:14249): Hilo 0: 
+tiempo de ejecucion: 54000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517904
+[INFO] 20:37:27:577 suse.c/(14323:14323): Valor del semaforo afinado: 1
+[INFO] 20:37:27:582 suse.c/(14323:14323): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 20:38:17:582 suse.c/(14323:14323): Timer log 
+[INFO] 20:38:17:582 suse.c/(14323:14323): Grado actual de multiprogramacion: 1
+[INFO] 20:39:06:122 suse.c/(14370:14370): Valor del semaforo afinado: 1
+[INFO] 20:39:06:129 suse.c/(14370:14370): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 20:43:11:844 suse.c/(14427:14427): Valor del semaforo afinado: 1
+[INFO] 20:43:11:847 suse.c/(14427:14427): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 20:46:55:684 suse.c/(14520:14520): Valor del semaforo afinado: 1
+[INFO] 20:46:55:687 suse.c/(14520:14520): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 20:48:29:745 suse.c/(14558:14558): Valor del semaforo afinado: 1
+[INFO] 20:48:29:748 suse.c/(14558:14558): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 20:53:27:814 suse.c/(14616:14616): Timer log 
+[INFO] 20:53:27:817 suse.c/(14616:14616): Grado actual de multiprogramacion: 1
+[INFO] 20:59:56:456 suse.c/(14751:14751): Timer log 
+[INFO] 20:59:56:457 suse.c/(14751:14751): Grado actual de multiprogramacion: 1
+[INFO] 20:59:56:457 suse.c/(14751:14751): Valor del semaforo afinado: 1
+[INFO] 20:59:56:457 suse.c/(14751:14751): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 20:59:56:458 suse.c/(14751:14751): Socket 5:
+[INFO] 20:59:56:458 suse.c/(14751:14751): Hilos en cola NEW: 0
+[INFO] 20:59:56:458 suse.c/(14751:14751): Hilos en cola READY: 0
+[INFO] 20:59:56:458 suse.c/(14751:14751): Hilos en cola BLOCKED: 1
+[INFO] 20:59:56:458 suse.c/(14751:14751): Hilos en cola RUN: 1
+[INFO] 20:59:56:458 suse.c/(14751:14751): Hilos en cola EXIT: 0
+[INFO] 20:59:56:458 suse.c/(14751:14751): Hilo 0: 
+tiempo de ejecucion: 48000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 0
+[INFO] 20:59:56:458 suse.c/(14751:14751): Hilo 1: 
+tiempo de ejecucion: 48000 
+tiempo de espera: -662649632 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 153402296
+[INFO] 21:00:02:320 suse.c/(14751:14754): Finalizo el hilo 1 del socket 5
+[INFO] 21:00:02:320 suse.c/(14751:14754): Grado actual de multiprogramacion: 0
+[INFO] 21:00:02:320 suse.c/(14751:14754): Valor del semaforo afinado: 1
+[INFO] 21:00:02:320 suse.c/(14751:14754): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 21:00:02:320 suse.c/(14751:14754): Socket 5:
+[INFO] 21:00:02:320 suse.c/(14751:14754): Hilos en cola NEW: 0
+[INFO] 21:00:02:320 suse.c/(14751:14754): Hilos en cola READY: 0
+[INFO] 21:00:02:320 suse.c/(14751:14754): Hilos en cola BLOCKED: 1
+[INFO] 21:00:02:320 suse.c/(14751:14754): Hilos en cola RUN: 0
+[INFO] 21:00:02:320 suse.c/(14751:14754): Hilos en cola EXIT: 1
+[INFO] 21:00:02:320 suse.c/(14751:14754): Hilo 1: 
+tiempo de ejecucion: 54000 
+tiempo de espera: -662649632 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134518018
+[INFO] 21:00:02:320 suse.c/(14751:14754): Hilo 0: 
+tiempo de ejecucion: 54000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134518018
+[INFO] 21:00:02:360 suse.c/(14751:14754): Finalizo el hilo 0 del socket 5
+[INFO] 21:00:02:360 suse.c/(14751:14754): Grado actual de multiprogramacion: 0
+[INFO] 21:00:02:360 suse.c/(14751:14754): Valor del semaforo afinado: 1
+[INFO] 21:00:02:361 suse.c/(14751:14754): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 21:00:02:361 suse.c/(14751:14754): Socket 5:
+[INFO] 21:00:02:361 suse.c/(14751:14754): Hilos en cola NEW: 0
+[INFO] 21:00:02:361 suse.c/(14751:14754): Hilos en cola READY: 0
+[INFO] 21:00:02:361 suse.c/(14751:14754): Hilos en cola BLOCKED: 0
+[INFO] 21:00:02:361 suse.c/(14751:14754): Hilos en cola RUN: 0
+[INFO] 21:00:02:361 suse.c/(14751:14754): Hilos en cola EXIT: 2
+[INFO] 21:00:02:361 suse.c/(14751:14754): Hilo 1: 
+tiempo de ejecucion: 54000 
+tiempo de espera: -662649632 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517904
+[INFO] 21:00:02:361 suse.c/(14751:14754): Hilo 0: 
+tiempo de ejecucion: 54000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517904
+[INFO] 21:00:46:448 suse.c/(14751:14751): Timer log 
+[INFO] 21:00:46:465 suse.c/(14751:14751): Grado actual de multiprogramacion: 0
+[INFO] 21:00:46:465 suse.c/(14751:14751): Valor del semaforo afinado: 1
+[INFO] 21:00:46:465 suse.c/(14751:14751): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 21:00:46:465 suse.c/(14751:14751): Socket 5:
+[INFO] 21:00:46:465 suse.c/(14751:14751): Hilos en cola NEW: 0
+[INFO] 21:00:46:465 suse.c/(14751:14751): Hilos en cola READY: 0
+[INFO] 21:00:46:465 suse.c/(14751:14751): Hilos en cola BLOCKED: 0
+[INFO] 21:00:46:466 suse.c/(14751:14751): Hilos en cola RUN: 0
+[INFO] 21:00:46:466 suse.c/(14751:14751): Hilos en cola EXIT: 2
+[INFO] 21:00:46:466 suse.c/(14751:14751): Hilo 1: 
+tiempo de ejecucion: 98000 
+tiempo de espera: -662649632 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517904
+[INFO] 21:00:46:466 suse.c/(14751:14751): Hilo 0: 
+tiempo de ejecucion: 98000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517904
+[INFO] 21:42:36:812 suse.c/(15313:15313): Timer log 
+[INFO] 21:42:36:813 suse.c/(15313:15313): Grado actual de multiprogramacion: 1
+[INFO] 21:42:36:813 suse.c/(15313:15313): Valor del semaforo afinado: 1
+[INFO] 21:42:36:813 suse.c/(15313:15313): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 21:42:36:814 suse.c/(15313:15313): Socket 5:
+[INFO] 21:42:36:814 suse.c/(15313:15313): Hilos en cola NEW: 0
+[INFO] 21:42:36:814 suse.c/(15313:15313): Hilos en cola READY: 0
+[INFO] 21:42:36:814 suse.c/(15313:15313): Hilos en cola BLOCKED: 1
+[INFO] 21:42:36:814 suse.c/(15313:15313): Hilos en cola RUN: 1
+[INFO] 21:42:36:814 suse.c/(15313:15313): Hilos en cola EXIT: 0
+[INFO] 21:42:36:814 suse.c/(15313:15313): Hilo 0: 
+tiempo de ejecucion: 47000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 0
+[INFO] 21:42:36:814 suse.c/(15313:15313): Hilo 1: 
+tiempo de ejecucion: 47000 
+tiempo de espera: -660088632 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 166960024
+[INFO] 21:42:43:680 suse.c/(15313:15316): Finalizo el hilo 1 del socket 5
+[INFO] 21:42:43:681 suse.c/(15313:15316): Grado actual de multiprogramacion: 0
+[INFO] 21:42:43:681 suse.c/(15313:15316): Valor del semaforo afinado: 1
+[INFO] 21:42:43:681 suse.c/(15313:15316): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 21:42:43:681 suse.c/(15313:15316): Socket 5:
+[INFO] 21:42:43:681 suse.c/(15313:15316): Hilos en cola NEW: 0
+[INFO] 21:42:43:681 suse.c/(15313:15316): Hilos en cola READY: 0
+[INFO] 21:42:43:681 suse.c/(15313:15316): Hilos en cola BLOCKED: 1
+[INFO] 21:42:43:682 suse.c/(15313:15316): Hilos en cola RUN: 0
+[INFO] 21:42:43:682 suse.c/(15313:15316): Hilos en cola EXIT: 1
+[INFO] 21:42:43:682 suse.c/(15313:15316): Hilo 1: 
+tiempo de ejecucion: 54000 
+tiempo de espera: -660088632 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517922
+[INFO] 21:42:43:682 suse.c/(15313:15316): Hilo 0: 
+tiempo de ejecucion: 54000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517922
+[INFO] 21:42:43:721 suse.c/(15313:15316): Finalizo el hilo 0 del socket 5
+[INFO] 21:42:43:721 suse.c/(15313:15316): Grado actual de multiprogramacion: 0
+[INFO] 21:42:43:721 suse.c/(15313:15316): Valor del semaforo afinado: 1
+[INFO] 21:42:43:721 suse.c/(15313:15316): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 21:42:43:721 suse.c/(15313:15316): Socket 5:
+[INFO] 21:42:43:722 suse.c/(15313:15316): Hilos en cola NEW: 0
+[INFO] 21:42:43:722 suse.c/(15313:15316): Hilos en cola READY: 0
+[INFO] 21:42:43:722 suse.c/(15313:15316): Hilos en cola BLOCKED: 0
+[INFO] 21:42:43:722 suse.c/(15313:15316): Hilos en cola RUN: 0
+[INFO] 21:42:43:722 suse.c/(15313:15316): Hilos en cola EXIT: 2
+[INFO] 21:42:43:722 suse.c/(15313:15316): Hilo 1: 
+tiempo de ejecucion: 54000 
+tiempo de espera: -660088632 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517808
+[INFO] 21:42:43:723 suse.c/(15313:15316): Hilo 0: 
+tiempo de ejecucion: 54000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517808
+[INFO] 21:46:19:924 suse.c/(15440:15440): Timer log 
+[INFO] 21:46:19:949 suse.c/(15440:15440): Grado actual de multiprogramacion: 2
+[INFO] 21:46:19:950 suse.c/(15440:15440): Valor del semaforo afinado: 1
+[INFO] 21:46:19:950 suse.c/(15440:15440): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 21:46:19:950 suse.c/(15440:15440): Socket 5:
+[INFO] 21:46:19:950 suse.c/(15440:15440): Hilos en cola NEW: 0
+[INFO] 21:46:19:951 suse.c/(15440:15440): Hilos en cola READY: 1
+[INFO] 21:46:19:951 suse.c/(15440:15440): Hilos en cola BLOCKED: 1
+[INFO] 21:46:19:951 suse.c/(15440:15440): Hilos en cola RUN: 0
+[INFO] 21:46:19:951 suse.c/(15440:15440): Hilos en cola EXIT: 0
+[INFO] 21:46:19:951 suse.c/(15440:15440): Hilo 1: 
+tiempo de ejecucion: 46000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 0
+[INFO] 21:46:19:952 suse.c/(15440:15440): Hilo 0: 
+tiempo de ejecucion: 46000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 0
+[INFO] 21:46:19:952 suse.c/(15440:15440): Socket 7:
+[INFO] 21:46:19:952 suse.c/(15440:15440): Hilos en cola NEW: 0
+[INFO] 21:46:19:952 suse.c/(15440:15440): Hilos en cola READY: 0
+[INFO] 21:46:19:955 suse.c/(15440:15440): Hilos en cola BLOCKED: 1
+[INFO] 21:46:19:956 suse.c/(15440:15440): Hilos en cola RUN: 1
+[INFO] 21:46:19:956 suse.c/(15440:15440): Hilos en cola EXIT: 0
+[INFO] 21:46:19:956 suse.c/(15440:15440): Hilo 0: 
+tiempo de ejecucion: 43000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517922
+[INFO] 21:46:19:956 suse.c/(15440:15440): Hilo 1: 
+tiempo de ejecucion: 43000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 162766472
+[INFO] 21:46:27:492 suse.c/(15440:15443): Finalizo el hilo 1 del socket 5
+[INFO] 21:46:27:493 suse.c/(15440:15443): Grado actual de multiprogramacion: 1
+[INFO] 21:46:27:493 suse.c/(15440:15443): Valor del semaforo afinado: 1
+[INFO] 21:46:27:493 suse.c/(15440:15443): Valor del semaforo solo_hiper_mega_piola: 0
+[INFO] 21:46:27:493 suse.c/(15440:15443): Socket 5:
+[INFO] 21:46:27:493 suse.c/(15440:15443): Hilos en cola NEW: 0
+[INFO] 21:46:27:493 suse.c/(15440:15443): Hilos en cola READY: 0
+[INFO] 21:46:27:493 suse.c/(15440:15443): Hilos en cola BLOCKED: 1
+[INFO] 21:46:27:493 suse.c/(15440:15443): Hilos en cola RUN: 0
+[INFO] 21:46:27:493 suse.c/(15440:15443): Hilos en cola EXIT: 1
+[INFO] 21:46:27:493 suse.c/(15440:15443): Hilo 1: 
+tiempo de ejecucion: 54000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517922
+[INFO] 21:46:27:493 suse.c/(15440:15443): Hilo 0: 
+tiempo de ejecucion: 54000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517922
+[INFO] 21:46:27:493 suse.c/(15440:15443): Socket 7:
+[INFO] 21:46:27:493 suse.c/(15440:15443): Hilos en cola NEW: 0
+[INFO] 21:46:27:493 suse.c/(15440:15443): Hilos en cola READY: 0
+[INFO] 21:46:27:493 suse.c/(15440:15443): Hilos en cola BLOCKED: 1
+[INFO] 21:46:27:493 suse.c/(15440:15443): Hilos en cola RUN: 1
+[INFO] 21:46:27:493 suse.c/(15440:15443): Hilos en cola EXIT: 0
+[INFO] 21:46:27:493 suse.c/(15440:15443): Hilo 0: 
+tiempo de ejecucion: 51000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517922
+[INFO] 21:46:27:494 suse.c/(15440:15443): Hilo 1: 
+tiempo de ejecucion: 51000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: -1336814768
+[INFO] 21:46:27:496 suse.c/(15440:15445): Finalizo el hilo 0 del socket 7
+[INFO] 21:46:27:504 suse.c/(15440:15445): Grado actual de multiprogramacion: 2
+[INFO] 21:46:27:505 suse.c/(15440:15445): Valor del semaforo afinado: 1
+[INFO] 21:46:27:513 suse.c/(15440:15445): Valor del semaforo solo_hiper_mega_piola: 0
+[INFO] 21:46:27:513 suse.c/(15440:15445): Socket 5:
+[INFO] 21:46:27:513 suse.c/(15440:15445): Hilos en cola NEW: 0
+[INFO] 21:46:27:513 suse.c/(15440:15445): Hilos en cola READY: 1
+[INFO] 21:46:27:513 suse.c/(15440:15445): Hilos en cola BLOCKED: 0
+[INFO] 21:46:27:513 suse.c/(15440:15445): Hilos en cola RUN: 0
+[INFO] 21:46:27:513 suse.c/(15440:15445): Hilos en cola EXIT: 1
+[INFO] 21:46:27:513 suse.c/(15440:15445): Hilo 1: 
+tiempo de ejecucion: 54000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517808
+[INFO] 21:46:27:513 suse.c/(15440:15445): Hilo 0: 
+tiempo de ejecucion: 54000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517808
+[INFO] 21:46:27:513 suse.c/(15440:15445): Socket 7:
+[INFO] 21:46:27:513 suse.c/(15440:15445): Hilos en cola NEW: 0
+[INFO] 21:46:27:513 suse.c/(15440:15445): Hilos en cola READY: 1
+[INFO] 21:46:27:513 suse.c/(15440:15445): Hilos en cola BLOCKED: 0
+[INFO] 21:46:27:513 suse.c/(15440:15445): Hilos en cola RUN: 0
+[INFO] 21:46:27:513 suse.c/(15440:15445): Hilos en cola EXIT: 1
+[INFO] 21:46:27:513 suse.c/(15440:15445): Hilo 0: 
+tiempo de ejecucion: 51000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517808
+[INFO] 21:46:27:513 suse.c/(15440:15445): Hilo 1: 
+tiempo de ejecucion: 51000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517808
+[INFO] 21:46:27:536 suse.c/(15440:15443): Finalizo el hilo 0 del socket 5
+[INFO] 21:46:27:536 suse.c/(15440:15443): Grado actual de multiprogramacion: 1
+[INFO] 21:46:27:536 suse.c/(15440:15443): Valor del semaforo afinado: 1
+[INFO] 21:46:27:536 suse.c/(15440:15443): Valor del semaforo solo_hiper_mega_piola: 0
+[INFO] 21:46:27:536 suse.c/(15440:15443): Socket 5:
+[INFO] 21:46:27:536 suse.c/(15440:15443): Hilos en cola NEW: 0
+[INFO] 21:46:27:536 suse.c/(15440:15443): Hilos en cola READY: 0
+[INFO] 21:46:27:536 suse.c/(15440:15443): Hilos en cola BLOCKED: 0
+[INFO] 21:46:27:536 suse.c/(15440:15443): Hilos en cola RUN: 0
+[INFO] 21:46:27:536 suse.c/(15440:15443): Hilos en cola EXIT: 2
+[INFO] 21:46:27:536 suse.c/(15440:15443): Hilo 1: 
+tiempo de ejecucion: 54000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517808
+[INFO] 21:46:27:536 suse.c/(15440:15443): Hilo 0: 
+tiempo de ejecucion: 54000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517808
+[INFO] 21:46:27:536 suse.c/(15440:15443): Socket 7:
+[INFO] 21:46:27:536 suse.c/(15440:15443): Hilos en cola NEW: 0
+[INFO] 21:46:27:536 suse.c/(15440:15443): Hilos en cola READY: 1
+[INFO] 21:46:27:536 suse.c/(15440:15443): Hilos en cola BLOCKED: 0
+[INFO] 21:46:27:536 suse.c/(15440:15443): Hilos en cola RUN: 0
+[INFO] 21:46:27:537 suse.c/(15440:15443): Hilos en cola EXIT: 1
+[INFO] 21:46:27:537 suse.c/(15440:15443): Hilo 0: 
+tiempo de ejecucion: 51000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517808
+[INFO] 21:46:27:537 suse.c/(15440:15443): Hilo 1: 
+tiempo de ejecucion: 51000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517808
+[INFO] 21:47:09:920 suse.c/(15440:15440): Timer log 
+[INFO] 21:47:09:930 suse.c/(15440:15440): Grado actual de multiprogramacion: 1
+[INFO] 21:47:09:931 suse.c/(15440:15440): Valor del semaforo afinado: 1
+[INFO] 21:47:09:931 suse.c/(15440:15440): Valor del semaforo solo_hiper_mega_piola: 0
+[INFO] 21:47:09:931 suse.c/(15440:15440): Socket 5:
+[INFO] 21:47:09:931 suse.c/(15440:15440): Hilos en cola NEW: 0
+[INFO] 21:47:09:931 suse.c/(15440:15440): Hilos en cola READY: 0
+[INFO] 21:47:09:931 suse.c/(15440:15440): Hilos en cola BLOCKED: 0
+[INFO] 21:47:09:931 suse.c/(15440:15440): Hilos en cola RUN: 0
+[INFO] 21:47:09:932 suse.c/(15440:15440): Hilos en cola EXIT: 2
+[INFO] 21:47:09:932 suse.c/(15440:15440): Hilo 1: 
+tiempo de ejecucion: 96000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517808
+[INFO] 21:47:09:932 suse.c/(15440:15440): Hilo 0: 
+tiempo de ejecucion: 96000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517808
+[INFO] 21:47:09:932 suse.c/(15440:15440): Socket 7:
+[INFO] 21:47:09:932 suse.c/(15440:15440): Hilos en cola NEW: 0
+[INFO] 21:47:09:932 suse.c/(15440:15440): Hilos en cola READY: 1
+[INFO] 21:47:09:932 suse.c/(15440:15440): Hilos en cola BLOCKED: 0
+[INFO] 21:47:09:932 suse.c/(15440:15440): Hilos en cola RUN: 0
+[INFO] 21:47:09:932 suse.c/(15440:15440): Hilos en cola EXIT: 1
+[INFO] 21:47:09:932 suse.c/(15440:15440): Hilo 0: 
+tiempo de ejecucion: 93000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517808
+[INFO] 21:47:09:933 suse.c/(15440:15440): Hilo 1: 
+tiempo de ejecucion: 93000 
+tiempo de espera: 0 
+tiempo de uso de CPU: 0.000000 
+porcentaje tiempo de ejecucion: 134517808
