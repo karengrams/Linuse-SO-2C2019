@@ -182,6 +182,8 @@ t_proceso* crear_proceso(int id, char* ip){
 	proceso->id = id;
 	proceso->ip = string_duplicate(ip);
 	proceso->tablaDeSegmentos = list_create();
+	proceso->totalMemoriaLiberada=0;
+	proceso->totalMemoriaPedida=0;
 	return proceso;
 }
 

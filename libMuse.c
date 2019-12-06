@@ -47,12 +47,15 @@ uint32_t muse_alloc(uint32_t tam){
 }
 
 void muse_free(uint32_t dir){
+	int error;
 	t_paquete* paquete = crear_paquete(MUSE_FREE);
 	agregar_a_paquete(paquete, &ID, sizeof(int));
 	agregar_a_paquete(paquete, &dir, sizeof(uint32_t));
 	enviar_paquete(paquete, SOCKET);
 	eliminar_paquete(paquete);
-
+	recv(SOCKET, &error, sizeof(int), 0);
+	if(error==-1)
+		raise(SIGABRT);
 }
 
 int muse_get(void* dst, uint32_t src, size_t n){
@@ -87,7 +90,8 @@ int muse_cpy(uint32_t dst, void* src, int n){
 	eliminar_paquete(paquete);
 
 	recv(SOCKET, &error, sizeof(int), 0);
-
+	if(error==-2)
+		raise(SIGSEGV);
 	return error;
 }
 
@@ -116,6 +120,11 @@ int muse_sync(uint32_t addr, size_t len){
 	eliminar_paquete(paquete);
 
 	recv(SOCKET, &error, sizeof(int), 0);
+	if(error==-2)
+		raise(SIGSEGV);
+	if(error==-3)
+		raise(SIGABRT);
+
 	return error;
 }
 

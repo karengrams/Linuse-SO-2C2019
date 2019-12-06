@@ -22,7 +22,6 @@ void atender_cliente(void *element){
     	int cod_op = recibir_operacion(socketCli);
 
     	if(cod_op>=10 && cod_op<=18 ){
-        printf("Operacion nro. %d por el socket %d\n\n",cod_op,socketCli);
     	paqueteRecibido = recibir_paquete(socketCli);
     		switch(cod_op){
     		case MUSE_INIT:
@@ -32,7 +31,7 @@ void atender_cliente(void *element){
     		break;
     		case MUSE_CLOSE:
     	    	cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
-				mostrar_tabla_de_segmentos(cliente_a_atender->tablaDeSegmentos);
+//				mostrar_tabla_de_segmentos(cliente_a_atender->tablaDeSegmentos);
     			museclose(cliente_a_atender);
     			break;
     		case MUSE_ALLOC:
@@ -41,12 +40,13 @@ void atender_cliente(void *element){
     			send(socketCli, &direccion, sizeof(uint32_t), 0);
     		break;
     		case MUSE_FREE:
-    	    	cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
+    			cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
     			id_cliente = *((int*)list_get(paqueteRecibido, 0));
     			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
-    			musefree(cliente_a_atender,direccion_pedida);
+    			cod_error = musefree(cliente_a_atender,direccion_pedida);
+    			send(socketCli, &cod_error, sizeof(int), 0);
     		break;
-    		case MUSE_GET: // TODO: ver caso de que se pase del limite
+    		case MUSE_GET:
     			cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
     			cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
     			buffer = museget(cliente_a_atender, paqueteRecibido);
@@ -115,44 +115,8 @@ int main(void) {
 	server_socket=iniciar_socket("127.0.0.1",config_get_string_value(config,"LISTEN_PORT"));
 
 	while(true){
-		printf("Waiting for connections...\n");
-
 		client_socket=esperar_cliente(server_socket);
-		printf("Connected!\n");
 		pthread_create(&hilo_de_atencion, NULL, &atender_cliente, &client_socket);
-
 	}
-
-
-// Comunicacion con select
-//		Arranca a atender clientes
-//		fd_set master;
-//		fd_set read_fds;
-//		int fdmax;
-//		FD_ZERO(&master);
-//		FD_ZERO(&read_fds);
-//		int socketEs = iniciar_socket("127.0.0.1",config_get_string_value(config, "LISTEN_PORT"));
-//
-//		FD_SET(socketEs, &master);
-//		fdmax = socketEs;
-//
-//		signal(SIGINT,liberacion_de_recursos);
-//
-//
-//		while (1) {
-//
-//			read_fds = master;
-//			select(fdmax + 1, &read_fds, NULL, NULL, NULL); // @suppress("Symbol is not resolved")
-//
-//			for (int i = 0; i <= fdmax; i++) {
-//				if (FD_ISSET(i, &read_fds)) {
-//					if (i == socketEs) {
-//						admitir_nuevo_cliente(&master, &fdmax, i);
-//					} else {
-//						atender_cliente_select(&master, i);
-//					}
-//				}
-//			}
-//		}
 	return 0;
 }

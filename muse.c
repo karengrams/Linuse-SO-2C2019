@@ -2,13 +2,6 @@
 
 #define ERROR -1;
 
-void mostrar_frames_ocupados(){
-	for(int i=0;i<bitarray_get_max_bit(BIT_ARRAY_FRAMES);i++){
-		if(bitarray_test_bit(BIT_ARRAY_FRAMES,i))
-			printf("Frame nro. %d ocupado:%d\n",i,bitarray_test_bit(BIT_ARRAY_FRAMES,i));
-	}
-}
-
 void inicializar_tabla_procesos(){
 	PROCESS_TABLE = list_create();
 }
@@ -34,6 +27,7 @@ void inicializar_recursos_de_memoria(){
 	TAM_PAG = leer_del_config("PAGE_SIZE", config);
 	inicilizar_tabla_de_frames();
 	memoria = malloc(leer_del_config("MEMORY_SIZE", config));
+	CANTIDAD_DE_MEMORIA_DISPONIBLE= leer_del_config("MEMORY_SIZE",config);
 	dividir_memoria_en_frames(memoria, TAM_PAG, leer_del_config("MEMORY_SIZE", config));
 	inicializar_bitmap();
 	inicializar_tabla_procesos();
@@ -50,14 +44,14 @@ void inicializar_recursos_de_memoria(){
 	sem_init(&mutex_write_frame,0,1);
 	sem_init(&mutex_process_list,0,1);
 	sem_init(&binary_free_frame,0,0);
-
+	logger_info = log_create("MUSE.log","MUSE",true,LOG_LEVEL_INFO);
+	logger_error = log_create("MUSE.log","MUSE",true,LOG_LEVEL_ERROR);
+	logger_trace = log_create("MUSE.log","MUSE",true,LOG_LEVEL_TRACE);
 }
-
-
 
 void liberacion_de_recursos(int num){
 
-	printf("Liberando recursos...\n");
+	log_trace(logger_trace,"se procede a liberar recursos del sistema.");
 
 	void _liberar_proceso(void*element){
 		t_proceso *ptr_proceso = (t_proceso*) element;
@@ -98,11 +92,37 @@ void liberacion_de_recursos(int num){
 	sem_destroy(&mutex_write_frame);
 	sem_destroy(&mutex_process_list);
 	sem_destroy(&binary_free_frame);
-	printf("Recursos liberados!\n");
+	log_trace(logger_trace,"se liberaron correctamente todos los recursos.");
+	log_destroy(logger_error);
+	log_destroy(logger_info);
+	log_destroy(logger_trace);
 	raise(SIGTERM);
 }
 
+void loggear_informacion(t_proceso *proceso){
+	int cantidad_seg_tot = cantidad_total_de_segmentos_en_sistema();
+	int porcentaje_de_memoria,espacio_libre_ultimo_metadata;
+	if(!cantidad_seg_tot)
+		porcentaje_de_memoria=0;
+	else
+		porcentaje_de_memoria = list_size(proceso->tablaDeSegmentos)/cantidad_seg_tot;
+	segment* ptr_ultimo_seg = ultimo_segmento_heap(proceso);
+	if(!ptr_ultimo_seg)
+		espacio_libre_ultimo_metadata = 0;
+	else
+		espacio_libre_ultimo_metadata = espacio_libre(ptr_ultimo_seg);
+
+	log_info(logger_info,"el porcentaje de memoria asignada del proceso #%d es igual a %d % . Se solicito un total de %d bytes y se libero un total de %d bytes. Se obtuvo un total de %d bytes perdidos. Y la cantidad de memoria disponible del proceso es de %d"
+				,proceso->id
+				,porcentaje_de_memoria
+				,proceso->totalMemoriaPedida
+				,proceso->totalMemoriaLiberada
+				,memory_leaks_proceso(proceso)
+				,espacio_libre_ultimo_metadata);
+}
+
 int museinit(t_proceso* cliente_a_atender, char* ipCliente, int id){
+	log_trace(logger_trace,"proceso #%d solicito la apertura de la libreria.",id);
 	if (cliente_a_atender != NULL) {
 		return ERROR; //YA EXISTE EN NUESTRA TABLA ERROR
 	} else {
@@ -110,33 +130,46 @@ int museinit(t_proceso* cliente_a_atender, char* ipCliente, int id){
 		sem_wait(&mutex_process_list);
 		list_add(PROCESS_TABLE, procesoNuevo); //Si no existe lo creamos y agregamos
 		sem_post(&mutex_process_list);
+		log_trace(logger_trace,"se inicializo correctamente la libreria para proceso #%d",procesoNuevo->id);
 		return 0;
 	}
 }
 
+
 void museclose(t_proceso* proceso){
+	log_trace(logger_trace,"proceso #%d solicito el cierre de la libreria.",proceso->id);
+	loggear_informacion(proceso);
 	liberar_tabla_de_segmentos(proceso);
 	bool _mismo_id (void*element){
 		t_proceso *otroproceso = (t_proceso*)element;
 		return (otroproceso->id == proceso->id);
 	}
+
 	list_remove_by_condition(PROCESS_TABLE,_mismo_id);
 	free(proceso->ip);
 	free(proceso);
 }
 
+
+
 uint32_t musealloc(t_proceso* proceso,int tam){
+	log_trace(logger_trace,"el proceso #%d solicito %d bytes dinamicos de memoria.",proceso->id,tam);
+	loggear_informacion(proceso);
 	uint32_t offset;
 	t_list *tabla_de_segmento = proceso->tablaDeSegmentos;
 	segment *ptr_segmento = buscar_segmento_heap_para_tam(tabla_de_segmento,tam); // Busca segmento de tipo heap con espacio
 	if(!ptr_segmento){
 		ptr_segmento= buscar_segmento_heap_expandible_para_tam(tabla_de_segmento,tam);
-		if(ptr_segmento)
+		if(ptr_segmento){
+			log_trace(logger_trace,"se procede a extender el segmento nro #%d del proceso #%d.",ptr_segmento->nro_segmento,proceso->id);
 			expandir_segmento(ptr_segmento,tam);
-
-		else
+		}
+		else{
+			log_trace(logger_trace,"se crea un segmento nuevo para el proceso #%d.",proceso->id);
 			ptr_segmento=crear_segmento(HEAP,tam+sizeof(heapmetadata),tabla_de_segmento);
-
+		}
+	}else{
+		log_trace(logger_trace,"se procede a asignar memoria del segmento nro #%d del proceso #%d.",ptr_segmento->nro_segmento,proceso->id);
 	}
 	offset = obtener_offset_para_tam(ptr_segmento,tam);
 
@@ -159,13 +192,16 @@ uint32_t musealloc(t_proceso* proceso,int tam){
 	paux_metadata_ocupado->ocupado=true;
 	ptr_segmento->tamanio+=tam;
 	escribir_metadata_en_frame(ptr_segmento, paux_seg_metadata_ocupado);
-
 	proceso->totalMemoriaPedida += tam;
-
+	log_trace(logger_trace,"se le asigno correctamente memoria dinamica al proceso #%d. La direccion logica es %lu",proceso->id,ptr_segmento->base_logica+offset+sizeof(heapmetadata));
 	return ptr_segmento->base_logica+offset+sizeof(heapmetadata);
 }
 
-void musefree(t_proceso *proceso, uint32_t direccion) {
+
+
+int musefree(t_proceso *proceso, uint32_t direccion) {
+	log_trace(logger_trace,"el proceso #%d solicito la liberacion de la direccion de memoria %lu.",proceso->id,direccion);
+
 	segment *ptr_segmento = buscar_segmento_dada_una_direccion(direccion,proceso->tablaDeSegmentos);
 	if(ptr_segmento && ptr_segmento->tipo==HEAP){
 		segmentheapmetadata *ptr_seg_metadata = buscar_metadata_para_liberar(direccion - ptr_segmento->base_logica, ptr_segmento);
@@ -199,26 +235,33 @@ void musefree(t_proceso *proceso, uint32_t direccion) {
 		if(ptr_segmento->tabla_de_paginas->elements_count==1 && ptr_segmento->metadatas->elements_count==1){
 			eliminar_segmento_de_tabla(proceso,ptr_segmento);
 		}
+		log_trace(logger_trace,"se libero correctamente la direccion %lu del proceso #%d",direccion,proceso->id);
+		return 0;
 	}
-	else
-		raise(SIGABRT);
+	else{
+		log_error(logger_error,"error al liberar la memoria de la direccion %lu.",direccion);
+		return -1;
+	}
 }
 
 void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 	int cantidadDeBytes = *((int*) list_get(paqueteRecibido, 1));
 	uint32_t direccion = *((uint32_t*) list_get(paqueteRecibido, 2));
 	void* buffer = malloc(cantidadDeBytes);
+	log_trace(logger_trace,"el proceso #%d solicito la lectura de %d bytes de la direccion %lu",proceso->id,cantidadDeBytes,direccion);
 
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion, proceso->tablaDeSegmentos);
 
 	if (!ptr_segmento) {
 		free(buffer);
+		log_error(logger_error,"la direccion %lu no corresponde a un segmento del proceso #%d",direccion,proceso->id);
 		return NULL; //ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO.
 	}
 
 	if ((direccion + cantidadDeBytes) > limite_segmento(ptr_segmento)+1) {
 		free(buffer);
-		raise(SIGSEGV); // SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
+		log_error(logger_error,"la direccion %lu se pasa del limite del segmento #%d del proceso #%d",direccion,ptr_segmento->nro_segmento,proceso->id);
+		return NULL; // SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
 	}
 
 	int numeroPagina = numero_pagina(ptr_segmento, direccion);
@@ -243,7 +286,14 @@ void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 	return (buffer);
 }
 
+
+
 uint32_t musemap(t_proceso*proceso, char*path, size_t length, int flags){
+	if(flags==MAP_SHARED)
+		log_trace(logger_trace,"el proceso #%d solicito el mappeo de %d bytes del archivo '%s' de forma compartida.",proceso->id,(int)length,path);
+	else
+		log_trace(logger_trace,"el proceso #%d solicito el mappeo de %d bytes del archivo '%s' de forma privada.",proceso->id,(int)length,path);
+
 	int paginas_de_seg,tam_a_mappear;
 	void *file_mmap;
 	segment *segmento_mmap=crear_segmento(MMAP,length,proceso->tablaDeSegmentos);
@@ -313,6 +363,7 @@ uint32_t musemap(t_proceso*proceso, char*path, size_t length, int flags){
 	}
 
 	// TODO: cubrir la situacion que se abre un archivo privado, aunque dijo adro que no se fijaban en eso, lo vquiero poner igual
+	log_trace(logger_trace,"se le otorgo la direccion %lu del archivo mappeado a memoria al proceso #%d.",segmento_mmap->base_logica,proceso->id);
 
 	close(fd);
     return segmento_mmap->base_logica;
@@ -323,12 +374,18 @@ int musesync(t_proceso* proceso,uint32_t direccion, size_t length){
 	segmentmmapmetadata *ptr_metadata = (segmentmmapmetadata*) list_get(ptr_segmento->metadatas,0);
 	mapped_file *ptr_mapped_file=buscar_archivo_abierto(ptr_metadata->path);
 	void *file;
-	if(direccion + length > limite_segmento(ptr_segmento))
-	    raise(SIGSEGV);
-	if(!ptr_segmento || ptr_segmento->tipo!=MMAP)
-		raise(SIGABRT);
+	if(direccion + length > limite_segmento(ptr_segmento)+1){
+		log_error(logger_error,"la cantidad de bytes a sincronizar del segmento #%d del proceso #%d se pasa del limite del segmento. Se produce segmentation fault.",ptr_segmento->nro_segmento,proceso->id);
+	    loggear_informacion(proceso);
+		return -2;
+	}
+	if(!ptr_segmento || ptr_segmento->tipo!=MMAP){
+		log_error(logger_error,"la direccion #lu solicitada a sincronizar por proceso #%d es direccion invalida.",direccion,proceso->id);
+		return -3;
+	}
 
 	if(ptr_mapped_file){
+		log_trace(logger_trace,"el proceso #%d solicito la sincronizacion de %d bytes al archivo %s.",proceso->id,(int)length,ptr_mapped_file->path);
 		int nro_pag = div(direccion-ptr_segmento->base_logica,TAM_PAG).quot;
 		int cantidad_de_paginas = div(direccion-ptr_segmento->base_logica+length,TAM_PAG).quot-nro_pag;
 		int paginas_copiadas=0;
@@ -343,6 +400,7 @@ int musesync(t_proceso* proceso,uint32_t direccion, size_t length){
 			paginas_copiadas++;
 		}
 		sem_post(&mutex_write_shared_files);
+
 		return 0;
 	}else
 		return -1;
@@ -354,17 +412,22 @@ int museunmap(t_proceso *proceso,uint32_t direccion){
 	mapped_file *ptr_mapped_metadata = buscar_archivo_abierto(ptr_metadata->path);
 
 	if(ptr_mapped_metadata){
+		log_trace(logger_trace,"el proceso #%d solicito la liberacion del archivo '%s'.",proceso->id,ptr_mapped_metadata->path);
 		liberar_recursos_segmento_map(ptr_segmento,proceso);
 		return 0;
 	}
-	else
+	else{
+		log_error(logger_error,"la direccion solicitada, por el proceso#%d, a liberar no corresponde a un archivo mappeado a memoria.",proceso->id);
 		return -1;
+	}
 }
+
 
 int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {
 
 	int cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
 	uint32_t direccion_pedida = *((uint32_t*) list_get(paqueteRecibido, 3));
+	log_trace(logger_trace,"el proceso #%d solicito copiar %d a copiar en la direccion #%lu.",proceso->id,cantidad_de_bytes,direccion_pedida);
 
 	void* buffer_a_copiar = malloc(cantidad_de_bytes);
 
@@ -375,12 +438,14 @@ int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {
 
 	if (!ptr_segmento || (direccion_pedida + cantidad_de_bytes)> limite_segmento(ptr_segmento)+1) {
 		free(buffer_a_copiar);
-		raise(SIGSEGV);//ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO.
+		log_error(logger_error,"la direccion pedida por proceso #%d no corresponde a un segmento del mismo.",proceso->id);
+		return -2;//ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO.
 		//O SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
 	}
 
 	if(ptr_segmento->tipo==HEAP)
 		if (direccion_pisa_alguna_metadata(ptr_segmento, direccion_pedida,cantidad_de_bytes)) {
+			log_error(logger_error,"la cantidad de %d bytes por proceso #%d excede el limite.",cantidad_de_bytes,proceso->id);
 			free(buffer_a_copiar);
 			return -1;
 		}
@@ -407,20 +472,30 @@ int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {
 		desplazamientoEnBuffer += tamanioACopiar;
 		desplazamientoEnPagina = 0; //Solo era valido para la primera pagina
 	}
+	log_trace(logger_trace,"se copio exitosamente '%s' en la direccion %lu correspondiendo al segmento #%d del proceso #%d.",(char*)buffer_a_copiar,direccion_pedida,ptr_segmento->nro_segmento,proceso->id);
 	return 0;
 }
 
+
+
 segment* ultimo_segmento_heap(t_proceso* proceso){
 
-	bool _segmentos_heap(void* elemento){
-		segment* segmento = (segment*)elemento;
-		return segmento->tipo == HEAP;
+	segment*ptr_seg;
+	bool encontrado = false;
+
+	void _buscar_ultimo_segmento_tipo_heap(void*element){
+		segment *otro_ptr_seg = (segment*)element;
+		if(otro_ptr_seg->tipo==HEAP){
+			ptr_seg=otro_ptr_seg;
+		}
 	}
 
-	t_list* list_de_heap = list_filter(proceso->tablaDeSegmentos, &_segmentos_heap);
-	segment* ultimoHeap = list_get(list_de_heap, list_size(list_de_heap)-1);
-	return ultimoHeap;
+	list_iterate(proceso->tablaDeSegmentos,_buscar_ultimo_segmento_tipo_heap);
+
+	return ptr_seg;
+
 }
+
 
 int memoria_libre_en_segmento(segment* segmento){
 	int seed = 0;
@@ -440,21 +515,22 @@ int memoria_libre_en_segmento(segment* segmento){
 	return *((int*)list_fold(metadatasFree, &seed, &_suma_bytes));
 }
 
+
 int cantidad_total_de_segmentos_en_sistema(){
-	int seed = 0;
 
-	void* suma_segmentos(void* seed, void* element){
-		t_proceso* proceso = (t_proceso*)element;
-		int* seedSum = (int*)seed;
-		int segments = list_size(proceso->tablaDeSegmentos);
-		int suma = segments + *(seedSum);
-		memcpy(seed, &suma, sizeof(int));
-		return seed;
-
+	int cantidad_total_de_segmentos=0;
+	sem_wait(&mutex_process_list);
+	void _cantidad_de_segmentos(void*element){
+		t_proceso *proceso = (t_proceso*)element;
+		cantidad_total_de_segmentos+=list_size(proceso->tablaDeSegmentos);
 	}
 
-	return *((int*)list_fold(PROCESS_TABLE, &seed, &suma_segmentos));
+	list_iterate(PROCESS_TABLE,_cantidad_de_segmentos);
+	sem_post(&mutex_process_list);
+
+	return cantidad_total_de_segmentos;
 }
+
 
 int suma_frames_libres(){
 	int max = bitarray_get_max_bit(BIT_ARRAY_FRAMES);
@@ -466,9 +542,11 @@ int suma_frames_libres(){
 	return contador;
 }
 
+
 int memory_leaks_proceso(t_proceso* proceso){
 	return proceso->totalMemoriaPedida - proceso->totalMemoriaLiberada;
 }
+
 
 t_proceso* buscar_proceso(t_list* paqueteRecibido, char* ipCliente){
 	int id = *((int*) list_get(paqueteRecibido, 0)); // ACA se muere?

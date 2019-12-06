@@ -31,10 +31,10 @@
 #include "structures.h"
 #include <semaphore.h>
 
+int CANTIDAD_DE_MEMORIA_DISPONIBLE;
 t_list* PROCESS_TABLE;
 t_config* config;
 
-void mostrar_frames_ocupados();
 void inicializar_tabla_procesos();
 void inicializar_tabla_archivos_compartidos();
 void inicializar_memoria_virtual(int);
@@ -45,7 +45,7 @@ void inicializar_recursos_de_memoria();
 int museinit(t_proceso*, char*, int);
 void museclose(t_proceso*);
 uint32_t musealloc(t_proceso*, int);
-void musefree(t_proceso *, uint32_t);
+int musefree(t_proceso *, uint32_t);
 void* museget(t_proceso*, t_list*);
 int musecpy(t_proceso* , t_list*);
 mapped_file* buscar_archivo_abierto(char*);

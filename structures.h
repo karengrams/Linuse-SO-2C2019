@@ -11,6 +11,7 @@
 #include <commons/collections/list.h>
 #include <commons/collections/node.h>
 #include <semaphore.h>
+#include <commons/log.h>
 
 typedef struct buffer t_buffer;
 typedef struct paquete t_paquete;
@@ -22,6 +23,10 @@ sem_t mutex_write_shared_files;
 sem_t mutex_write_frame;
 sem_t mutex_process_list;
 sem_t binary_free_frame;
+
+t_log *logger_info;
+t_log *logger_trace;
+t_log *logger_error;
 
 typedef enum {
 	DESCONEXION = 0,

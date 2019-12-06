@@ -500,3 +500,18 @@ void update_file_number(){
 
 	list_iterate(MAPPED_FILES,_update_file_number);
 }
+
+int espacio_libre(segment*ptr_segmento){
+	int free = 0;
+	if(ptr_segmento->tipo==HEAP){
+		void _espacio_total_libre(void*element){
+			segmentheapmetadata *ptr_seg_metadata = (segmentheapmetadata*)element;
+			heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
+			if(!ptr_metadata->ocupado)
+				free+=ptr_metadata->bytes;
+		}
+		list_iterate(ptr_segmento->metadatas,_espacio_total_libre);
+		return free;
+	}else
+		return -1;
+}

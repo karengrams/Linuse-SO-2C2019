@@ -75,7 +75,7 @@ void asignar_marco_en_swap(page* pag){
 void swap_pages(page* victima, page* paginaPedida){
 	//datos de la victima
 	sem_wait(&binary_swap_pages);
-
+	log_trace("se swapea la pagina #%d con la pagina #%d",paginaPedida->nro_pagina,victima->nro_pagina);
 	int nroFrame = victima->nro_frame;
 	frame* frameVictima = ((frame*)list_get(FRAMES_TABLE, nroFrame));
 
@@ -109,8 +109,10 @@ void traer_pagina(page* pagina){
 	//y cargamos, si esta en memoria seteamos el bit de uso
 	void *buffer=malloc(TAM_PAG);
 	if (!pagina->bit_presencia){
+		log_trace(logger_trace,"se produce un page fault (pagina #%d)",pagina->nro_pagina);
 		frame *marco_libre = obtener_marco_libre();
 		if(marco_libre){
+			log_trace(logger_trace,"se procede a asignar el marco #%d a la pagina #%d",marco_libre->nro_frame,pagina->nro_pagina);
 			memcpy(marco_libre->memoria, VIRTUAL_MEMORY+pagina->nro_frame*TAM_PAG, TAM_PAG); //Swap mappeado como variable global por ahora
 			bitarray_clean_bit(BIT_ARRAY_SWAP,(off_t) pagina->nro_frame);
 			bitarray_set_bit(BIT_ARRAY_FRAMES, (off_t) marco_libre->nro_frame);
@@ -171,7 +173,7 @@ void incrementar_indice(){
 
 page* algoritmo_clock_modificado(){
 	page* victima = NULL;
-
+	log_trace(logger_trace,"se comienza a ejecutar el algoritmo clock modificado.");
 	sem_wait(&mutex_clock_mod);
 	while(!victima){
 
@@ -182,6 +184,7 @@ page* algoritmo_clock_modificado(){
 		}
 
 	}
+	log_trace(logger_trace,"se eligio como victima la pagina #%d cuyo frame es #%d.",victima->nro_pagina,victima->nro_frame);
 	sem_post(&binary_swap_pages);
 	return victima;
 }
