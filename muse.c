@@ -41,15 +41,18 @@ void inicializar_recursos_de_memoria(){
 	inicializar_bitmap_swap(leer_del_config("SWAP_SIZE",config),TAM_PAG);
 	inicializar_memoria_virtual(leer_del_config("SWAP_SIZE",config));
 	sem_init(&mutex_frames,0,1);
-	sem_init(&binary_swap_pages,0,1);
+	sem_init(&binary_swap_pages,0,0);
 	sem_init(&mutex_swap,0,1);
 	sem_init(&mutex_swap_file,0,1);
 	sem_init(&mutex_shared_files,0,1);
 	sem_init(&mutex_write_shared_files,0,1);
 	sem_init(&mutex_clock_mod,0,1);
-
+	sem_init(&mutex_write_frame,0,1);
+	sem_init(&mutex_process_list,0,1);
 
 }
+
+
 
 void liberacion_de_recursos(int num){
 
@@ -91,7 +94,8 @@ void liberacion_de_recursos(int num){
 	sem_destroy(&mutex_swap_file);
 	sem_destroy(&mutex_shared_files);
 	sem_destroy(&binary_swap_pages);
-
+	sem_destroy(&mutex_write_frame);
+	sem_destroy(&mutex_process_list);
 	printf("Recursos liberados!\n");
 	raise(SIGTERM);
 }
@@ -101,7 +105,9 @@ int museinit(t_proceso* cliente_a_atender, char* ipCliente, int id){
 		return ERROR; //YA EXISTE EN NUESTRA TABLA ERROR
 	} else {
 		t_proceso* procesoNuevo = crear_proceso(id, ipCliente);
+		sem_wait(&mutex_process_list);
 		list_add(PROCESS_TABLE, procesoNuevo); //Si no existe lo creamos y agregamos
+		sem_post(&mutex_process_list);
 		return 0;
 	}
 }
@@ -203,10 +209,15 @@ void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion, proceso->tablaDeSegmentos);
 
-    if (!ptr_segmento || (direccion + cantidadDeBytes) > limite_segmento(ptr_segmento)) {
-      free(buffer);
-      raise(SIGSEGV); //ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO O SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
-    }
+	if (!ptr_segmento) {
+		free(buffer);
+		return NULL; //ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO.
+	}
+
+	if ((direccion + cantidadDeBytes) > limite_segmento(ptr_segmento)+1) {
+		free(buffer);
+		raise(SIGSEGV); // SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
+	}
 
 	int numeroPagina = numero_pagina(ptr_segmento, direccion);
 	int desplazamientoEnPagina = desplazamiento_en_pagina(ptr_segmento,direccion);
@@ -371,7 +382,7 @@ int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion_pedida,
 			proceso->tablaDeSegmentos);
 
-	if (!ptr_segmento || (direccion_pedida + cantidad_de_bytes)> limite_segmento(ptr_segmento)) {
+	if (!ptr_segmento || (direccion_pedida + cantidad_de_bytes)> limite_segmento(ptr_segmento)+1) {
 		free(buffer_a_copiar);
 		raise(SIGSEGV);//ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO.
 		//O SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
@@ -394,9 +405,9 @@ int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {
 		traer_pagina(pagina);
 		frame* marco = pagina->frame;
 		tamanioACopiar = minimo(cantidad_de_bytes, (TAM_PAG - desplazamientoEnPagina));
-
+		sem_wait(&mutex_write_frame);
 		memcpy((marco->memoria + desplazamientoEnPagina), (buffer_a_copiar + desplazamientoEnBuffer), tamanioACopiar);
-
+		sem_post(&mutex_write_frame);
 		pagina->bit_modificado = true;
 
 		cantidad_de_bytes -= tamanioACopiar;
@@ -465,4 +476,20 @@ int suma_frames_libres(){
 
 int memory_leaks_proceso(t_proceso* proceso){
 	return proceso->totalMemoriaPedida - proceso->totalMemoriaLiberada;
+}
+
+t_proceso* buscar_proceso(t_list* paqueteRecibido, char* ipCliente){
+	int id = *((int*) list_get(paqueteRecibido, 0)); // ACA se muere?
+	t_proceso *process;
+
+	bool mismoipid(void* arg) {
+		t_proceso* cliente = (t_proceso*) arg;
+		return ((cliente->id) == id && !(strcmp(ipCliente, cliente->ip)));
+	}
+
+	sem_wait(&mutex_process_list);
+	process = list_find(PROCESS_TABLE, mismoipid);
+	sem_post(&mutex_process_list);
+	return process;
+
 }

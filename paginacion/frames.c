@@ -66,8 +66,9 @@ void escribir_metadata_en_frame(segment* ptr_segmento,segmentheapmetadata* paux_
 		page* pagina = (page*) list_get(ptr_segmento->tabla_de_paginas,numeroPagina);
 		traer_pagina(pagina);
 		frame* ptr_frame_aux = (frame*) pagina->frame; //Por alguna razon no me dejaba entrar al campo memoria si no hacia esto
-
+		sem_wait(&mutex_write_frame);
 		memcpy(ptr_frame_aux->memoria + desplazamiento,paux_metadata_ocupado->metadata, sizeof(heapmetadata));
+		sem_post(&mutex_write_frame);
 
 	} else { //si no entra lo copiamos de a pedazos
 		page* paginaUno = (page*) list_get(ptr_segmento->tabla_de_paginas,numeroPagina);
@@ -77,9 +78,10 @@ void escribir_metadata_en_frame(segment* ptr_segmento,segmentheapmetadata* paux_
 		frame* ptr_frame_aux_uno = (frame*)paginaUno->frame;
 		frame* ptr_frame_aux_dos = (frame*)paginaDos->frame;
 		int aCopiar = TAM_PAG - desplazamiento;
-
+		sem_wait(&mutex_write_frame);
 		memcpy(ptr_frame_aux_uno->memoria + desplazamiento,paux_metadata_ocupado->metadata, aCopiar);
 		memcpy(ptr_frame_aux_dos->memoria,paux_metadata_ocupado->metadata + aCopiar,sizeof(heapmetadata) - aCopiar);
+		sem_post(&mutex_write_frame);
 	}
 
 }

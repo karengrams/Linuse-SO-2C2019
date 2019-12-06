@@ -15,12 +15,12 @@ int esperar_cliente(int socket_servidor){
 
 int recibir_operacion(int socket_cliente){
 	int cod_op;
-	if(recv(socket_cliente, &cod_op, sizeof(int), MSG_WAITALL) != 0)
-		return cod_op;
-	else{
-		close(socket_cliente);
+	int error = recv(socket_cliente, &cod_op, sizeof(int), MSG_WAITALL);
+
+	if(error == 0)
 		return -1;
-	}
+
+	return cod_op;
 }
 
 void* recibir_buffer(int* size, int socket_cliente){
@@ -183,18 +183,6 @@ t_proceso* crear_proceso(int id, char* ip){
 	proceso->ip = string_duplicate(ip);
 	proceso->tablaDeSegmentos = list_create();
 	return proceso;
-}
-
-t_proceso* buscar_proceso(t_list* paqueteRecibido, char* ipCliente){
-	int id = *((int*) list_get(paqueteRecibido, 0)); // ACA se muere?
-
-	bool mismoipid(void* arg) {
-		t_proceso* cliente = (t_proceso*) arg;
-		return ((cliente->id) == id && !(strcmp(ipCliente, cliente->ip)));
-	}
-
-	return list_find(PROCESS_TABLE, mismoipid);
-
 }
 
 void admitir_nuevo_cliente(fd_set *master, int* fdmax, int socketEs){

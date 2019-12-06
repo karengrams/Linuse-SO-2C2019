@@ -18,7 +18,7 @@ void atender_cliente_select(fd_set* master, int socketCli){
 	ipCliente(socketCli, ipCli);
 
 	int cod_op = recibir_operacion(socketCli);
-	printf("Codigo operacion %d\n", cod_op);
+	printf("Codigo operacion %d por el socket %d\n", cod_op,socketCli);
 
 	if(cod_op!=-1){
 		paqueteRecibido = recibir_paquete(socketCli);
@@ -106,34 +106,35 @@ void atender_cliente(void *element){
 	while(1){
 
     	int cod_op = recibir_operacion(socketCli);
-    	if(cod_op>=10 && cod_op<=18){
-        	printf("\n\nSe ha solicitado la operacion nro. %d por el socket %d\n\n",cod_op,socketCli);
-    		paqueteRecibido = recibir_paquete(socketCli);
-    		cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
+
+    	if(cod_op>=10 && cod_op<=18 ){
+       // printf("Operacion nro. %d por el socket %d\n\n",cod_op,socketCli);
+    	printf("Socket:%d\n",socketCli);
+    	paqueteRecibido = recibir_paquete(socketCli);
     		switch(cod_op){
     		case MUSE_INIT:
-    			mostrar_frames_ocupados();
     			id_cliente = *((int*)list_get(paqueteRecibido, 0));
     			cod_error = museinit(cliente_a_atender, ipCli, id_cliente);
     			send(socketCli, &cod_error, sizeof(int), 0);
     		break;
     		case MUSE_CLOSE:
-    			printf("\nAntes de liberar al proceso...\n");
-    			mostrar_tabla_de_segmentos(cliente_a_atender->tablaDeSegmentos);
+    	    	cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
+				mostrar_tabla_de_segmentos(cliente_a_atender->tablaDeSegmentos);
     			museclose(cliente_a_atender);
-    			printf("\nLuego de liberar al proceso...\n");
-    			mostrar_frames_ocupados();
-    		break;
+    			break;
     		case MUSE_ALLOC:
+    	    	cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
     			direccion = musealloc(cliente_a_atender, *((int*)list_get(paqueteRecibido,1)));
     			send(socketCli, &direccion, sizeof(uint32_t), 0);
     		break;
     		case MUSE_FREE:
+    	    	cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
     			id_cliente = *((int*)list_get(paqueteRecibido, 0));
     			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
     			musefree(cliente_a_atender,direccion_pedida);
     		break;
     		case MUSE_GET: // TODO: ver caso de que se pase del limite
+    			cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
     			cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
     			buffer = museget(cliente_a_atender, paqueteRecibido);
     			if (buffer == NULL){
@@ -147,10 +148,12 @@ void atender_cliente(void *element){
     			}
     		break;
     		case MUSE_CPY:
-    				cod_error = musecpy(cliente_a_atender, paqueteRecibido);
-    				send(socketCli, &cod_error, sizeof(int), 0);
+    	    	cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
+    			cod_error = musecpy(cliente_a_atender, paqueteRecibido);
+    			send(socketCli, &cod_error, sizeof(int), 0);
     		break;
     		case MUSE_MAP:
+    	    	cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
     			id_cliente = *((int*)list_get(paqueteRecibido, 0));
     			char *path = string_duplicate((char*)list_get(paqueteRecibido,1));
     			cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 2)); //este seria el length a mappear
@@ -159,6 +162,7 @@ void atender_cliente(void *element){
     			send(socketCli, &direccion, sizeof(uint32_t), 0);
     		break;
     		case MUSE_SYNC:
+    	    	cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
     			id_cliente = *((int*)list_get(paqueteRecibido, 0));
     			cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1)); //cantidad de bytes a guardar en el archivo
     			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 2)); //direccion a partir de la cual hacer el sync
@@ -167,6 +171,7 @@ void atender_cliente(void *element){
     			send(socketCli, &cod_error, sizeof(int), 0);
     		break;
     		case MUSE_UNMAP:
+    	    	cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
     			id_cliente = *((int*)list_get(paqueteRecibido, 0));
     			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
     			museunmap(cliente_a_atender,direccion_pedida);
@@ -178,7 +183,10 @@ void atender_cliente(void *element){
 	}
 	free(ipCli);
 	free(buffer);
-		//free(paqueteRecibido); //TODO:fijarse como eliminar la lista de las commons
+	void _eliminar_elementos_paquete(void*element){
+		free(element);
+	}
+	list_destroy_and_destroy_elements(paqueteRecibido,_eliminar_elementos_paquete);
 
 }
 

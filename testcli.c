@@ -2,38 +2,21 @@
 #include <unistd.h>
 
 int main(){
-	int *ptr;
-	void* cosas = malloc(50);
 	void* recibir = malloc(265);
 	void* recibir2 = malloc(265);
-
 	int id = getpid();
-	muse_init(id, "127.0.0.1",9168);
+	muse_init(id, "127.0.0.1",9169);
 	uint32_t my_memory = muse_alloc(30);
-//	uint32_t my_other_memory = muse_alloc(5);
-//	uint32_t my_other_other_memory = muse_alloc(50);
-//	uint32_t my_other_other_other_memory = muse_alloc(10);
-//	uint32_t my_other_other_other_other_memory = muse_alloc(100);
-//	muse_free(my_other_other_other_other_memory);
-//	muse_free(my_other_other_other_memory);
-//	muse_free(my_other_other_memory);
-//	muse_free(my_other_memory);
-//	muse_free(my_memory);
-
-	uint32_t map = muse_map("holi.txt",265,MAP_SHARED);
+	uint32_t map = muse_map("stephen.txt",277,MAP_SHARED);
 	printf("map = %lu\n",map);
-//	muse_sync(map,120);
 	printf("my_memory = %lu\n",my_memory);
-//	printf("my_other_memory = %lu\n",my_other_memory);
-//	printf("my_other_other_memory = %lu\n",my_other_other_memory);
-//	printf("my_other_other_other_memory = %lu\n",my_other_other_other_memory);
-	sleep(3);
-//	muse_unmap(map);
-	muse_cpy(my_memory, "Hola perri, como va?", 21);
+	muse_cpy(my_memory, "Hola loquui, como va?", 21);
 	muse_get(recibir,my_memory,10);
-	muse_get(recibir2,map,115);
+	muse_cpy(map, "Habia una vaca re loca y pirada que queria aprobar sistemas operativos y no pudo ", 81); 
+	muse_get(recibir2,map,81);
 	printf("muse_get(recibir,my_memory,10)=%s\n", (char*)recibir);
-	printf("muse_get(recibir2,map,115)=%s\n",(char*)recibir2);
+	printf("muse_get(recibir2,map,81)=%s\n",(char*)recibir2);
+	sleep(9);
 	muse_close();
 	return 0;
 }

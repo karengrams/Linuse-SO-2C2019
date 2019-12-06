@@ -365,6 +365,7 @@ void recalcular_bases_logicas_de_segmentos(t_list *tabla_de_segmentos){
 void liberar_recursos_del_segmento(segment*ptr_segmento,t_proceso* proceso){
 	int cantidad_de_paginas_asignadas = ptr_segmento->tabla_de_paginas->elements_count;
 	int paginas_removidas=0;
+	int cant_pag_compartidas;
 
 
 	void _eliminar_metadatas(void*element){
@@ -388,13 +389,6 @@ void liberar_recursos_del_segmento(segment*ptr_segmento,t_proceso* proceso){
 		free(ptr_pagina);
 	}
 
-	void _eliminar_y_quitar_paginas(void*element){
-		page*ptr_pag = (page*)element;
-		if(cantidad_de_paginas_asignadas>ptr_pag->nro_pagina)
-			list_remove(ptr_segmento->tabla_de_paginas,ptr_pag->nro_pagina-paginas_removidas); // La tercera vez muere
-		paginas_removidas++;
-		_eliminar_paginas(element);
-	}
 
 	if(ptr_segmento->tipo==MMAP){
 		segmentmmapmetadata *ptr_metadata = (segmentmmapmetadata*)list_get(ptr_segmento->metadatas,0);
@@ -405,22 +399,30 @@ void liberar_recursos_del_segmento(segment*ptr_segmento,t_proceso* proceso){
 			return otro_proceso->id == proceso->id;
 		}
 
+		void _eliminar_paginas_compartidas(void*element){
+			page * ptr_pagina = (page*)element;
+			if(ptr_pagina->nro_frame<list_size(ptr_mapped_metadata->paginas_min_asignadas))
+				list_remove(ptr_segmento->tabla_de_paginas,0);
+		}
+
+		sem_wait(&mutex_shared_files);
 		list_remove_by_condition(ptr_mapped_metadata->procesos,_mismo_id);
+		list_iterate(ptr_segmento->tabla_de_paginas,_eliminar_paginas_compartidas);
 		if(!ptr_mapped_metadata->procesos->elements_count){
-			sem_wait(&mutex_shared_files);
+			cant_pag_compartidas = list_size(ptr_mapped_metadata->paginas_min_asignadas);
 			munmap(ptr_mapped_metadata->file,ptr_mapped_metadata->tam_archivo);
-			list_iterate(ptr_mapped_metadata->paginas_min_asignadas,_eliminar_y_quitar_paginas);
-			list_destroy(ptr_mapped_metadata->paginas_min_asignadas);
+			list_destroy_and_destroy_elements(ptr_mapped_metadata->paginas_min_asignadas,_eliminar_paginas);
 			list_destroy(ptr_mapped_metadata->procesos);
 			free(ptr_mapped_metadata->path);
 			list_remove(MAPPED_FILES,ptr_mapped_metadata->nro_file);
 			update_file_number();
 			free(ptr_mapped_metadata);
-			sem_post(&mutex_shared_files);
 		}
+		sem_post(&mutex_shared_files);
 	}
 
 	list_destroy_and_destroy_elements(ptr_segmento->tabla_de_paginas,&_eliminar_paginas);
+
 	list_destroy_and_destroy_elements(ptr_segmento->metadatas,&_eliminar_metadatas);
 	free(ptr_segmento);
 }

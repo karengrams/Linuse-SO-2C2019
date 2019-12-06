@@ -10,11 +10,17 @@
 
 #include <commons/collections/list.h>
 #include <commons/collections/node.h>
+#include <semaphore.h>
 
 typedef struct buffer t_buffer;
 typedef struct paquete t_paquete;
 typedef struct frame_t frame;
 
+sem_t mutex_process_list;
+sem_t mutex_shared;
+sem_t mutex_write_shared_files;
+sem_t mutex_write_frame;
+sem_t mutex_process_list;
 
 typedef enum {
 	DESCONEXION = 0,

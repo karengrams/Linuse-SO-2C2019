@@ -24,6 +24,7 @@
 #include "../muse.h"
 #include "../libMuse.h"
 #include "../structures.h"
+#include <semaphore.h>
 
 #define ERROR -1;
 
@@ -48,7 +49,6 @@ void* serializar_paquete(t_paquete* , int);
 void enviar_paquete(t_paquete*, int);
 void eliminar_paquete(t_paquete*);
 t_proceso* crear_proceso(int, char*);
-t_proceso* buscar_proceso(t_list*, char*);
 void liberar_proceso(t_proceso*);
 void admitir_nuevo_cliente(fd_set*, int*, int);
 

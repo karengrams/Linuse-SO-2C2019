@@ -31,9 +31,6 @@
 #include "structures.h"
 #include <semaphore.h>
 
-sem_t mutex_shared;
-sem_t mutex_write_shared_files;
-
 t_list* PROCESS_TABLE;
 t_config* config;
 
@@ -60,5 +57,5 @@ int memoria_libre_en_segmento(segment*);
 int cantidad_total_de_segmentos_en_sistema();
 int suma_frames_libres();
 int memory_leaks_proceso(t_proceso*);
-
+t_proceso* buscar_proceso(t_list* , char*);
 #endif /* MUSE_H_ */
