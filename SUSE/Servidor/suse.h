@@ -38,12 +38,12 @@ typedef struct{
 typedef struct {
 	int socket_fd; //socket del proceso que se comunica con suse
     int tid; //tid asignado por hilolay
-    int tiempo_creacion; //valor de time(0) al momento de entrar a la cola new
-    int tiempo_en_cola_actual;  //se le asigna time(0) cuando entra en ready o en exec
-    int tiempo_total_en_ready;  //cuando sale de ready se le suma time(0) - tiempo_en_cola_actual
-    int tiempo_total_en_exec; //cuando sale de exec se le suma time(0) - tiempo_en_cola_actual
-    int ultima_rafaga;  //cuando sale de exec se le asigna time(0) - tiempo_en_cola_actual
-    int ultima_estimacion; //la primera es 0
+    double tiempo_creacion; //valor de time(0) al momento de entrar a la cola new
+    struct timeval tiempo_en_cola_actual;  //se le asigna time(0) cuando entra en ready o en exec
+    double tiempo_total_en_ready;  //cuando sale de ready se le suma time(0) - tiempo_en_cola_actual
+    double tiempo_total_en_exec; //cuando sale de exec se le suma time(0) - tiempo_en_cola_actual
+    double ultima_rafaga;  //cuando sale de exec se le asigna time(0) - tiempo_en_cola_actual
+    double ultima_estimacion; //la primera es 0
 } __attribute__((packed)) t_thread;
 
 typedef struct{
