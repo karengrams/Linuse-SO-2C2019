@@ -29,6 +29,8 @@ sem_t semaforos_suse; //deberia ser un array de semaforos para ser mas precisos,
 
 struct timeval TIEMPO_INICIO_PROGRAMA;
 
+int FUNCIONAR = 1;
+int SOCKET_ESCUCHA;
 
 
 //FUNCIONES DEL CONFIG
@@ -53,8 +55,9 @@ int* pasar_a_vector_de_int(char** array){
 
 	for(int i=0; i<longitud; i++){
 		vector[i] = (atoi(array[i]));
+		free(array[i]);
 	}
-
+	free(array);
 	return vector;
 }
 
@@ -121,8 +124,11 @@ int total_hilos_en_ready_y_exec(){
 	sem_post(&sem_ready);
 
 	sem_wait(&sem_execute);
-	int exec = list_size(list_filter(listaEXEC, &_not_null));
+	t_list* coso = list_filter(listaEXEC, &_not_null);
 	sem_post(&sem_execute);
+	int exec = list_size(coso);
+
+	list_destroy(coso);
 	return ready+exec;
 }
 
@@ -144,26 +150,6 @@ void loggear_semaforos(void){
 	}
 
 }
-
-
-//void* _suma_tiempos_ejecucion(void* seed, void*elem){
-//	int inicial = *((int*) seed);
-//	t_thread* hilo = (t_thread*)elem;
-//	inicial = inicial + hilo->tiempo_creacion;
-//	memcpy(seed, &inicial, sizeof(int));
-//	return seed;
-//}
-//
-//void* _suma_tiempos_ejecucion_blocked(void* seed, void* elem){
-//	int inicial = *((int*) seed);
-//	t_blocked* block = (t_blocked*)elem;
-//	t_thread* hilo = block->thread;
-//	inicial = inicial + time(0) - hilo->tiempo_creacion;
-//	memcpy(seed, &inicial, sizeof(int));
-//	return seed;
-//}
-
-
 
 
 void loggear_procesos(void){
@@ -281,7 +267,9 @@ void loggear_procesos(void){
 		list_iterate(ready->lista_threads, &loggear_threads);
 		list_iterate(listaBlocked, &loggear_blockeds);
 
-
+		list_destroy(listaNew);
+		list_destroy(listaExit);
+		list_destroy(listaBlocked);
 	}
 }
 
@@ -435,7 +423,7 @@ void buscar_hilos_blockeados_por_este(int tid){ //probablemente no haya o haya s
 	}
 
 	list_iterate(listaBloqueados, &_cambiar_a_blocked_ready);
-
+	list_destroy(listaBloqueados);
 }
 
 void buscar_y_pasarlo_a_exit(int fd){ //Este codigo quedo asquerosamente feo
@@ -589,6 +577,10 @@ void atenderCliente(void* elemento){
 			return elemento->socket_fd == socketCli;
 		}
 
+		void _destruir_paquete(void* elem){
+			free(elem);
+		}
+
 		switch(cod_op){
 
 		case SUSE_INIT:
@@ -608,7 +600,7 @@ void atenderCliente(void* elemento){
 				list_add(colaNEW, nuevoThread);
 				sem_post(&sem_new);
 				}
-
+			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
 			break;
 
 		case SUSE_SCHEDULE:
@@ -631,7 +623,6 @@ void atenderCliente(void* elemento){
 			}
 
 			send(socketCli, &tid, sizeof(int), 0); //mandamos el tid del hilo que pusimos a ejecutar
-
 			break;
 
 		case SUSE_CLOSE:
@@ -640,6 +631,14 @@ void atenderCliente(void* elemento){
 			buscar_y_pasarlo_a_exit(socketCli); //Agarra el ult que esta en la cola exe de el socket y lo pasa a exit
 			buscar_hilos_blockeados_por_este(tid);
 			escribir_logs(tid, socketCli);
+
+			if(tid==0){
+				list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
+				close(socketCli);
+				pthread_exit(NULL);
+				return;
+			} //Fin del hilo
+			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
 			break;
 
 		case SUSE_JOIN:
@@ -650,6 +649,8 @@ void atenderCliente(void* elemento){
 			if(!tid_ya_esta_en_exit(tid, socketCli)){ //puede pasar que el thread al cual le hacen join ya termino
 				buscar_y_pasarlo_a_blocked(socketCli, tid, JOIN);//Agarra el ult que esta en la cola exe de el socket y lo pasa a blocked por join con ese tid
 			}
+
+			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
 			break;
 
 		case SUSE_SIGNAL:
@@ -663,6 +664,7 @@ void atenderCliente(void* elemento){
 			error = hacer_signal(posicionEnArray);
 			sem_post(&semaforos_suse);
 
+			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
 			break;
 
 		case SUSE_WAIT:
@@ -677,9 +679,10 @@ void atenderCliente(void* elemento){
 
 			send(socketCli, &error, sizeof(int), 0);
 
-
+			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
 			break;
 		}
+
 	}
 }
 
@@ -728,7 +731,7 @@ void* hay_blocked_ready(){
 
 //ESTE HILO VA A MOVER LOS HILOS DESDE NEW O BLOCKED A READY
 void planificador_largo_plazo(){
-	while(1){
+	while(FUNCIONAR){
 
 		if(podemos_agregar_hilos_a_ready()){
 
@@ -738,6 +741,8 @@ void planificador_largo_plazo(){
 
 				int socket = hilo->thread->socket_fd;
 
+				t_thread* thread = hilo->thread;
+
 				bool _mismo_fd(void* elem){
 					t_cola_ready* elemento = (t_cola_ready*)elem;
 					return elemento->socket_fd == socket;
@@ -746,10 +751,10 @@ void planificador_largo_plazo(){
 				t_cola_ready* colaReady = (t_cola_ready*)list_find(colaREADY, &_mismo_fd);
 				sem_post(&sem_ready);
 
-				list_add(colaReady->lista_threads, hilo->thread);
+				list_add(colaReady->lista_threads, thread);
 
-				gettimeofday(&hilo->thread->tiempo_en_cola_actual,NULL); //momento de ingreso a ready
-
+				gettimeofday(&thread->tiempo_en_cola_actual,NULL); //momento de ingreso a ready
+				free(hilo);
 				t_cosa* cosa = list_find(LISTA_SEMAFOROS, _mismo_fd);
 				sem_post(cosa->semaforo);
 
@@ -760,10 +765,64 @@ void planificador_largo_plazo(){
 
 		}
 	}
+	pthread_exit(NULL);
 }
 
+void _liberar_exit(void* elem){
+	free(elem);
+}
 
+void _liberar_ready(void* elem){
+	t_cola_ready* cola = (t_cola_ready*)elem;
+	list_destroy_and_destroy_elements(cola->lista_threads, &_liberar_exit);
+	free(elem);
+}
+void _liberar_execute(void* elem){
+	t_execute* cola = (t_execute*)elem;
+	free(cola->thread);
+	free(elem);
+}
 
+void _liberar_semaforos(void* elem){
+	t_cosa* cosa = (t_cosa*)elem;
+	sem_close((cosa->semaforo));
+	free(cosa->semaforo);
+	free(elem);
+}
+
+void liberar_sem_ids(){
+	for(int i=0 ; i<tamanio_vector; i++){
+		free(SEM_IDS[i]);
+	}
+	free(SEM_IDS);
+}
+
+void liberar_recursos(int sig){
+
+	list_destroy(colaNEW);
+	list_destroy(listaBLOCKED);
+	list_destroy_and_destroy_elements(listaEXIT, &_liberar_exit);
+	list_destroy_and_destroy_elements(colaREADY, &_liberar_ready);
+	list_destroy_and_destroy_elements(listaEXEC, &_liberar_execute);
+
+	list_destroy_and_destroy_elements(LISTA_SEMAFOROS, &_liberar_semaforos);
+	config_destroy(CONFIG);
+	log_destroy(LOG);
+
+	sem_close(&sem_blocked);
+	sem_close(&sem_execute);
+	sem_close(&sem_exit);
+	sem_close(&sem_new);
+	sem_close(&sem_ready);
+	sem_close(&sem_run);
+	sem_close(&semaforos_suse);
+
+	close(SOCKET_ESCUCHA);
+	liberar_sem_ids();
+	free(SEM_MAX);
+	free(SEM_VALOR);
+	FUNCIONAR = 0;
+}
 
 void iniciar_semaforos(){
 	sem_init(&sem_new,0,1);
@@ -797,6 +856,7 @@ int main(){
 
 	iniciar_semaforos();
 
+	signal(SIGUSR1, &liberar_recursos); //Cuando generemos esta signal se liberan los recursos y termina el proceso
 	//ALARMA PARA LOGS
 	signal(SIGALRM, &escribirLog);
 	struct itimerval intervalo;
@@ -814,14 +874,22 @@ int main(){
 	pthread_t hiloAtencion, hiloPlanif;
 
 
-	int socketEscucha = iniciar_servidor("127.0.0.1", puerto_listen());
+	SOCKET_ESCUCHA = iniciar_servidor("127.0.0.1", puerto_listen());
 	int cliente;
 
 	pthread_create(&hiloPlanif, NULL, &planificador_largo_plazo, NULL);
 
 
-	while(1){
-		cliente = esperar_cliente(socketEscucha);
-		pthread_create(&hiloAtencion, NULL, &atenderCliente, &cliente);
+	while(FUNCIONAR){
+		cliente = esperar_cliente(SOCKET_ESCUCHA);
+
+		if(cliente!=-1){
+			pthread_create(&hiloAtencion, NULL, &atenderCliente, &cliente);
+			pthread_detach(hiloAtencion);
+		}
 	}
+
+	pthread_join(hiloPlanif, NULL);
+
+	return EXIT_SUCCESS;
 }
