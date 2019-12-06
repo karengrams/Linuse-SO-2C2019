@@ -11,7 +11,9 @@
 #include <stdint.h>
 #include <semaphore.h>
 
+sem_t mutex_clock_mod;
 sem_t mutex_frames;
+sem_t binary_swap_pages;
 
 typedef struct page_t page;
 

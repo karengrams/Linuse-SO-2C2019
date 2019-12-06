@@ -46,8 +46,6 @@ int paginas_necesarias(int valorPedido) {
 void asignar_marco(page* pag) {
 	sem_wait(&mutex_frames);
 	frame *marco_libre = obtener_marco_libre();
-	printf("Asignando el marco nro. %d a la pagina nro. %d\n",marco_libre->nro_frame,pag->nro_pagina);
-
 	if(!marco_libre){ //si no hay marcos libres buscamos en el swap
 		asignar_marco_en_swap(pag);
 	} else {
@@ -73,19 +71,11 @@ void asignar_marco_en_swap(page* pag){
 	pag->bit_modificado = false;
 }
 
-//int posicion_en_tabla_paginas(page* elemento, t_list *tabla_de_paginas) {
-//	page *comparador;
-//	for (int index = 0; index < tabla_de_paginas->elements_count; index++) {
-//		comparador = list_get(tabla_de_paginas, index);
-//		if (!memcmp(elemento, comparador, sizeof(page))) { //Si son iguales devuelve 0
-//			return index;
-//		}
-//	}
-//	return -1;
-//}
 
 void swap_pages(page* victima, page* paginaPedida){
 	//datos de la victima
+	sem_wait(&binary_swap_pages);
+
 	int nroFrame = victima->nro_frame;
 	frame* frameVictima = ((frame*)list_get(FRAMES_TABLE, nroFrame));
 
@@ -110,16 +100,20 @@ void swap_pages(page* victima, page* paginaPedida){
 
 	PAGINAS_EN_FRAMES[nroFrame] = paginaPedida; //cargamos la pagina pedida en el vector de paginas cargadas en memoria
 	free(bufferAux);
+	sem_post(&mutex_clock_mod);
 }
 
 void traer_pagina(page* pagina){
 	//cada vez que referencian
 	//una pagina si no esta en memoria la buscamos
 	//y cargamos, si esta en memoria seteamos el bit de uso
-
+	void *buffer=malloc(TAM_PAG);
 	if (!pagina->bit_presencia){
 		frame *marco_libre = obtener_marco_libre();
 		if(marco_libre){
+			sem_wait(&mutex_frames);
+			memcpy(marco_libre->memoria, VIRTUAL_MEMORY+pagina->nro_frame*TAM_PAG, TAM_PAG); //Swap mappeado como variable global por ahora
+			bitarray_clean_bit(BIT_ARRAY_SWAP,(off_t) pagina->nro_frame);
 			bitarray_set_bit(BIT_ARRAY_FRAMES, (off_t) marco_libre->nro_frame);
 			pagina->frame = marco_libre;
 			pagina->bit_presencia = true;
@@ -127,9 +121,11 @@ void traer_pagina(page* pagina){
 			pagina->bit_uso = true;
 			pagina->bit_modificado = false;
 			PAGINAS_EN_FRAMES[marco_libre->nro_frame] = pagina;
+			sem_post(&mutex_frames);
 		}else{
 			page* victima = algoritmo_clock_modificado();
 			swap_pages(victima, pagina);
+
 		}
 	}
 	pagina->bit_uso = true;
@@ -179,6 +175,7 @@ void incrementar_indice(){
 page* algoritmo_clock_modificado(){
 	page* victima = NULL;
 
+	sem_wait(&mutex_clock_mod);
 	while(!victima){
 
 		victima = buscar_cero_cero();
@@ -188,7 +185,7 @@ page* algoritmo_clock_modificado(){
 		}
 
 	}
-
+	sem_post(&binary_swap_pages);
 	return victima;
 }
 

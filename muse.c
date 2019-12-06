@@ -41,10 +41,13 @@ void inicializar_recursos_de_memoria(){
 	inicializar_bitmap_swap(leer_del_config("SWAP_SIZE",config),TAM_PAG);
 	inicializar_memoria_virtual(leer_del_config("SWAP_SIZE",config));
 	sem_init(&mutex_frames,0,1);
+	sem_init(&binary_swap_pages,0,1);
 	sem_init(&mutex_swap,0,1);
 	sem_init(&mutex_swap_file,0,1);
 	sem_init(&mutex_shared_files,0,1);
 	sem_init(&mutex_write_shared_files,0,1);
+	sem_init(&mutex_clock_mod,0,1);
+
 
 }
 
@@ -84,8 +87,10 @@ void liberacion_de_recursos(int num){
 	config_destroy(config);
 	sem_destroy(&mutex_frames);
 	sem_destroy(&mutex_swap);
+	sem_destroy(&mutex_clock_mod);
 	sem_destroy(&mutex_swap_file);
 	sem_destroy(&mutex_shared_files);
+	sem_destroy(&binary_swap_pages);
 
 	printf("Recursos liberados!\n");
 	raise(SIGTERM);
@@ -208,9 +213,12 @@ void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 	int auxiliar = 0;
 	int tamanioACopiar;
 	int desplazamientoEnBuffer = 0;
+
+
+
 	while (cantidadDeBytes > 0) {
 		page* pagina = (page*)list_get(ptr_segmento->tabla_de_paginas,numeroPagina + auxiliar);
-		traer_pagina(pagina);
+		traer_pagina(pagina); // TODO: si hay frames libres para aquellas paginas que dan page_fault deberia asignarselos
 		frame* marco =(frame*) (pagina->frame);
 		tamanioACopiar = minimo(cantidadDeBytes,(TAM_PAG - desplazamientoEnPagina));
 		memcpy(buffer + desplazamientoEnBuffer,marco->memoria + desplazamientoEnPagina, tamanioACopiar);

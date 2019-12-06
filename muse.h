@@ -32,7 +32,6 @@
 #include <semaphore.h>
 
 sem_t mutex_shared;
-sem_t lock_page;
 sem_t mutex_write_shared_files;
 
 t_list* PROCESS_TABLE;

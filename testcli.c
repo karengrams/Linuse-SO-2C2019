@@ -18,7 +18,7 @@ int main(){
 //	muse_free(my_other_other_other_memory);
 //	muse_free(my_other_other_memory);
 //	muse_free(my_other_memory);
-	muse_free(my_memory);
+//	muse_free(my_memory);
 
 	uint32_t map = muse_map("holi.txt",265,MAP_SHARED);
 	printf("map = %lu\n",map);
