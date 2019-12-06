@@ -29,6 +29,11 @@ typedef enum {
 	SUSE_SIGNAL = 6,
 } op_code;
 
+typedef struct{
+	int fd;
+	sem_t* semaforo;
+} __attribute__((packed)) t_cosa;
+
 
 typedef struct {
 	int socket_fd; //socket del proceso que se comunica con suse

@@ -4,18 +4,13 @@
 #include "suse.h"
 #include "utils.c"
 
-/*TODO list:
- * 	Agregar semaforos para sincornizar los pedidos de suse (evitar condicion de carrera en las listas
- * 	Probar
- * 	Tomar cerveza
- */
-
-
 t_list* colaNEW;
 t_list* colaREADY;
 t_list* listaEXEC;
 t_list* listaEXIT;
 t_list* listaBLOCKED;
+
+t_list* LISTA_SEMAFOROS;
 
 t_config* CONFIG;
 t_log* LOG;
@@ -125,6 +120,7 @@ void loggear_semaforos(void){
 		log_info(LOG, "Valor del semaforo %s: %d", SEM_IDS[i], SEM_VALOR[i]);
 		sem_post(&semaforos_suse);
 	}
+
 }
 
 
@@ -202,7 +198,7 @@ void loggear_procesos(void){
 		log_info(LOG, "Hilos en cola READY: %d", list_size(ready->lista_threads));
 		log_info(LOG, "Hilos en cola BLOCKED: %d", list_size(listaBlocked));
 		log_info(LOG, "Hilos en cola RUN: %d", hiloEjecutando);
-		log_info(LOG, "Hilos en cola EXIT: %d", list_size(listaExit));
+		log_info(LOG, "Hilos en cola EXIT: %d\n\n", list_size(listaExit));
 
 		int semilla = 0;
 		list_fold(listaNew, &semilla, &_suma_tiempos_ejecucion);
@@ -212,6 +208,14 @@ void loggear_procesos(void){
 
 		if(execute->thread!= NULL)
 			semilla = semilla + time(0) - execute->thread->tiempo_creacion;
+
+
+		if(execute->thread!= NULL){
+			t_thread* hilo = execute->thread;
+			int tiempoEjecucion = time(0)-hilo->tiempo_creacion;
+			log_info(LOG, "Hilo %d: \ntiempo de ejecucion: %d \ntiempo de espera: %d \ntiempo de uso de CPU: %f \nporcentaje "
+			"tiempo de ejecucion: %d", hilo->tid , tiempoEjecucion*1000 , (hilo->tiempo_total_en_ready)*1000, (hilo->tiempo_total_en_exec)*1000, tiempoEjecucion/semilla);
+			}
 
 
 		void loggear_threads(void* elem){
@@ -225,7 +229,7 @@ void loggear_procesos(void){
 					t_thread* hilo = block->thread;
 					int tiempoEjecucion = time(0)-hilo->tiempo_creacion;
 					log_info(LOG, "Hilo %d: \ntiempo de ejecucion: %d \ntiempo de espera: %d \ntiempo de uso de CPU: %f \nporcentaje "
-					"tiempo de ejecucion: %d", hilo->tid , tiempoEjecucion*1000 , (hilo->tiempo_total_en_ready)*1000, (hilo->tiempo_total_en_exec)*1000, tiempoEjecucion/semilla);
+					"tiempo de ejecucion: %d\n\n", hilo->tid , tiempoEjecucion*1000 , (hilo->tiempo_total_en_ready)*1000, (hilo->tiempo_total_en_exec)*1000, tiempoEjecucion/semilla);
 				}
 
 
@@ -234,12 +238,7 @@ void loggear_procesos(void){
 		list_iterate(ready->lista_threads, &loggear_threads);
 		list_iterate(listaBlocked, &loggear_blockeds);
 
-		if(execute->thread!= NULL){
-			t_thread* hilo = execute->thread;
-			int tiempoEjecucion = time(0)-hilo->tiempo_creacion;
-			log_info(LOG, "Hilo %d: \ntiempo de ejecucion: %d \ntiempo de espera: %d \ntiempo de uso de CPU: %f \nporcentaje "
-			"tiempo de ejecucion: %d", hilo->tid , tiempoEjecucion*1000 , (hilo->tiempo_total_en_ready)*1000, (hilo->tiempo_total_en_exec)*1000, tiempoEjecucion/semilla);
-			}
+
 	}
 }
 
@@ -314,7 +313,7 @@ void agregar_a_ready(int fd, t_thread* hilo){
 
 //FUNCIONES AUXILIARES DE SUSE_SCHEDULE
 
-void swap_threads(t_execute* nodoExec, t_thread* nuevoHilo, t_list* cola){
+int swap_threads(t_execute* nodoExec, t_thread* nuevoHilo, t_list* cola){
 	t_thread* victima = nodoExec->thread;
 
 	if(victima!=NULL){ //si victima == NULL no habia procesos ejecutando en ese momento
@@ -324,11 +323,17 @@ void swap_threads(t_execute* nodoExec, t_thread* nuevoHilo, t_list* cola){
 	victima->ultima_rafaga = time(0) - victima->tiempo_en_cola_actual;
 	victima->tiempo_en_cola_actual = time(0); //seteamos el tiempo en que entra a ready
 	list_add(cola, victima);//desplazamos a la victima
+	nodoExec->thread = nuevoHilo; //agregamos el nuevo hilo a exec
+	nuevoHilo->tiempo_total_en_ready =+ time(0)-nuevoHilo->tiempo_en_cola_actual; //sumamos el tiempo que estuvo en ready
+	nuevoHilo->tiempo_en_cola_actual = time(0); //seteamos el tiempo en que entra a exe
+	return 0;
 	}
 
 	nodoExec->thread = nuevoHilo; //agregamos el nuevo hilo a exec
 	nuevoHilo->tiempo_total_en_ready =+ time(0)-nuevoHilo->tiempo_en_cola_actual; //sumamos el tiempo que estuvo en ready
 	nuevoHilo->tiempo_en_cola_actual = time(0); //seteamos el tiempo en que entra a exe
+	return 1;
+
 }
 
 int rafaga_estimada(void* elem){
@@ -487,12 +492,25 @@ int hacer_wait(int posicion, int fd){
 	}
 }
 
+t_cosa* iniciar_cosa(sem_t* semaforo, int fd){
+	t_cosa* cosa = malloc(sizeof(t_cosa));
+	cosa->fd = fd;
+	cosa->semaforo = semaforo;
+	return cosa;
+}
+
 //HILO DE ATENCION A CLIENTES, UN HILO POR CADA SOCKET CONECTADO
 
 void atenderCliente(void* elemento){
 	int socketCli = *((int*)elemento);
 
-	t_list* paqueteRecibido = NULL, *colaAAplicarSJF;
+	sem_t semaforoLoco;
+	sem_init(&semaforoLoco, 0, 0);
+	t_cosa* cosa = iniciar_cosa(&semaforoLoco, socketCli);
+	list_add(LISTA_SEMAFOROS, cosa);
+
+
+	t_list* paqueteRecibido = NULL, *colaAAplicarSJF = NULL;
 	t_cola_ready* nodoReady;
 	t_execute* nodoEnEjecucion;
 	t_thread* hiloAEjecutar, *nuevoThread;
@@ -521,32 +539,32 @@ void atenderCliente(void* elemento){
 				nodoEnEjecucion->thread = nuevoThread;
 
 			} else {
-				if(podemos_agregar_hilos_a_ready()){
-					agregar_a_ready(socketCli, nuevoThread);
-				} else {
-
-			sem_wait(&sem_new);
-			list_add(colaNEW, nuevoThread);
-			sem_post(&sem_new);
+				sem_wait(&sem_new);
+				list_add(colaNEW, nuevoThread);
+				sem_post(&sem_new);
 				}
-			}
+
 			break;
 
 		case SUSE_SCHEDULE:
 
-			nodoReady = (t_cola_ready*)list_find(colaREADY, &_mismo_fd); //buscamos la lista ready de este proceso
-			colaAAplicarSJF = nodoReady->lista_threads;
+			colaAAplicarSJF = ((t_cola_ready*)list_find(colaREADY, &_mismo_fd))->lista_threads; //buscamos la lista ready de este proceso
 			nodoEnEjecucion = (t_execute*)list_find(listaEXEC, &_mismo_fd); //buscamos el hilo en ejecucion de este proceso
 
-			if(list_size(colaAAplicarSJF)!=0){
+			if((nodoEnEjecucion->thread != NULL) && (list_size(colaAAplicarSJF) == 0)){
+				tid = nodoEnEjecucion->thread->tid;
+			} else {
+				printf("Me bloqueo porque no tengo que ejecutar\n");
+				sem_wait(&semaforoLoco);
+				printf("Ahora si tengo que ejecutar\n");
+				colaAAplicarSJF = ((t_cola_ready*)list_find(colaREADY, &_mismo_fd))->lista_threads;
 				hiloAEjecutar = algoritmo_SJF(colaAAplicarSJF); //Que esta funcion haga el remove de la cola de ready y lo retorne
-				swap_threads(nodoEnEjecucion, hiloAEjecutar, colaAAplicarSJF); //mueve el hiloEnEjecucion a ready y el hiloAEjecutar a execute
-				tid = hiloAEjecutar->tid;
+				error = swap_threads(nodoEnEjecucion, hiloAEjecutar, colaAAplicarSJF); //mueve el hiloEnEjecucion a ready y el hiloAEjecutar a execute
 
-			} else { //SUPONIENDO POR AHORA QUE HAY UN HILO EN EJECUCION...
-					//TODO: PREGUNTAR QUE HACER SI EL QUE ESTABA EN EXE SE BLOQUEA Y NO HAY NADA EN READY
-				if(nodoEnEjecucion->thread!= NULL)
-					tid = nodoEnEjecucion->thread->tid;
+				if(error == 0)
+					sem_post(&semaforoLoco);
+
+					tid = hiloAEjecutar->tid;
 			}
 
 			send(socketCli, &tid, sizeof(int), 0); //mandamos el tid del hilo que pusimos a ejecutar
@@ -628,6 +646,9 @@ void move_de_new_a_ready(){
 
 		list_add(colaReady->lista_threads, hilo);
 		hilo->tiempo_en_cola_actual = time(0); //momento en que ingresa a ready
+
+		t_cosa* cosa = list_find(LISTA_SEMAFOROS, _mismo_fd);
+		sem_post(cosa->semaforo);
 	}
 }
 
@@ -645,11 +666,13 @@ void* hay_blocked_ready(){
 //ESTE HILO VA A MOVER LOS HILOS DESDE NEW O BLOCKED A READY
 void planificador_largo_plazo(){
 	while(1){
+
 		if(podemos_agregar_hilos_a_ready()){
 
 			t_blocked* hilo = (t_blocked*)hay_blocked_ready();
 
 			if(hilo != NULL){
+
 				int socket = hilo->thread->socket_fd;
 
 				bool _mismo_fd(void* elem){
@@ -662,7 +685,12 @@ void planificador_largo_plazo(){
 
 				list_add(colaReady->lista_threads, hilo->thread);
 				hilo->thread->tiempo_en_cola_actual = time(0); //momento de ingreso a ready
+
+				t_cosa* cosa = list_find(LISTA_SEMAFOROS, _mismo_fd);
+				sem_post(cosa->semaforo);
+
 			} else {
+
 				move_de_new_a_ready();
 			}
 
@@ -674,13 +702,13 @@ void planificador_largo_plazo(){
 
 
 void iniciar_semaforos(){
-	sem_init(&sem_new,1,1);
-	sem_init(&sem_ready,1,1);
-	sem_init(&sem_run,1,1);
-	sem_init(&sem_blocked,1,1);
-	sem_init(&sem_exit,1,1);
-	sem_init(&semaforos_suse,1,1);
-	sem_init(&sem_execute, 1, 1);
+	sem_init(&sem_new,0,1);
+	sem_init(&sem_ready,0,1);
+	sem_init(&sem_run,0,1);
+	sem_init(&sem_blocked,0,1);
+	sem_init(&sem_exit,0,1);
+	sem_init(&semaforos_suse,0,1);
+	sem_init(&sem_execute, 0, 1);
 }
 
 
@@ -696,6 +724,7 @@ int main(){
 	listaBLOCKED = list_create();
 	colaREADY = list_create();
 	listaEXEC = list_create();
+	LISTA_SEMAFOROS = list_create();
 
 	SEM_IDS = ids_semaforos();
 	SEM_VALOR = valores_iniciales_semaforos();
