@@ -193,12 +193,7 @@ uint32_t musealloc(t_proceso* proceso,int tam){
 	ptr_segmento->tamanio+=tam;
 	escribir_metadata_en_frame(ptr_segmento, paux_seg_metadata_ocupado);
 	proceso->totalMemoriaPedida += tam;
-	mostrar_paginas(ptr_segmento);
-	mostrar_metadatas(ptr_segmento->metadatas);
 	log_trace(logger_trace,"se le asigno correctamente memoria dinamica al proceso #%d. La direccion logica es %lu",proceso->id,ptr_segmento->base_logica+offset+sizeof(heapmetadata));
-
-	mem_hexdump(memoria,leer_del_config("MEMORY_SIZE",config));
-
 	return ptr_segmento->base_logica+offset+sizeof(heapmetadata);
 }
 
