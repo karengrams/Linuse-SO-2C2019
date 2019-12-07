@@ -42,5 +42,6 @@ page* algoritmo_clock_modificado();
 void escribir_en_archivo_swap(void*,t_list*,size_t,size_t);
 void escribir_pagina_extra_en_archivo_swap(page*,t_list *);
 void agregar_paginas_extras(t_list*, int);
+void incrementar_indice();
 
 #endif /* PAGINACION_H_ */

@@ -31,8 +31,15 @@ void atender_cliente(void *element){
     		break;
     		case MUSE_CLOSE:
     	    	cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
-//				mostrar_tabla_de_segmentos(cliente_a_atender->tablaDeSegmentos);
     			museclose(cliente_a_atender);
+    			close(socketCli);
+				pthread_exit(NULL);
+				free(ipCli);
+				free(buffer);
+			  	void _eliminar_elementos_paquete(void*element){
+			   		free(element);
+				}
+			  	list_destroy_and_destroy_elements(paqueteRecibido,_eliminar_elementos_paquete);
     			break;
     		case MUSE_ALLOC:
     	    	cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
@@ -94,12 +101,7 @@ void atender_cliente(void *element){
     	}
 
 	}
-	free(ipCli);
-	free(buffer);
-	void _eliminar_elementos_paquete(void*element){
-		free(element);
-	}
-	list_destroy_and_destroy_elements(paqueteRecibido,_eliminar_elementos_paquete);
+
 
 }
 

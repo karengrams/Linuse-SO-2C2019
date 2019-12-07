@@ -60,7 +60,6 @@ uint32_t obtener_offset_para_tam(segment *, int );
 void expandir_segmento(segment *,int);
 bool metadatas_fusionables(segmentheapmetadata *, segmentheapmetadata *);
 segmentheapmetadata* buscar_metadata_para_anidar(t_list *, segmentheapmetadata *);
-int index_del_segment_metadata(segmentheapmetadata *, t_list *);
 void buddy_system(segmentheapmetadata *, t_list *);
 void mostrar_metadatas(t_list*);
 void mostrar_metadatas_mmap(t_list*);
@@ -74,4 +73,5 @@ void liberar_tabla_de_segmentos(t_proceso*);
 void eliminar_segmento_de_tabla(t_proceso*,segment*);
 mapped_file* buscar_archivo_abierto(char*);
 void update_file_number();
+int index_del_segment_metadata(segmentheapmetadata *ptr_seg_metadata,t_list *metadatas);
 #endif /* muse-segmentacion_h */

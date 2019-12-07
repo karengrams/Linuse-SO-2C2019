@@ -50,7 +50,7 @@ void asignar_marco(page* pag) {
 		asignar_marco_en_swap(pag);
 	} else {
 		bitarray_set_bit(BIT_ARRAY_FRAMES, (off_t) marco_libre->nro_frame);
-		pag->frame = marco_libre;
+		pag->frame = (frame*)marco_libre;
 		pag->bit_presencia = true;
 		pag->nro_frame = marco_libre->nro_frame;
 		pag->bit_uso = true;
@@ -76,7 +76,7 @@ void asignar_marco_en_swap(page* pag){
 void swap_pages(page* victima, page* paginaPedida){
 	//datos de la victima
 	sem_wait(&binary_swap_pages);
-	log_trace("se swapea la pagina #%d con la pagina #%d",paginaPedida->nro_pagina,victima->nro_pagina);
+	log_trace(logger_trace,"se swapea la pagina #%d con la pagina #%d",paginaPedida->nro_pagina,victima->nro_pagina);
 	int nroFrame = victima->nro_frame;
 	frame* frameVictima = ((frame*)list_get(FRAMES_TABLE, nroFrame));
 
@@ -108,7 +108,6 @@ void traer_pagina(page* pagina){
 	//cada vez que referencian
 	//una pagina si no esta en memoria la buscamos
 	//y cargamos, si esta en memoria seteamos el bit de uso
-	void *buffer=malloc(TAM_PAG);
 	if (!pagina->bit_presencia){
 		log_trace(logger_trace,"se produce un page fault (pagina #%d)",pagina->nro_pagina);
 		frame *marco_libre = obtener_marco_libre();
@@ -117,7 +116,7 @@ void traer_pagina(page* pagina){
 			memcpy(marco_libre->memoria, VIRTUAL_MEMORY+pagina->nro_frame*TAM_PAG, TAM_PAG); //Swap mappeado como variable global por ahora
 			bitarray_clean_bit(BIT_ARRAY_SWAP,(off_t) pagina->nro_frame);
 			bitarray_set_bit(BIT_ARRAY_FRAMES, (off_t) marco_libre->nro_frame);
-			pagina->frame = marco_libre;
+			pagina->frame = (frame*)marco_libre;
 			pagina->bit_presencia = true;
 			pagina->nro_frame = marco_libre->nro_frame;
 			pagina->bit_uso = true;

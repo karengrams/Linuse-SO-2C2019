@@ -50,7 +50,7 @@ t_list* recibir_paquete(int socket_cliente){
 	}
 	free(buffer);
 	return valores;
-	return NULL;
+
 }
 
 int iniciar_socket(char* ip, char* port){
