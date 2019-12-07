@@ -849,7 +849,7 @@ void liberar_recursos(int sig){
 	sem_close(&sem_run);
 	sem_close(&semaforos_suse);
 	close(SOCKET_ESCUCHA);
-	liberar_sem_ids();
+	//liberar_sem_ids();
 	//free(SEM_MAX);
 	//free(SEM_VALOR);
 	FUNCIONAR = 0;
@@ -920,7 +920,7 @@ int main(){
 		}
 	}
 
-	pthread_join(hiloPlanif, NULL);
-
+	//pthread_join(hiloPlanif, NULL);
+	printf("ADIOS\n");
 	return EXIT_SUCCESS;
 }
