@@ -132,17 +132,17 @@ int total_hilos_en_ready_y_exec(){
 	return ready+exec;
 }
 
-void imprimir_semaforos(){
-	int a, b, c, d, e, f, g;
-	sem_getvalue(&sem_blocked, &a);
-	sem_getvalue(&sem_execute, &b);
-	sem_getvalue(&sem_exit, &c);
-	sem_getvalue(&sem_new, &d);
-	sem_getvalue(&sem_ready, &e);
-	sem_getvalue(&sem_run, &f);
-	sem_getvalue(&semaforos_suse, &g);
-	printf("Semaforos: %d\n%d\n%d\n%d\n%d\n%d\n%d\n", a,b,c,d,e,f,g);
-}
+//void imprimir_semaforos(){
+//	int a, b, c, d, e, f, g;
+//	sem_getvalue(&sem_blocked, &a);
+//	sem_getvalue(&sem_execute, &b);
+//	sem_getvalue(&sem_exit, &c);
+//	sem_getvalue(&sem_new, &d);
+//	sem_getvalue(&sem_ready, &e);
+//	sem_getvalue(&sem_run, &f);
+//	sem_getvalue(&semaforos_suse, &g);
+//	printf("Semaforos: %d\n%d\n%d\n%d\n%d\n%d\n%d\n", a,b,c,d,e,f,g);
+//}
 
 bool podemos_agregar_hilos_a_ready(){
 	return total_hilos_en_ready_y_exec() < grado_de_multiprogramacion_maximo();
@@ -269,8 +269,8 @@ void loggear_procesos(void){
 					t_blocked* block = (t_blocked*)elem;
 					t_thread* hilo = block->thread;
 					double tiempoEjecucion = momentoLog - hilo->tiempo_creacion;
-					log_info(LOG, "\nHilo %d: \nTiempo de ejecucion: %d \nTiempo de espera: %d \nTiempo de uso de CPU: %f \nPorcentaje "
-					"tiempo de ejecucion: %d\n\n\n", hilo->tid , tiempoEjecucion , (hilo->tiempo_total_en_ready), (hilo->tiempo_total_en_exec), tiempoEjecucion/semilla);
+					log_info(LOG, "\nHilo %d: \nTiempo de ejecucion: %f \nTiempo de espera: %f \nTiempo de uso de CPU: %f \nPorcentaje "
+					"tiempo de ejecucion: %f\n\n\n", hilo->tid , tiempoEjecucion , (hilo->tiempo_total_en_ready), (hilo->tiempo_total_en_exec), tiempoEjecucion/semilla);
 				}
 
 
@@ -292,6 +292,8 @@ void escribir_logs(int motivo, int socket){
 	} else {
 		log_info(LOG, "Finalizo el hilo %d del socket %d", motivo, socket);
 	}
+
+
 
 	log_info(LOG, "Grado actual de multiprogramacion: %d", total_hilos_en_ready_y_exec());
 	loggear_semaforos();
@@ -596,9 +598,6 @@ void atenderCliente(void* elemento){
 	while(1){
 
 		int cod_op = recibir_operacion(socketCli);
-		printf("operacion %d recibida \n", cod_op);
-
-
 
 		switch(cod_op){
 
@@ -704,9 +703,7 @@ void atenderCliente(void* elemento){
 
 			escribir_logs(tid, socketCli);
 
-			printf("Suse close, finalizo el hilo %d\n", tid);
 			list_destroy_and_destroy_elements(paqueteRecibido, &_destruir_paquete);
-			printf("paquete destruido\n");
 			send(socketCli, &tid, sizeof(int), 0);
 			break;
 		}
@@ -822,7 +819,7 @@ void _liberar_execute(void* elem){
 void _liberar_semaforos(void* elem){
 	t_cosa* cosa = (t_cosa*)elem;
 	sem_close((cosa->semaforo));
-	free(cosa->semaforo);
+	//free(cosa->semaforo);
 	free(elem);
 }
 
@@ -834,7 +831,6 @@ void liberar_sem_ids(){
 }
 
 void liberar_recursos(int sig){
-
 	list_destroy(colaNEW);
 	list_destroy(listaBLOCKED);
 	list_destroy_and_destroy_elements(listaEXIT, &_liberar_exit);
@@ -852,11 +848,10 @@ void liberar_recursos(int sig){
 	sem_close(&sem_ready);
 	sem_close(&sem_run);
 	sem_close(&semaforos_suse);
-
 	close(SOCKET_ESCUCHA);
 	liberar_sem_ids();
-	free(SEM_MAX);
-	free(SEM_VALOR);
+	//free(SEM_MAX);
+	//free(SEM_VALOR);
 	FUNCIONAR = 0;
 }
 
