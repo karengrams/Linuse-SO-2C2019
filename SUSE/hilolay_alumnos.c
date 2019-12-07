@@ -66,7 +66,9 @@ int suse_close(int tid){
 	agregar_a_paquete(paquete, &tid, sizeof(int));
 	enviar_paquete(paquete, SOCKET);
 	eliminar_paquete(paquete);
-	return 0;
+	int error;
+	recv(SOCKET, &error, sizeof(int),0);
+	//return 0;
 }
 
 static struct hilolay_operations hiloops = {

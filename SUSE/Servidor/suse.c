@@ -132,6 +132,18 @@ int total_hilos_en_ready_y_exec(){
 	return ready+exec;
 }
 
+void imprimir_semaforos(){
+	int a, b, c, d, e, f, g;
+	sem_getvalue(&sem_blocked, &a);
+	sem_getvalue(&sem_execute, &b);
+	sem_getvalue(&sem_exit, &c);
+	sem_getvalue(&sem_new, &d);
+	sem_getvalue(&sem_ready, &e);
+	sem_getvalue(&sem_run, &f);
+	sem_getvalue(&semaforos_suse, &g);
+	printf("Semaforos: %d\n%d\n%d\n%d\n%d\n%d\n%d\n", a,b,c,d,e,f,g);
+}
+
 bool podemos_agregar_hilos_a_ready(){
 	return total_hilos_en_ready_y_exec() < grado_de_multiprogramacion_maximo();
 }
@@ -357,9 +369,8 @@ void agregar_a_ready(int fd, t_thread* hilo){
 		}
 	sem_wait(&sem_ready);
 	t_cola_ready* nodoReady = list_find(colaREADY, _mismo_fd);
-	sem_post(&sem_ready);
-
 	list_add(nodoReady->lista_threads,hilo);
+	sem_post(&sem_ready);
 }
 
 //FUNCIONES AUXILIARES DE SUSE_SCHEDULE
@@ -368,24 +379,25 @@ int swap_threads(t_execute* nodoExec, t_thread* nuevoHilo, t_list* cola){
 	t_thread* victima = nodoExec->thread;
 
 	if(victima!=NULL){ //si victima == NULL no habia procesos ejecutando en ese momento
-					   //en suse_close si estaba ejecutando cuando termina se pone NULL
-
-	victima->tiempo_total_en_exec = victima->tiempo_total_en_exec + tiempo_que_paso_desde_colaActual(victima->tiempo_en_cola_actual);
-	victima->ultima_rafaga =  tiempo_que_paso_desde_colaActual(victima->tiempo_en_cola_actual);
-	list_add(cola, victima);//desplazamos a la victima
-	gettimeofday(&victima->tiempo_en_cola_actual,NULL); //seteamos el tiempo en que entra a ready
-
-	nodoExec->thread = nuevoHilo; //agregamos el nuevo hilo a exec
-	nuevoHilo->tiempo_total_en_ready =	nuevoHilo->tiempo_total_en_ready + tiempo_que_paso_desde_colaActual(nuevoHilo->tiempo_en_cola_actual); //sumamos el tiempo que estuvo en ready
-	gettimeofday(&nuevoHilo->tiempo_en_cola_actual,NULL); //seteamos el tiempo en que entra a exe
-	return 0;
-	}
-
-	nodoExec->thread = nuevoHilo; //agregamos el nuevo hilo a exec
-	nuevoHilo->tiempo_total_en_ready =	nuevoHilo->tiempo_total_en_ready + tiempo_que_paso_desde_colaActual(nuevoHilo->tiempo_en_cola_actual); //sumamos el tiempo que estuvo en ready
-	gettimeofday(&nuevoHilo->tiempo_en_cola_actual,NULL); //seteamos el tiempo en que entra a exe
-	return 1;
-
+		sem_wait(&sem_ready);
+		victima->tiempo_total_en_exec = victima->tiempo_total_en_exec + tiempo_que_paso_desde_colaActual(victima->tiempo_en_cola_actual);
+		victima->ultima_rafaga =  tiempo_que_paso_desde_colaActual(victima->tiempo_en_cola_actual);
+		list_add(cola, victima);//desplazamos a la victima
+		gettimeofday(&victima->tiempo_en_cola_actual,NULL); //seteamos el tiempo en que entra a ready
+		sem_post(&sem_ready);
+		sem_wait(&sem_execute);
+		nodoExec->thread = nuevoHilo; //agregamos el nuevo hilo a exec
+		nuevoHilo->tiempo_total_en_ready =	nuevoHilo->tiempo_total_en_ready + tiempo_que_paso_desde_colaActual(nuevoHilo->tiempo_en_cola_actual); //sumamos el tiempo que estuvo en ready
+		gettimeofday(&nuevoHilo->tiempo_en_cola_actual,NULL); //seteamos el tiempo en que entra a exe
+		sem_post(&sem_execute);
+		return 0;
+		}
+		sem_wait(&sem_execute);
+		nodoExec->thread = nuevoHilo; //agregamos el nuevo hilo a exec
+		nuevoHilo->tiempo_total_en_ready =	nuevoHilo->tiempo_total_en_ready + tiempo_que_paso_desde_colaActual(nuevoHilo->tiempo_en_cola_actual); //sumamos el tiempo que estuvo en ready
+		gettimeofday(&nuevoHilo->tiempo_en_cola_actual,NULL); //seteamos el tiempo en que entra a exe
+		sem_post(&sem_execute);
+		return 1;
 }
 
 int rafaga_estimada(void* elem){
@@ -398,24 +410,26 @@ bool _menor_rafaga_estimada(void* elem, void* elem2){
 }
 
 t_thread* algoritmo_SJF(t_list* lista){
+	sem_wait(&sem_ready);
 	list_sort(lista, &_menor_rafaga_estimada);
 	t_thread* hiloElegido = (t_thread*)list_remove(lista, 0);
 	hiloElegido->ultima_estimacion = rafaga_estimada(hiloElegido); //le asigno la nueva ultima estiamcion de sjf
+	sem_post(&sem_ready);
 	return hiloElegido;
 }
 
 
 //FUNCIONES AUXILIARES DEL SUSE_CLOSE
-void buscar_hilos_blockeados_por_este(int tid){ //probablemente no haya o haya solo uno que sea el proceso padre....
+void buscar_hilos_blockeados_por_este(int tid, int fd){ //probablemente no haya o haya solo uno que sea el proceso padre....
 
 	bool _blocked_por_tid(void* elem){
 		t_blocked* elemento = (t_blocked*)elem;
-		return (elemento->estado == JOIN) && (elemento->tid == tid);
+		return ((elemento->estado == JOIN) && (elemento->tid == tid) && (elemento->thread->socket_fd == fd));
 	}
 
 	sem_wait(&sem_blocked);
 	t_list* listaBloqueados = list_filter(listaBLOCKED, &_blocked_por_tid);
-	sem_post(&sem_blocked);
+
 
 	void _cambiar_a_blocked_ready(void* elem){
 		t_blocked* elemento = (t_blocked*) elem;
@@ -423,6 +437,7 @@ void buscar_hilos_blockeados_por_este(int tid){ //probablemente no haya o haya s
 	}
 
 	list_iterate(listaBloqueados, &_cambiar_a_blocked_ready);
+	sem_post(&sem_blocked);
 	list_destroy(listaBloqueados);
 }
 
@@ -431,13 +446,11 @@ void buscar_y_pasarlo_a_exit(int fd){ //Este codigo quedo asquerosamente feo
 	t_thread* hilo ;
 
 	bool _mismo_fd(void* elem){
-		t_cola_ready* elemento = (t_cola_ready*)elem;
+		t_execute* elemento = (t_execute*)elem;
 		return elemento->socket_fd == fd;
 	}
 
-	sem_wait(&sem_execute);
 	t_execute* execution = list_find(listaEXEC, &_mismo_fd);//lo buscamos en exec
-	sem_post(&sem_execute);
 
 	hilo = execution->thread;
 	hilo->tiempo_total_en_exec = hilo->tiempo_total_en_exec + tiempo_que_paso_desde_colaActual(hilo->tiempo_en_cola_actual);
@@ -477,21 +490,21 @@ void buscar_y_pasarlo_a_blocked(int fd,int razon, t_estado estado){
 	t_thread* hilo ;
 
 		bool _mismo_fd(void* elem){
-			t_cola_ready* elemento = (t_cola_ready*)elem;
+			t_execute* elemento = (t_execute*)elem;
 			return elemento->socket_fd == fd;
 		}
 
-		sem_wait(&sem_execute);
 		t_execute* execution = list_find(listaEXEC, &_mismo_fd);//lo buscamos en exec
-		sem_post(&sem_execute);
+
 
 
 		hilo = execution->thread;
 		hilo->tiempo_total_en_exec = hilo->tiempo_total_en_exec +tiempo_que_paso_desde_colaActual(hilo->tiempo_en_cola_actual);
 		execution->thread = NULL;
+		sem_wait(&sem_blocked);
 		t_blocked* blocked = crear_entrada_blocked(hilo, estado, razon);
 
-		sem_wait(&sem_blocked);
+
 		list_add(listaBLOCKED, blocked);
 		sem_post(&sem_blocked);
 
@@ -524,10 +537,12 @@ int hacer_signal(int posicion){
 
 			sem_wait(&sem_blocked);
 			t_blocked* hilo = list_find(listaBLOCKED, &_blocked_por_sem); //buscamos el primer blockeado
-			sem_post(&sem_blocked);
+
 			if(hilo!=NULL)
 				hilo->estado = BLOCKED_READY; // y lo ponemos como blocked ready
-		}
+			sem_post(&sem_blocked);
+	}
+
 	return 0;
 }
 
@@ -539,7 +554,9 @@ int hacer_wait(int posicion, int fd){
 	if(SEM_VALOR[posicion]>=0){ //Si es mayor a 0 lo toma
 		return 1;
 	} else { //Si es menor o igual a 0, lo debe decrementar y bloquearse (buscar la cola exe del fd y desplazar ese thread)
+		sem_wait(&sem_execute);
 		buscar_y_pasarlo_a_blocked(fd, posicion, SEMAPHORE);
+		sem_post(&sem_execute);
 		return 0;
 	}
 }
@@ -566,13 +583,9 @@ void atenderCliente(void* elemento){
 	t_cola_ready* nodoReady;
 	t_execute* nodoEnEjecucion;
 	t_thread* hiloAEjecutar, *nuevoThread;
-	int tid, posicionEnArray, error;
+	int tid, posicionEnArray, error, valorsem;
 	char* nombreSemaforo;
-
-	while(1){
-		int cod_op = recibir_operacion(socketCli);
-
-		bool _mismo_fd(void* elem){
+	bool _mismo_fd(void* elem){
 			t_cola_ready* elemento = (t_cola_ready*)elem;
 			return elemento->socket_fd == socketCli;
 		}
@@ -580,6 +593,12 @@ void atenderCliente(void* elemento){
 		void _destruir_paquete(void* elem){
 			free(elem);
 		}
+	while(1){
+
+		int cod_op = recibir_operacion(socketCli);
+		printf("operacion %d recibida \n", cod_op);
+
+
 
 		switch(cod_op){
 
@@ -605,7 +624,9 @@ void atenderCliente(void* elemento){
 
 		case SUSE_SCHEDULE:
 
+			sem_wait(&sem_ready);
 			colaAAplicarSJF = ((t_cola_ready*)list_find(colaREADY, &_mismo_fd))->lista_threads; //buscamos la lista ready de este proceso
+			sem_post(&sem_ready);
 			nodoEnEjecucion = (t_execute*)list_find(listaEXEC, &_mismo_fd); //buscamos el hilo en ejecucion de este proceso
 
 			if((nodoEnEjecucion->thread != NULL) && (list_size(colaAAplicarSJF) == 0)){
@@ -619,26 +640,10 @@ void atenderCliente(void* elemento){
 				if(error == 0)
 					sem_post(&semaforoLoco);
 
-					tid = hiloAEjecutar->tid;
+				tid = hiloAEjecutar->tid;
 			}
 
 			send(socketCli, &tid, sizeof(int), 0); //mandamos el tid del hilo que pusimos a ejecutar
-			break;
-
-		case SUSE_CLOSE:
-			paqueteRecibido = recibir_paquete(socketCli);
-			tid = *((int*)paqueteRecibido->head->data);
-			buscar_y_pasarlo_a_exit(socketCli); //Agarra el ult que esta en la cola exe de el socket y lo pasa a exit
-			buscar_hilos_blockeados_por_este(tid);
-			escribir_logs(tid, socketCli);
-
-			if(tid==0){
-				list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
-				close(socketCli);
-				pthread_exit(NULL);
-				return;
-			} //Fin del hilo
-			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
 			break;
 
 		case SUSE_JOIN:
@@ -681,6 +686,29 @@ void atenderCliente(void* elemento){
 
 			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
 			break;
+
+		case SUSE_CLOSE:
+			paqueteRecibido = recibir_paquete(socketCli);
+			tid = *((int*)paqueteRecibido->head->data);
+			sem_wait(&sem_execute);
+			buscar_y_pasarlo_a_exit(socketCli); //Agarra el ult que esta en la cola exe de el socket y lo pasa a exit
+			sem_post(&sem_execute);
+			buscar_hilos_blockeados_por_este(tid, socketCli);
+
+			if(!tid){
+				list_destroy_and_destroy_elements(paqueteRecibido, &_destruir_paquete);
+				close(socketCli);
+				pthread_exit(NULL);
+				return;
+			} //Fin del hilo
+
+			escribir_logs(tid, socketCli);
+
+			printf("Suse close, finalizo el hilo %d\n", tid);
+			list_destroy_and_destroy_elements(paqueteRecibido, &_destruir_paquete);
+			printf("paquete destruido\n");
+			send(socketCli, &tid, sizeof(int), 0);
+			break;
 		}
 
 	}
@@ -695,7 +723,7 @@ void atenderCliente(void* elemento){
 
 void move_de_new_a_ready(){
 
-	if(colaNEW->elements_count){ //Si hay elementos que agregar en new
+	if(colaNEW->elements_count!=0){ //Si hay elementos que agregar en new
 		sem_wait(&sem_new);
 		t_thread* hilo = list_remove(colaNEW, 0); //sacamos el primero porque FIFO
 		sem_post(&sem_new);
@@ -713,8 +741,10 @@ void move_de_new_a_ready(){
 		list_add(colaReady->lista_threads, hilo);
 		gettimeofday(&hilo->tiempo_en_cola_actual,NULL); //momento en que ingresa a ready
 
+		sem_wait(&semaforos_suse);
 		t_cosa* cosa = list_find(LISTA_SEMAFOROS, _mismo_fd);
 		sem_post(cosa->semaforo);
+		sem_post(&semaforos_suse);
 	}
 }
 
@@ -723,9 +753,9 @@ void* hay_blocked_ready(){
 		t_blocked* hilo = (t_blocked*)elem;
 		return hilo->estado == BLOCKED_READY;
 	}
-	sem_wait(&sem_blocked);
+
 	void* respuesta = list_remove_by_condition(listaBLOCKED, &_esta_blocked_ready);
-	sem_post(&sem_blocked);
+
 	return respuesta;
 }
 
@@ -734,9 +764,9 @@ void planificador_largo_plazo(){
 	while(FUNCIONAR){
 
 		if(podemos_agregar_hilos_a_ready()){
-
+			sem_wait(&sem_blocked);
 			t_blocked* hilo = (t_blocked*)hay_blocked_ready();
-
+			sem_post(&sem_blocked);
 			if(hilo != NULL){
 
 				int socket = hilo->thread->socket_fd;
@@ -755,8 +785,10 @@ void planificador_largo_plazo(){
 
 				gettimeofday(&thread->tiempo_en_cola_actual,NULL); //momento de ingreso a ready
 				free(hilo);
+				sem_wait(&semaforos_suse);
 				t_cosa* cosa = list_find(LISTA_SEMAFOROS, _mismo_fd);
 				sem_post(cosa->semaforo);
+				sem_post(&semaforos_suse);
 
 			} else {
 
@@ -767,6 +799,10 @@ void planificador_largo_plazo(){
 	}
 	pthread_exit(NULL);
 }
+
+
+
+//FUNCIONES DE LIBERAR RECURSOS
 
 void _liberar_exit(void* elem){
 	free(elem);
@@ -791,7 +827,7 @@ void _liberar_semaforos(void* elem){
 }
 
 void liberar_sem_ids(){
-	for(int i=0 ; i<tamanio_vector; i++){
+	for(int i=0 ; i<tamanio_vector(SEM_IDS); i++){
 		free(SEM_IDS[i]);
 	}
 	free(SEM_IDS);
