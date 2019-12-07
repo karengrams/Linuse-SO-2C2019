@@ -55,9 +55,10 @@ void asignar_marco(page* pag) {
 		pag->nro_frame = marco_libre->nro_frame;
 		pag->bit_uso = true;
 		pag->bit_modificado = false;
+		PAGINAS_EN_FRAMES[marco_libre->nro_frame] = pag;
+
 	}
 
-	PAGINAS_EN_FRAMES[marco_libre->nro_frame] = pag;
 	sem_post(&mutex_frames);
 }
 
