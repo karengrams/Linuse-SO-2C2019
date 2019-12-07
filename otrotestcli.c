@@ -1,24 +1,57 @@
 #include "libMuse.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-int main(){
-	int *ptr;
-	void* cosas = malloc(50);
-	void* recibir = malloc(265);
-	void* recibir2 = malloc(265);
-	int id = getpid();
-	muse_init(id, "127.0.0.1", 9172);
-	uint32_t my_memory = muse_alloc(100);
-	//muse_cpy(50, "POR DIOS DONDE SORONGO ROMPEEEEEEE, SINCRO TE ODIO", 50); // Todo: para mi es aca donde muere
-	/*uint32_t map = muse_map("stephen.txt",50,MAP_SHARED);
-	muse_cpy(map, "POR DIOS DONDE SORONGO ROMPEEEEEEE, SINCRO TE ODIO", 50); // Todo: para mi es aca donde muere
-	muse_get(recibir2,map,50);
-	muse_sync(map,10);
-	muse_unmap(map);
-	printf("my_memory=%lu\n",my_memory);
-	printf("map=%lu\n",map);
-	printf("muse_get(recibir2,map,50)=%s\n",(char*)recibir2);
-	muse_free(my_memory);
-	printf("POR DIOSOSSSSNKASNDKLASDFANF");*/
+
+char* pasa_palabra(int cod)
+{
+	switch(cod)
+	{
+	case 1:
+		return strdup("No sabes que sufro?\n");
+	case 2:
+		return strdup("No escuchas mi plato girar?\n");
+	case 3:
+		return strdup("Cuanto tiempo hasta hallarte?\n");
+	case 4:
+	case 5:
+		return strdup("Uh, haces mi motor andar\n");
+	case 6:
+		return strdup("Y mis cilindros rotar\n");
+	default:
+	{
+		if(cod % 2)
+			return strdup("Oh si\n");
+		else
+			return strdup("un Archivo de swap supermasivo\n");
+	}
+	}
+}
+
+void recursiva(int num)
+{
+	if(num == 0)
+		return;
+	char* estrofa = pasa_palabra(num);
+	int longitud = strlen(estrofa)+1;
+	uint32_t ptr = muse_alloc(longitud);
+
+	muse_cpy(ptr, estrofa, longitud);
+	recursiva(num - 1);
+	muse_get(estrofa, ptr, longitud);
+
+	puts(estrofa);
+
+	muse_free(ptr);
+	free(estrofa);
+	sleep(1);
+}
+
+int main(void)
+{
+	muse_init(getpid(), "127.0.0.1", 9172);
+	recursiva(15);
 	muse_close();
-	return 0;
 }
