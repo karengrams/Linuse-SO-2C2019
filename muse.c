@@ -193,11 +193,14 @@ uint32_t musealloc(t_proceso* proceso,int tam){
 	ptr_segmento->tamanio+=tam;
 	escribir_metadata_en_frame(ptr_segmento, paux_seg_metadata_ocupado);
 	proceso->totalMemoriaPedida += tam;
+	mostrar_paginas(ptr_segmento);
+	mostrar_metadatas(ptr_segmento->metadatas);
 	log_trace(logger_trace,"se le asigno correctamente memoria dinamica al proceso #%d. La direccion logica es %lu",proceso->id,ptr_segmento->base_logica+offset+sizeof(heapmetadata));
+
+	mem_hexdump(memoria,leer_del_config("MEMORY_SIZE",config));
+
 	return ptr_segmento->base_logica+offset+sizeof(heapmetadata);
 }
-
-
 
 int musefree(t_proceso *proceso, uint32_t direccion) {
 	log_trace(logger_trace,"el proceso #%d solicito la liberacion de la direccion de memoria %lu.",proceso->id,direccion);
@@ -285,8 +288,6 @@ void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 
 	return (buffer);
 }
-
-
 
 uint32_t musemap(t_proceso*proceso, char*path, size_t length, int flags){
 	if(flags==MAP_SHARED)
@@ -422,7 +423,6 @@ int museunmap(t_proceso *proceso,uint32_t direccion){
 	}
 }
 
-
 int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {
 
 	int cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
@@ -433,8 +433,7 @@ int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {
 
 	memcpy(buffer_a_copiar, list_get(paqueteRecibido, 2), cantidad_de_bytes);
 
-	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion_pedida,
-			proceso->tablaDeSegmentos);
+	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion_pedida,proceso->tablaDeSegmentos);
 
 	if (!ptr_segmento || (direccion_pedida + cantidad_de_bytes)> limite_segmento(ptr_segmento)+1) {
 		free(buffer_a_copiar);
@@ -452,7 +451,6 @@ int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {
 
 	int numeroPagina = numero_pagina(ptr_segmento, direccion_pedida);
 	int desplazamientoEnPagina = desplazamiento_en_pagina(ptr_segmento,direccion_pedida);
-
 	int auxiliar = 0;
 	int tamanioACopiar;
 	int desplazamientoEnBuffer = 0;
@@ -475,7 +473,6 @@ int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {
 	log_trace(logger_trace,"se copio exitosamente '%s' en la direccion %lu correspondiendo al segmento #%d del proceso #%d.",(char*)buffer_a_copiar,direccion_pedida,ptr_segmento->nro_segmento,proceso->id);
 	return 0;
 }
-
 
 
 segment* ultimo_segmento_heap(t_proceso* proceso){

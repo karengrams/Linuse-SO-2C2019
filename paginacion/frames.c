@@ -1,4 +1,5 @@
 #include "frames.h"
+#include <commons/memory.h>
 
 void inicilizar_tabla_de_frames() {
 	FRAMES_TABLE = list_create();
@@ -62,13 +63,16 @@ void escribir_metadata_en_frame(segment* ptr_segmento,segmentheapmetadata* paux_
 	uint32_t direccionAbsoluta = paux_metadata_ocupado->posicion_inicial+ ptr_segmento->base_logica;
 	int numeroPagina = numero_pagina(ptr_segmento, direccionAbsoluta);
 	int desplazamiento = desplazamiento_en_pagina(ptr_segmento,direccionAbsoluta);
+	char *ptr_loco = malloc(TAM_PAG);
 
 	if (TAM_PAG - desplazamiento >= sizeof(heapmetadata)) { //si entra copiamos solo en esa pagina
 		page* pagina = (page*) list_get(ptr_segmento->tabla_de_paginas,numeroPagina);
 		traer_pagina(pagina);
 		frame* ptr_frame_aux = (frame*) pagina->frame; //Por alguna razon no me dejaba entrar al campo memoria si no hacia esto
+		heapmetadata *ptr_metadata = paux_metadata_ocupado->metadata;
 		sem_wait(&mutex_write_frame);
-		memcpy(ptr_frame_aux->memoria + desplazamiento,paux_metadata_ocupado->metadata, sizeof(heapmetadata));
+		memcpy(ptr_frame_aux->memoria+desplazamiento, &(ptr_metadata->bytes),sizeof(int));
+		memcpy(ptr_frame_aux->memoria + desplazamiento + sizeof(int),&(ptr_metadata->ocupado), sizeof(bool));
 		sem_post(&mutex_write_frame);
 
 	} else { //si no entra lo copiamos de a pedazos
@@ -84,5 +88,6 @@ void escribir_metadata_en_frame(segment* ptr_segmento,segmentheapmetadata* paux_
 		memcpy(ptr_frame_aux_dos->memoria,paux_metadata_ocupado->metadata + aCopiar,sizeof(heapmetadata) - aCopiar);
 		sem_post(&mutex_write_frame);
 	}
+
 
 }

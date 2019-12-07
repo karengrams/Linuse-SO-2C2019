@@ -110,8 +110,8 @@ int numero_pagina(segment* segmento, uint32_t direccion) {
 }
 
 int desplazamiento_en_pagina(segment* segmento, uint32_t direccion) {
-	int desplazamientoEnSegmento = direccion - segmento->base_logica;
-	return div(desplazamientoEnSegmento, TAM_PAG).rem;
+	int desplazamiento = (int)div(direccion - segmento->base_logica,TAM_PAG).rem;
+	return desplazamiento;
 }
 
 int tamanio_segmento(segment* segmento) {
@@ -153,6 +153,16 @@ segmentheapmetadata *buscar_metadata_para_liberar(uint32_t direccion, segment *s
 		return direccion_seg_metadata == direccion;
 	}
 	return (segmentheapmetadata*) list_find(segmento->metadatas,_direccion_de_metadata);
+}
+
+segmentheapmetadata *buscar_metadata_de_segmento_segun_dir(uint32_t dir,segment*segmento){
+	bool _metadata_dada_una_direccion(void*element){
+		segmentheapmetadata* ptr_seg_metadata = (segmentheapmetadata*)element;
+		heapmetadata* ptr_metadata = ptr_seg_metadata->metadata;
+		return ptr_seg_metadata->posicion_inicial+sizeof(heapmetadata)<=dir || ptr_seg_metadata->posicion_inicial+sizeof(heapmetadata)+ptr_metadata->bytes >dir;
+	}
+
+	return (segmentheapmetadata*)list_find(segmento->metadatas,_metadata_dada_una_direccion);
 }
 
 segmentheapmetadata* buscar_metadata_de_segmento_segun(uint32_t offset, segment* segmento) {
