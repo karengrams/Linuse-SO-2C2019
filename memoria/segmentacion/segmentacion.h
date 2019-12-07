@@ -3,7 +3,7 @@
 #include <commons/collections/list.h>
 #include "../paginacion/frames.h"
 #include "../paginacion/paginacion.h"
-#include "../structures.h"
+#include "../muse-structures.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -12,36 +12,6 @@
 #include <string.h>
 #include <semaphore.h>
 
-sem_t mutex_shared_files;
-t_list* MAPPED_FILES;
-
-typedef enum segment_type_t {
-	HEAP, MMAP,
-} segment_type;
-
-typedef struct segment_t {
-	int nro_segmento;
-	segment_type tipo;
-	uint32_t base_logica;
-	int tamanio; //  tam. pedido
-	t_list *metadatas; // Hay dos tipos segmentheapmetadata o mmapmetadata
-	t_list *tabla_de_paginas;
-}__attribute__((packed)) segment;
-
-typedef struct heapmetadata_t{
-	bool ocupado;
-	int bytes;
-}__attribute__((packed)) heapmetadata;
-
-typedef struct segmentheapmetadata_t{
-	heapmetadata *metadata;
-	uint32_t posicion_inicial;
-}__attribute__((packed)) segmentheapmetadata;
-
-typedef struct segmentmmapmetadata_t{
-	char *path;
-	int tam_mappeado;
-}__attribute__((packed)) segmentmmapmetadata;
 
 int minimo(int, int);
 segment* crear_segmento(segment_type, int, t_list*);

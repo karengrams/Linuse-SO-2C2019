@@ -1,0 +1,30 @@
+[TRACE] 06:20:34:445 MUSE/(7842:7957): proceso #7956 solicito la apertura de la libreria.
+[TRACE] 06:20:34:451 MUSE/(7842:7957): se inicializo correctamente la libreria para proceso #7956
+[TRACE] 06:20:34:451 MUSE/(7842:7957): el proceso #7956 solicito 30 bytes dinamicos de memoria.
+[INFO] 06:20:34:451 MUSE/(7842:7957): el porcentaje de memoria asignada del proceso #7956 es igual a 0 % .0 Se solicito un total de 0 bytes y se libero un total de 0 bytes. Se obtuvo un total de 0 bytes perdidos. Y la cantidad de memoria disponible del proceso es de 0
+[TRACE] 06:20:34:451 MUSE/(7842:7957): se crea un segmento nuevo para el proceso #7956.
+[TRACE] 06:20:34:455 MUSE/(7842:7957): se le asigno correctamente memoria dinamica al proceso #7956. La direccion logica es 5
+[TRACE] 06:20:34:455 MUSE/(7842:7957): el proceso #7956 solicito el mappeo de 50 bytes del archivo 'stephen.txt' de forma compartida.
+[TRACE] 06:20:34:455 MUSE/(7842:7957): se le otorgo la direccion 50 del archivo mappeado a memoria al proceso #7956.
+[TRACE] 06:20:34:455 MUSE/(7842:7957): el proceso #7956 solicito copiar 50 a copiar en la direccion #50.
+[TRACE] 06:20:34:455 MUSE/(7842:7957): se produce un page fault (pagina #859451392)
+[TRACE] 06:20:34:456 MUSE/(7842:7957): se procede a asignar el marco #1 a la pagina #859451392
+[TRACE] 06:20:34:456 MUSE/(7842:7957): se copio exitosamente 'POR DIOS DONDE SORONGO ROMPEEEEEEE, SINCRO TE ODIO' en la direccion 50 correspondiendo al segmento #1 del proceso #7956.
+[TRACE] 06:20:34:456 MUSE/(7842:7957): el proceso #7956 solicito la lectura de 50 bytes de la direccion 50
+[TRACE] 06:20:34:456 MUSE/(7842:7957): el proceso #7956 solicito la sincronizacion de 10 bytes al archivo stephen.txt.
+[TRACE] 06:33:36:971 MUSE/(8343:8347): proceso #8346 solicito la apertura de la libreria.
+[TRACE] 06:33:36:977 MUSE/(8343:8347): se inicializo correctamente la libreria para proceso #8346
+[TRACE] 06:33:36:978 MUSE/(8343:8347): el proceso #8346 solicito 30 bytes dinamicos de memoria.
+[INFO] 06:33:36:978 MUSE/(8343:8347): el porcentaje de memoria asignada del proceso #8346 es igual a 0 % .0 Se solicito un total de 0 bytes y se libero un total de 0 bytes. Se obtuvo un total de 0 bytes perdidos. Y la cantidad de memoria disponible del proceso es de 0
+[TRACE] 06:33:36:978 MUSE/(8343:8347): se crea un segmento nuevo para el proceso #8346.
+[TRACE] 06:33:36:978 MUSE/(8343:8347): se le asigno correctamente memoria dinamica al proceso #8346. La direccion logica es 5
+[TRACE] 06:33:36:978 MUSE/(8343:8347): el proceso #8346 solicito el mappeo de 50 bytes del archivo 'stephen.txt' de forma compartida.
+[TRACE] 06:33:36:978 MUSE/(8343:8347): el proceso #8346 solicito copiar 50 a copiar en la direccion #4294967295.
+[TRACE] 06:45:14:737 MUSE/(3327:3329): proceso #3328 solicito la apertura de la libreria.
+[TRACE] 06:45:14:739 MUSE/(3327:3329): se inicializo correctamente la libreria para proceso #3328
+[TRACE] 06:45:14:740 MUSE/(3327:3329): el proceso #3328 solicito 30 bytes dinamicos de memoria.
+[INFO] 06:45:14:740 MUSE/(3327:3329): el porcentaje de memoria asignada del proceso #3328 es igual a 0 % .0 Se solicito un total de 0 bytes y se libero un total de 0 bytes. Se obtuvo un total de 0 bytes perdidos. Y la cantidad de memoria disponible del proceso es de 0
+[TRACE] 06:45:14:740 MUSE/(3327:3329): se crea un segmento nuevo para el proceso #3328.
+[TRACE] 06:45:14:740 MUSE/(3327:3329): se le asigno correctamente memoria dinamica al proceso #3328. La direccion logica es 5
+[TRACE] 06:45:14:740 MUSE/(3327:3329): el proceso #3328 solicito el mappeo de 50 bytes del archivo 'stephen.txt' de forma compartida.
+[TRACE] 06:45:14:740 MUSE/(3327:3329): el proceso #3328 solicito copiar 50 a copiar en la direccion #4294967295.
