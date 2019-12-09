@@ -243,6 +243,7 @@ int musefree(t_proceso *proceso, uint32_t direccion) {
 }
 
 void* museget(t_proceso* proceso, t_list* paqueteRecibido){
+	sem_wait(&mutex_swap);
 	int cantidadDeBytes = *((int*) list_get(paqueteRecibido, 1));
 	uint32_t direccion = *((uint32_t*) list_get(paqueteRecibido, 2));
 	void* buffer = malloc(cantidadDeBytes);
@@ -280,7 +281,7 @@ void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 		desplazamientoEnBuffer += tamanioACopiar;
 		desplazamientoEnPagina = 0; //Solo era valido para la primera pagina
 	  }
-
+	sem_post(&mutex_swap);
 	return (buffer);
 }
 
