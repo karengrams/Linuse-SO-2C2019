@@ -84,24 +84,24 @@ int grado_de_multiprogramacion_maximo(){
 	return config_get_int_value(CONFIG, "MAX_MULTIPROG");
 }
 
-int alpha_sjf(){
-	return config_get_int_value(CONFIG, "ALPHA_SJF");
+double alpha_sjf(){
+	return config_get_double_value(CONFIG, "ALPHA_SJF");
 }
 
 
 
 //FUNCIONES DE LOS LOGS
-long double diferencia_entre_timevals(struct timeval tf, struct timeval ti){
+double diferencia_entre_timevals(struct timeval tf, struct timeval ti){
 	return (((tf.tv_sec*1000)+(tf.tv_usec/1000))-((ti.tv_sec*1000)+(ti.tv_usec/1000)));
 }
 
-long double tiempo_que_paso_desde_inicio(){
+double tiempo_que_paso_desde_inicio(){
 	struct timeval tiempo;
 	gettimeofday(&tiempo, NULL);
 	return diferencia_entre_timevals(tiempo, TIEMPO_INICIO_PROGRAMA);
 }
 
-long double tiempo_que_paso_desde_colaActual(struct timeval cola){
+double tiempo_que_paso_desde_colaActual(struct timeval cola){
 	struct timeval tiempo;
 	gettimeofday(&tiempo, NULL);
 	return diferencia_entre_timevals(tiempo, cola);
@@ -255,7 +255,7 @@ void loggear_procesos(void){
 			t_thread* hilo = execute->thread;
 			double tiempoEjecucion = momentoLog-hilo->tiempo_creacion;
 			log_info(LOG, "\nHilo %d: \nTiempo de ejecucion: %f \nTiempo de espera: %f \nTiempo de uso de CPU: %f \nPorcentaje "
-			"tiempo de ejecucion: %f", hilo->tid , tiempoEjecucion , (hilo->tiempo_total_en_ready), (hilo->tiempo_total_en_exec), tiempoEjecucion/semilla);
+			"tiempo de ejecucion: %f", hilo->tid , tiempoEjecucion , (hilo->tiempo_total_en_ready), ((hilo->tiempo_total_en_exec) + tiempo_que_paso_desde_colaActual(hilo->tiempo_en_cola_actual)), tiempoEjecucion/semilla);
 			}
 
 
@@ -265,6 +265,14 @@ void loggear_procesos(void){
 			log_info(LOG, "\nHilo %d: \nTiempo de ejecucion: %f \nTiempo de espera: %f \nTiempo de uso de CPU: %f \nPorcentaje "
 			"tiempo de ejecucion: %f", hilo->tid , tiempoEjecucion , (hilo->tiempo_total_en_ready), (hilo->tiempo_total_en_exec), tiempoEjecucion/semilla);
 		}
+
+		void loggear_threads_ready(void* elem){
+					t_thread* hilo = (t_thread*)elem;
+					double tiempoEjecucion = momentoLog-hilo->tiempo_creacion;
+					log_info(LOG, "\nHilo %d: \nTiempo de ejecucion: %f \nTiempo de espera: %f \nTiempo de uso de CPU: %f \nPorcentaje "
+					"tiempo de ejecucion: %f", hilo->tid , tiempoEjecucion , ((hilo->tiempo_total_en_ready)+tiempo_que_paso_desde_colaActual(hilo->tiempo_en_cola_actual)), (hilo->tiempo_total_en_exec), tiempoEjecucion/semilla);
+				}
+
 		void loggear_blockeds(void* elem){
 					t_blocked* block = (t_blocked*)elem;
 					t_thread* hilo = block->thread;
@@ -276,7 +284,7 @@ void loggear_procesos(void){
 
 		list_iterate(listaNew, &loggear_threads);
 		list_iterate(listaExit, &loggear_threads);
-		list_iterate(ready->lista_threads, &loggear_threads);
+		list_iterate(ready->lista_threads, &loggear_threads_ready);
 		list_iterate(listaBlocked, &loggear_blockeds);
 
 		list_destroy(listaNew);
@@ -297,7 +305,7 @@ void escribir_logs(int motivo, int socket){
 
 	log_info(LOG, "Grado actual de multiprogramacion: %d", total_hilos_en_ready_y_exec());
 	loggear_semaforos();
-
+//
 	sem_wait(&sem_blocked);
 	sem_wait(&sem_execute);
 	sem_wait(&sem_exit);
@@ -307,12 +315,12 @@ void escribir_logs(int motivo, int socket){
 
 	loggear_procesos();
 
-	sem_post(&sem_blocked);
-	sem_post(&sem_execute);
-	sem_post(&sem_exit);
-	sem_post(&sem_new);
-	sem_post(&sem_ready);
 	sem_post(&sem_run);
+	sem_post(&sem_ready);
+	sem_post(&sem_new);
+	sem_post(&sem_exit);
+	sem_post(&sem_execute);
+	sem_post(&sem_blocked);
 
 
 
@@ -384,8 +392,8 @@ int swap_threads(t_execute* nodoExec, t_thread* nuevoHilo, t_list* cola){
 		sem_wait(&sem_ready);
 		victima->tiempo_total_en_exec = victima->tiempo_total_en_exec + tiempo_que_paso_desde_colaActual(victima->tiempo_en_cola_actual);
 		victima->ultima_rafaga =  tiempo_que_paso_desde_colaActual(victima->tiempo_en_cola_actual);
-		list_add(cola, victima);//desplazamos a la victima
 		gettimeofday(&victima->tiempo_en_cola_actual,NULL); //seteamos el tiempo en que entra a ready
+		list_add(cola, victima);//desplazamos a la victima
 		sem_post(&sem_ready);
 		sem_wait(&sem_execute);
 		nodoExec->thread = nuevoHilo; //agregamos el nuevo hilo a exec
@@ -402,13 +410,13 @@ int swap_threads(t_execute* nodoExec, t_thread* nuevoHilo, t_list* cola){
 		return 1;
 }
 
-int rafaga_estimada(void* elem){
+long double rafaga_estimada(void* elem){
 	t_thread* hilo = (t_thread*) elem;
-	return (alpha_sjf()*hilo->ultima_rafaga + (1-alpha_sjf())*hilo->ultima_estimacion);
+	return ((alpha_sjf()*hilo->ultima_rafaga) + ((1-alpha_sjf())*hilo->ultima_estimacion));
 }
 
 bool _menor_rafaga_estimada(void* elem, void* elem2){
-	return rafaga_estimada(elem) < rafaga_estimada(elem2);
+	return (rafaga_estimada(elem) < rafaga_estimada(elem2));
 }
 
 t_thread* algoritmo_SJF(t_list* lista){
@@ -501,7 +509,8 @@ void buscar_y_pasarlo_a_blocked(int fd,int razon, t_estado estado){
 
 
 		hilo = execution->thread;
-		hilo->tiempo_total_en_exec = hilo->tiempo_total_en_exec +tiempo_que_paso_desde_colaActual(hilo->tiempo_en_cola_actual);
+		hilo->tiempo_total_en_exec = hilo->tiempo_total_en_exec + tiempo_que_paso_desde_colaActual(hilo->tiempo_en_cola_actual);
+		hilo->ultima_rafaga = tiempo_que_paso_desde_colaActual(hilo->tiempo_en_cola_actual);
 		execution->thread = NULL;
 		sem_wait(&sem_blocked);
 		t_blocked* blocked = crear_entrada_blocked(hilo, estado, razon);
@@ -642,6 +651,7 @@ void atenderCliente(void* elemento){
 				tid = hiloAEjecutar->tid;
 			}
 
+			printf("Se elije al hilo %d para ejecutar \n", tid);
 			send(socketCli, &tid, sizeof(int), 0); //mandamos el tid del hilo que pusimos a ejecutar
 			break;
 
@@ -693,6 +703,7 @@ void atenderCliente(void* elemento){
 			buscar_y_pasarlo_a_exit(socketCli); //Agarra el ult que esta en la cola exe de el socket y lo pasa a exit
 			sem_post(&sem_execute);
 			buscar_hilos_blockeados_por_este(tid, socketCli);
+			escribir_logs(tid, socketCli);
 
 			if(!tid){
 				list_destroy_and_destroy_elements(paqueteRecibido, &_destruir_paquete);
@@ -701,7 +712,7 @@ void atenderCliente(void* elemento){
 				return;
 			} //Fin del hilo
 
-			escribir_logs(tid, socketCli);
+
 
 			list_destroy_and_destroy_elements(paqueteRecibido, &_destruir_paquete);
 			send(socketCli, &tid, sizeof(int), 0);
@@ -887,7 +898,7 @@ int main(){
 
 	iniciar_semaforos();
 
-	signal(SIGUSR1, &liberar_recursos); //Cuando generemos esta signal se liberan los recursos y termina el proceso
+	signal(SIGINT, &liberar_recursos); //Cuando generemos esta signal se liberan los recursos y termina el proceso
 	//ALARMA PARA LOGS
 	signal(SIGALRM, &escribirLog);
 	struct itimerval intervalo;
@@ -921,6 +932,6 @@ int main(){
 	}
 
 	//pthread_join(hiloPlanif, NULL);
-	printf("ADIOS\n");
+	printf("\nADIOS\n");
 	return EXIT_SUCCESS;
 }
