@@ -28,6 +28,7 @@ void inicializar_recursos_de_memoria(){
 	inicilizar_tabla_de_frames();
 	memoria = malloc(leer_del_config("MEMORY_SIZE", config));
 	CANTIDAD_DE_MEMORIA_DISPONIBLE= leer_del_config("MEMORY_SIZE",config);
+	memset(memoria,'\0',CANTIDAD_DE_MEMORIA_DISPONIBLE);
 	dividir_memoria_en_frames(memoria, TAM_PAG, leer_del_config("MEMORY_SIZE", config));
 	inicializar_bitmap();
 	inicializar_tabla_procesos();

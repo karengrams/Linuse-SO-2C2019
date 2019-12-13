@@ -64,6 +64,7 @@ void escribir_metadata_en_frame(segment* ptr_segmento,segmentheapmetadata* paux_
 	int numeroPagina = numero_pagina(ptr_segmento, direccionAbsoluta);
 	int desplazamiento = desplazamiento_en_pagina(ptr_segmento,direccionAbsoluta);
 	char *ptr_loco = malloc(TAM_PAG);
+	void *ptr_metadata = serializar_heap_metadata(paux_metadata_ocupado->metadata,sizeof(heapmetadata));
 
 	if (TAM_PAG - desplazamiento >= sizeof(heapmetadata)) { //si entra copiamos solo en esa pagina
 		page* pagina = (page*) list_get(ptr_segmento->tabla_de_paginas,numeroPagina);
@@ -71,8 +72,7 @@ void escribir_metadata_en_frame(segment* ptr_segmento,segmentheapmetadata* paux_
 		frame* ptr_frame_aux = (frame*) pagina->frame; //Por alguna razon no me dejaba entrar al campo memoria si no hacia esto
 		heapmetadata *ptr_metadata = paux_metadata_ocupado->metadata;
 		sem_wait(&mutex_write_frame);
-		memcpy(ptr_frame_aux->memoria+desplazamiento, &(ptr_metadata->bytes),sizeof(int));
-		memcpy(ptr_frame_aux->memoria + desplazamiento + sizeof(int),&(ptr_metadata->ocupado), sizeof(bool));
+		memcpy(ptr_frame_aux->memoria+desplazamiento,ptr_metadata,sizeof(heapmetadata));
 		sem_post(&mutex_write_frame);
 
 	} else { //si no entra lo copiamos de a pedazos
@@ -84,10 +84,21 @@ void escribir_metadata_en_frame(segment* ptr_segmento,segmentheapmetadata* paux_
 		frame* ptr_frame_aux_dos = (frame*)paginaDos->frame;
 		int aCopiar = TAM_PAG - desplazamiento;
 		sem_wait(&mutex_write_frame);
-		memcpy(ptr_frame_aux_uno->memoria + desplazamiento,paux_metadata_ocupado->metadata, aCopiar);
-		memcpy(ptr_frame_aux_dos->memoria,paux_metadata_ocupado->metadata + aCopiar,sizeof(heapmetadata) - aCopiar);
+		memcpy(ptr_frame_aux_uno->memoria + desplazamiento,ptr_metadata, aCopiar);
+		memcpy(ptr_frame_aux_dos->memoria,ptr_metadata+aCopiar,sizeof(heapmetadata)-aCopiar);
 		sem_post(&mutex_write_frame);
 	}
 
+}
 
+void* serializar_heap_metadata(heapmetadata* metadata, int bytes){
+	void * magic = malloc(bytes);
+	int desplazamiento = 0;
+
+	memcpy(magic + desplazamiento, &(metadata->bytes), sizeof(int));
+	desplazamiento+= sizeof(int);
+	memcpy(magic + desplazamiento, &(metadata->ocupado), sizeof(bool));
+	desplazamiento+= sizeof(int);
+
+	return magic;
 }

@@ -12,6 +12,7 @@
 #include <commons/collections/node.h>
 #include <semaphore.h>
 #include <commons/log.h>
+#include <stdint.h>
 
 typedef struct buffer t_buffer;
 typedef struct paquete t_paquete;
@@ -40,6 +41,35 @@ typedef enum {
 	MUSE_UNMAP = 17,
 	MUSE_CLOSE = 18,
 } op_code;
+
+typedef enum segment_type_t {
+	HEAP, MMAP,
+} segment_type;
+
+typedef struct segment_t {
+	int nro_segmento;
+	segment_type tipo;
+	uint32_t base_logica;
+	int tamanio; //  tam. pedido
+	t_list *metadatas; // Hay dos tipos segmentheapmetadata o mmapmetadata
+	t_list *tabla_de_paginas;
+}__attribute__((packed)) segment;
+
+typedef struct heapmetadata_t{
+	bool ocupado;
+	int bytes;
+}__attribute__((packed)) heapmetadata;
+
+typedef struct segmentheapmetadata_t{
+	heapmetadata *metadata;
+	uint32_t posicion_inicial;
+}__attribute__((packed)) segmentheapmetadata;
+
+typedef struct segmentmmapmetadata_t{
+	char *path;
+	int tam_mappeado;
+}__attribute__((packed)) segmentmmapmetadata;
+
 
 typedef struct proceso{
 	int id;
