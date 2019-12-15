@@ -14,8 +14,19 @@ void dividir_memoria_en_frames(void * memoria, int pagetam, int memtam) {
 		(*frame_ptr).memoria = memoria + i * pagetam;
 		(*frame_ptr).nro_frame = i;
 		list_add(FRAMES_TABLE, frame_ptr);
-		PAGINAS_EN_FRAMES[i] = NULL; //YA INICIALIZO EL VECTOR EN NULL CON LA CANTIDAD DE ELEMENTOS
+	//	PAGINAS_EN_FRAMES[i] = NULL; //YA INICIALIZO EL VECTOR EN NULL CON LA CANTIDAD DE ELEMENTOS
 									 //IGUAL A LA CANTIDAD DE FRAMES
+		inicializar_tabla_para_clock(cantidadDeFrames);
+	}
+}
+
+void inicializar_tabla_para_clock(int cantidad_de_marcos){
+	PAGINAS_EN_FRAMES=list_create();
+	for(int i=0;i<cantidad_de_marcos;i++){
+		pages_in_frames*ptr_pag_in_frame = (pages_in_frames*)malloc(sizeof(pages_in_frames));
+		ptr_pag_in_frame->ptr_page=NULL;
+		ptr_pag_in_frame->ptr_frame=(frame*)list_get(FRAMES_TABLE,i);
+		list_add(PAGINAS_EN_FRAMES,ptr_pag_in_frame);
 	}
 }
 
@@ -64,6 +75,7 @@ void escribir_metadata_en_frame(segment* ptr_segmento,segmentheapmetadata* paux_
 	int numeroPagina = numero_pagina(ptr_segmento, direccionAbsoluta);
 	int desplazamiento = desplazamiento_en_pagina(ptr_segmento,direccionAbsoluta);
 	char *ptr_loco = malloc(TAM_PAG);
+	void *ptr_metadata = serializar_heap_metadata(paux_metadata_ocupado->metadata,sizeof(heapmetadata));
 
 	if (TAM_PAG - desplazamiento >= sizeof(heapmetadata)) { //si entra copiamos solo en esa pagina
 		page* pagina = (page*) list_get(ptr_segmento->tabla_de_paginas,numeroPagina);
@@ -71,8 +83,7 @@ void escribir_metadata_en_frame(segment* ptr_segmento,segmentheapmetadata* paux_
 		frame* ptr_frame_aux = (frame*) pagina->frame; //Por alguna razon no me dejaba entrar al campo memoria si no hacia esto
 		heapmetadata *ptr_metadata = paux_metadata_ocupado->metadata;
 		sem_wait(&mutex_write_frame);
-		memcpy(ptr_frame_aux->memoria+desplazamiento, &(ptr_metadata->bytes),sizeof(int));
-		memcpy(ptr_frame_aux->memoria + desplazamiento + sizeof(int),&(ptr_metadata->ocupado), sizeof(bool));
+		memcpy(ptr_frame_aux->memoria+desplazamiento,ptr_metadata,sizeof(heapmetadata));
 		sem_post(&mutex_write_frame);
 
 	} else { //si no entra lo copiamos de a pedazos
@@ -84,10 +95,21 @@ void escribir_metadata_en_frame(segment* ptr_segmento,segmentheapmetadata* paux_
 		frame* ptr_frame_aux_dos = (frame*)paginaDos->frame;
 		int aCopiar = TAM_PAG - desplazamiento;
 		sem_wait(&mutex_write_frame);
-		memcpy(ptr_frame_aux_uno->memoria + desplazamiento,paux_metadata_ocupado->metadata, aCopiar);
-		memcpy(ptr_frame_aux_dos->memoria,paux_metadata_ocupado->metadata + aCopiar,sizeof(heapmetadata) - aCopiar);
+		memcpy(ptr_frame_aux_uno->memoria + desplazamiento,ptr_metadata, aCopiar);
+		memcpy(ptr_frame_aux_dos->memoria,ptr_metadata+aCopiar,sizeof(heapmetadata)-aCopiar);
 		sem_post(&mutex_write_frame);
 	}
 
+}
 
+void* serializar_heap_metadata(heapmetadata* metadata, int bytes){
+	void * magic = malloc(bytes);
+	int desplazamiento = 0;
+
+	memcpy(magic + desplazamiento, &(metadata->bytes), sizeof(int));
+	desplazamiento+= sizeof(int);
+	memcpy(magic + desplazamiento, &(metadata->ocupado), sizeof(bool));
+	desplazamiento+= sizeof(int);
+
+	return magic;
 }

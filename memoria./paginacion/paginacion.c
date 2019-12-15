@@ -1,10 +1,13 @@
 #include "paginacion.h"
+#include <commons/memory.h>
 
 int INDICE_ALGORITMO_CLOCK = 0; //ptr para el algoritmo
 
 page* crear_pagina() {
 	page* pagina = malloc(sizeof(page));
 	pagina->bit_presencia = 0;
+	pagina->bit_uso=1;
+	pagina->bit_modificado=0;
 	pagina->frame = NULL;
 	return pagina;
 }
@@ -55,8 +58,7 @@ void asignar_marco(page* pag) {
 		pag->nro_frame = marco_libre->nro_frame;
 		pag->bit_uso = true;
 		pag->bit_modificado = false;
-		PAGINAS_EN_FRAMES[marco_libre->nro_frame] = pag;
-
+		agregar_a_lista_de_marcos_en_paginas(pag);
 	}
 
 	sem_post(&mutex_frames);
@@ -72,10 +74,8 @@ void asignar_marco_en_swap(page* pag){
 	pag->bit_modificado = false;
 }
 
-
 void swap_pages(page* victima, page* paginaPedida){
 	//datos de la victima
-	sem_wait(&binary_swap_pages);
 	log_trace(logger_trace,"se swapea la pagina #%d con la pagina #%d",paginaPedida->nro_pagina,victima->nro_pagina);
 	int nroFrame = victima->nro_frame;
 	frame* frameVictima = ((frame*)list_get(FRAMES_TABLE, nroFrame));
@@ -85,9 +85,16 @@ void swap_pages(page* victima, page* paginaPedida){
 	void* frameAReemplazar = frameVictima->memoria;
 	void* bufferAux = malloc(TAM_PAG);
 
+	sem_wait(&mutex_swap_file);
+	//mem_hexdump(memoria,140);
 	memcpy(bufferAux, VIRTUAL_MEMORY+posicionEnSwap, TAM_PAG); //Swap mappeado como variable global por ahora
 	memcpy(VIRTUAL_MEMORY+posicionEnSwap, frameAReemplazar, TAM_PAG);
 	memcpy(frameAReemplazar, bufferAux, TAM_PAG);
+	//printf("Luego del swap..\n");
+	//mem_hexdump(memoria,140);
+	//mem_hexdump(VIRTUAL_MEMORY,2048);
+
+	sem_post(&mutex_swap_file);
 
 	victima->bit_presencia = false;
 	victima->frame = NULL;
@@ -99,9 +106,9 @@ void swap_pages(page* victima, page* paginaPedida){
 	paginaPedida->bit_uso = true;
 	paginaPedida->bit_modificado = false;
 
-	PAGINAS_EN_FRAMES[nroFrame] = paginaPedida; //cargamos la pagina pedida en el vector de paginas cargadas en memoria
+	agregar_a_lista_de_marcos_en_paginas(paginaPedida);
+	//PAGINAS_EN_FRAMES[nroFrame] = paginaPedida; //cargamos la pagina pedida en el vector de paginas cargadas en memoria
 	free(bufferAux);
-	sem_post(&mutex_clock_mod);
 }
 
 void traer_pagina(page* pagina){
@@ -113,7 +120,9 @@ void traer_pagina(page* pagina){
 		frame *marco_libre = obtener_marco_libre();
 		if(marco_libre){
 			log_trace(logger_trace,"se procede a asignar el marco #%d a la pagina #%d",marco_libre->nro_frame,pagina->nro_pagina);
+			sem_wait(&mutex_swap_file);
 			memcpy(marco_libre->memoria, VIRTUAL_MEMORY+pagina->nro_frame*TAM_PAG, TAM_PAG); //Swap mappeado como variable global por ahora
+			sem_post(&mutex_swap_file);
 			bitarray_clean_bit(BIT_ARRAY_SWAP,(off_t) pagina->nro_frame);
 			bitarray_set_bit(BIT_ARRAY_FRAMES, (off_t) marco_libre->nro_frame);
 			pagina->frame = (frame*)marco_libre;
@@ -121,7 +130,7 @@ void traer_pagina(page* pagina){
 			pagina->nro_frame = marco_libre->nro_frame;
 			pagina->bit_uso = true;
 			pagina->bit_modificado = false;
-			PAGINAS_EN_FRAMES[marco_libre->nro_frame] = pagina;
+			agregar_a_lista_de_marcos_en_paginas(pagina);
 		}else{
 			page* victima = algoritmo_clock_modificado();
 			swap_pages(victima, pagina);
@@ -132,33 +141,40 @@ void traer_pagina(page* pagina){
 }
 
 page* buscar_cero_cero(){
-	for(int i=0; i<list_size(FRAMES_TABLE); i++){
+	for(int index=0; index<list_size(FRAMES_TABLE); index++){
 
-		page* pagina = PAGINAS_EN_FRAMES[INDICE_ALGORITMO_CLOCK];
+		page* pagina = obtener_pagina_en_frames_segun(index); //PAGINAS_EN_FRAMES[INDICE_ALGORITMO_CLOCK];
+//
+		if(pagina && index == INDICE_ALGORITMO_CLOCK){
 
-		if(pagina && (pagina->bit_uso == 0) && (pagina->bit_modificado == 0)){
+				if((pagina->bit_uso == 0) && (pagina->bit_modificado == 0)){
+				incrementar_indice();
+				return pagina;
+			}
+
 			incrementar_indice();
-			return pagina;
 		}
-
-		incrementar_indice();
 	}
 	return NULL;
 }
 
 page* buscar_cero_uno(){
 
-	for(int i=0; i<list_size(FRAMES_TABLE); i++){
+	for(int index=0; index<list_size(FRAMES_TABLE); index++){
 
-		page* pagina = PAGINAS_EN_FRAMES[INDICE_ALGORITMO_CLOCK];
+		page* pagina = obtener_pagina_en_frames_segun(index);//PAGINAS_EN_FRAMES[INDICE_ALGORITMO_CLOCK];
 
-		if(pagina && (pagina->bit_uso == 0)){
+		if(pagina && index == INDICE_ALGORITMO_CLOCK){
+			if(pagina->bit_uso == 0){
+				incrementar_indice();
+				return pagina;
+			}else{
+				pagina->bit_uso = 0; //lo seteamos en 0 y avanzamos
+			}
+
 			incrementar_indice();
-			return pagina;
-		}else{
-			pagina->bit_uso = 0; //lo seteamos en 0 y avanzamos
+
 		}
-		incrementar_indice();
 	}
 	return NULL;
 }
@@ -172,9 +188,9 @@ void incrementar_indice(){
 }
 
 page* algoritmo_clock_modificado(){
+	sem_wait(&mutex_clock_mod);
 	page* victima = NULL;
 	log_trace(logger_trace,"se comienza a ejecutar el algoritmo clock modificado.");
-	sem_wait(&mutex_clock_mod);
 	while(!victima){
 
 		victima = buscar_cero_cero();
@@ -185,7 +201,7 @@ page* algoritmo_clock_modificado(){
 
 	}
 	log_trace(logger_trace,"se eligio como victima la pagina #%d cuyo frame es #%d.",victima->nro_pagina,victima->nro_frame);
-	sem_post(&binary_swap_pages);
+	sem_post(&mutex_clock_mod);
 	return victima;
 }
 
@@ -201,19 +217,25 @@ void escribir_en_archivo_swap(void *file, t_list *tabla_de_paginas, size_t tam_a
 		if(offset >0 && archivo_completo){
 			padding = malloc(TAM_PAG);
 			memset(padding,'\0',TAM_PAG);
+			sem_wait(&mutex_swap_file);
 			memcpy(VIRTUAL_MEMORY+posicion_en_swap,padding,TAM_PAG);
+			sem_post(&mutex_swap_file);
 			offset -= TAM_PAG;
 			free(padding);
 		}
 		if(tam_archivo>=TAM_PAG && offset > 0 && !archivo_completo){
+			sem_wait(&mutex_swap_file);
 			memcpy(VIRTUAL_MEMORY+posicion_en_swap,file+(pag_pos*TAM_PAG),TAM_PAG);
+			sem_post(&mutex_swap_file);
 			offset -= TAM_PAG;
 			tam_archivo-= TAM_PAG;
 		}else if (offset > 0 && tam_archivo>0){
+			sem_wait(&mutex_swap_file);
 			memcpy(VIRTUAL_MEMORY+posicion_en_swap,file+(pag_pos*TAM_PAG),tam_archivo);
 			padding = malloc(TAM_PAG-tam_archivo);
 			memset(padding,'\0',TAM_PAG-tam_archivo);
 			memcpy(VIRTUAL_MEMORY+posicion_en_swap+tam_archivo,padding,TAM_PAG-tam_archivo);
+			sem_post(&mutex_swap_file);
 			offset-=TAM_PAG;
 			tam_archivo-= TAM_PAG;
 			archivo_completo=true;
@@ -228,7 +250,9 @@ void escribir_pagina_extra_en_archivo_swap(page*ptr_pagina,t_list *tabla_de_pagi
 	int posicion_en_swap = TAM_PAG * ptr_pagina->nro_frame;
 	void *padding = malloc(TAM_PAG);
 	memset(padding,'\0',TAM_PAG);
+	sem_wait(&mutex_swap_file);
 	memcpy(VIRTUAL_MEMORY+posicion_en_swap,padding,TAM_PAG);
+	sem_post(&mutex_swap_file);
 }
 
 void agregar_paginas_extras(t_list* tabla_de_paginas, int cantidadDePaginas){
@@ -245,7 +269,6 @@ void agregar_paginas_extras(t_list* tabla_de_paginas, int cantidadDePaginas){
 	}
 }
 
-
 void eliminar_pagina(void*element){
 	page* ptr_pagina = (page*)element;
 	if(ptr_pagina->bit_presencia)
@@ -255,3 +278,14 @@ void eliminar_pagina(void*element){
 	free(ptr_pagina);
 }
 
+void agregar_a_lista_de_marcos_en_paginas(page*pagina){
+	if(pagina->bit_presencia){
+		pages_in_frames*ptr_pag_in_frame = (pages_in_frames*)list_get(PAGINAS_EN_FRAMES,pagina->nro_frame);
+		ptr_pag_in_frame->ptr_page=pagina;
+	}
+}
+
+page * obtener_pagina_en_frames_segun(int nro_de_frame){
+	pages_in_frames* ptr_pag_in_frame = (pages_in_frames*)list_get(PAGINAS_EN_FRAMES,nro_de_frame);
+	return ptr_pag_in_frame->ptr_page;
+}

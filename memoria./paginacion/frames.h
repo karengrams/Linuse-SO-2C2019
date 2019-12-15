@@ -18,5 +18,7 @@ void dividir_memoria_en_frames(void*,int, int);
 void inicializar_bitmap();
 frame* obtener_marco_libre();
 void asignar_marcos(t_list*);
+void* serializar_heap_metadata(heapmetadata* , int );
+
 
 #endif /* PAGINACION_FRAMES_H_ */

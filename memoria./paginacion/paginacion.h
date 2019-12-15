@@ -16,19 +16,9 @@ sem_t mutex_clock_mod;
 sem_t mutex_frames;
 sem_t binary_swap_pages;
 
-typedef struct page_t page;
 
-page** PAGINAS_EN_FRAMES; //vector con paginas que estan presentes en frames para clock modificado
+t_list* PAGINAS_EN_FRAMES; //vector con paginas que estan presentes en frames para clock modificado
 int TAM_PAG;
-
-struct page_t{
-	bool bit_presencia;
-	bool bit_modificado;
-	bool bit_uso;
-	int nro_pagina;
-	int nro_frame; //Es necesario para buscarlo en el archivo swap si no esta cargado en memoria
-	struct frame *frame; //Creo que esto no tiene sentido tenerlo
-} __attribute__((packed));
 
 page* crear_pagina();
 t_list* crear_tabla_de_paginas(int);
@@ -43,5 +33,6 @@ void escribir_en_archivo_swap(void*,t_list*,size_t,size_t);
 void escribir_pagina_extra_en_archivo_swap(page*,t_list *);
 void agregar_paginas_extras(t_list*, int);
 void incrementar_indice();
+page * obtener_pagina_en_frames_segun(int);
 
 #endif /* PAGINACION_H_ */

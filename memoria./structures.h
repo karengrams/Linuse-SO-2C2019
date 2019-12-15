@@ -12,10 +12,10 @@
 #include <commons/collections/node.h>
 #include <semaphore.h>
 #include <commons/log.h>
+#include <stdint.h>
 
 typedef struct buffer t_buffer;
 typedef struct paquete t_paquete;
-typedef struct frame_t frame;
 
 sem_t mutex_process_list;
 sem_t mutex_shared;
@@ -41,6 +41,45 @@ typedef enum {
 	MUSE_CLOSE = 18,
 } op_code;
 
+typedef enum segment_type_t {
+	HEAP, MMAP,
+} segment_type;
+
+typedef struct{
+	bool bit_presencia;
+	bool bit_modificado;
+	bool bit_uso;
+	int nro_pagina;
+	int nro_frame; //Es necesario para buscarlo en el archivo swap si no esta cargado en memoria
+	struct frame *frame; //Creo que esto no tiene sentido tenerlo
+} __attribute__((packed))page;
+
+
+typedef struct segment_t {
+	int nro_segmento;
+	segment_type tipo;
+	uint32_t base_logica;
+	int tamanio; //  tam. pedido
+	t_list *metadatas; // Hay dos tipos segmentheapmetadata o mmapmetadata
+	t_list *tabla_de_paginas;
+}__attribute__((packed)) segment;
+
+typedef struct heapmetadata_t{
+	bool ocupado;
+	int bytes;
+}__attribute__((packed)) heapmetadata;
+
+typedef struct segmentheapmetadata_t{
+	heapmetadata *metadata;
+	uint32_t posicion_inicial;
+}__attribute__((packed)) segmentheapmetadata;
+
+typedef struct segmentmmapmetadata_t{
+	char *path;
+	int tam_mappeado;
+}__attribute__((packed)) segmentmmapmetadata;
+
+
 typedef struct proceso{
 	int id;
 	char* ip;
@@ -59,16 +98,15 @@ typedef struct mapped_file_t{
 	t_list *procesos; // Con estos sacas los opens y vas viendo que proceso lo tiene abierto
 }__attribute__((packed)) mapped_file;
 
-struct frame_t{
+typedef struct frame_t{
 	void *memoria;
 	int nro_frame;
-}__attribute__((packed));
-
+}__attribute__((packed))frame;
 
 typedef struct{
-	int nro_pag;
+	page* ptr_page;
 	frame *ptr_frame;
-}__attribute__((packed)) frames_compartidos;
+}__attribute__((packed)) pages_in_frames;
 
 struct buffer{
 	int size;

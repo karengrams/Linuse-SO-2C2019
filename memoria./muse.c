@@ -28,6 +28,7 @@ void inicializar_recursos_de_memoria(){
 	inicilizar_tabla_de_frames();
 	memoria = malloc(leer_del_config("MEMORY_SIZE", config));
 	CANTIDAD_DE_MEMORIA_DISPONIBLE= leer_del_config("MEMORY_SIZE",config);
+	memset(memoria,'\0',CANTIDAD_DE_MEMORIA_DISPONIBLE);
 	dividir_memoria_en_frames(memoria, TAM_PAG, leer_del_config("MEMORY_SIZE", config));
 	inicializar_bitmap();
 	inicializar_tabla_procesos();
@@ -268,6 +269,7 @@ void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 	int auxiliar = 0;
 	int tamanioACopiar;
 	int desplazamientoEnBuffer = 0;
+	void *ni_idea=(char*)malloc(cantidad_de_bytes);
 
 
 	while (cantidadDeBytes > 0) {
@@ -281,6 +283,7 @@ void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 		desplazamientoEnBuffer += tamanioACopiar;
 		desplazamientoEnPagina = 0; //Solo era valido para la primera pagina
 	  }
+	mem_hexdump(memoria,1000);
 	sem_post(&mutex_swap);
 	return (buffer);
 }
@@ -420,6 +423,7 @@ int museunmap(t_proceso *proceso,uint32_t direccion){
 }
 
 int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {
+	sem_wait(&mutex_frames);
 
 	int cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
 	uint32_t direccion_pedida = *((uint32_t*) list_get(paqueteRecibido, 3));
@@ -445,31 +449,33 @@ int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {
 			return -1;
 		}
 
-	int numeroPagina = numero_pagina(ptr_segmento, direccion_pedida);
-	int desplazamientoEnPagina = desplazamiento_en_pagina(ptr_segmento,direccion_pedida);
-	int auxiliar = 0;
-	int tamanioACopiar;
-	int desplazamientoEnBuffer = 0;
+	int page_number = numero_pagina(ptr_segmento, direccion_pedida);
+	int page_offset = desplazamiento_en_pagina(ptr_segmento,direccion_pedida);
+	int copied_bytes = 0;
+	int offset=0;
+	int copied_bytes_frame=0;
 
-	while (cantidad_de_bytes > 0) {
-		page* pagina = (page*)list_get(ptr_segmento->tabla_de_paginas,numeroPagina + auxiliar);
+	while(copied_bytes<cantidad_de_bytes){
+		page *pagina = (page*)list_get(ptr_segmento->tabla_de_paginas,page_number+offset);
 		traer_pagina(pagina);
-		frame* marco = pagina->frame;
-		tamanioACopiar = minimo(cantidad_de_bytes, (TAM_PAG - desplazamientoEnPagina));
-		sem_wait(&mutex_write_frame);
-		memcpy((marco->memoria + desplazamientoEnPagina), (buffer_a_copiar + desplazamientoEnBuffer), tamanioACopiar);
-		sem_post(&mutex_write_frame);
-		pagina->bit_modificado = true;
-
-		cantidad_de_bytes -= tamanioACopiar;
-		auxiliar++; //siguiente pagina
-		desplazamientoEnBuffer += tamanioACopiar;
-		desplazamientoEnPagina = 0; //Solo era valido para la primera pagina
+		frame*marco=pagina->frame;
+		pagina->bit_modificado=true;
+		memcpy(marco->memoria+page_offset+copied_bytes_frame,buffer_a_copiar+copied_bytes,1);
+		copied_bytes++;
+		copied_bytes_frame++;
+		if(copied_bytes+page_offset==TAM_PAG && pagina->nro_frame==page_number){
+			offset++;
+			page_offset=0;
+			copied_bytes_frame=0;
+		} else if(copied_bytes_frame==TAM_PAG){
+			offset++;
+			copied_bytes_frame=0;
+		}
 	}
-	log_trace(logger_trace,"se copio exitosamente '%s' en la direccion %lu correspondiendo al segmento #%d del proceso #%d.",(char*)buffer_a_copiar,direccion_pedida,ptr_segmento->nro_segmento,proceso->id);
+	sem_post(&mutex_frames);
+
 	return 0;
 }
-
 
 segment* ultimo_segmento_heap(t_proceso* proceso){
 
@@ -489,7 +495,6 @@ segment* ultimo_segmento_heap(t_proceso* proceso){
 
 }
 
-
 int memoria_libre_en_segmento(segment* segmento){
 	int seed = 0;
 	bool _metadata_free(void* elemento){
@@ -508,9 +513,7 @@ int memoria_libre_en_segmento(segment* segmento){
 	return *((int*)list_fold(metadatasFree, &seed, &_suma_bytes));
 }
 
-
 int cantidad_total_de_segmentos_en_sistema(){
-
 	int cantidad_total_de_segmentos=0;
 	sem_wait(&mutex_process_list);
 	void _cantidad_de_segmentos(void*element){
@@ -524,7 +527,6 @@ int cantidad_total_de_segmentos_en_sistema(){
 	return cantidad_total_de_segmentos;
 }
 
-
 int suma_frames_libres(){
 	int max = bitarray_get_max_bit(BIT_ARRAY_FRAMES);
 	int contador = 0;
@@ -535,11 +537,9 @@ int suma_frames_libres(){
 	return contador;
 }
 
-
 int memory_leaks_proceso(t_proceso* proceso){
 	return proceso->totalMemoriaPedida - proceso->totalMemoriaLiberada;
 }
-
 
 t_proceso* buscar_proceso(t_list* paqueteRecibido, char* ipCliente){
 	int id = *((int*) list_get(paqueteRecibido, 0)); // ACA se muere?

@@ -205,6 +205,7 @@ void expandir_segmento(segment *segmento,int tam){
 		(*seg_libre).metadata=libre;
 		(*seg_libre).posicion_inicial=paux_seg_metadata->posicion_inicial+paux_metadata->bytes+sizeof(heapmetadata);
 		list_add(segmento->metadatas,seg_libre);
+		escribir_metadata_en_frame(segmento,paux_seg_metadata);
 	}else
 		paux_metadata->bytes+=cant_pag*TAM_PAG;
 }
