@@ -177,8 +177,13 @@ uint32_t musealloc(t_proceso* proceso,int tam){
 	segmentheapmetadata *paux_seg_metadata_ocupado=buscar_metadata_de_segmento_segun(offset,ptr_segmento);
 	heapmetadata *paux_metadata_ocupado = paux_seg_metadata_ocupado->metadata;
 
-	if(paux_metadata_ocupado->bytes>tam+sizeof(heapmetadata)){ // Si los bytes que tenia libre antes de modificarlo, es mayor a lo pedido +
+	if(paux_metadata_ocupado->bytes-tam){ // Si los bytes que tenia libre antes de modificarlo, es mayor a lo pedido +
 		// el tam. del heapmetadata, deberia ir el metadata de libre
+		if(paux_metadata_ocupado->bytes-tam<sizeof(heapmetadata)){
+			int cantidad_de_paginas= paginas_necesarias(sizeof(heapmetadata)-(paux_metadata_ocupado->bytes-tam));
+			agregar_paginas(ptr_segmento->tabla_de_paginas,cantidad_de_paginas,ptr_segmento->tabla_de_paginas->elements_count);
+			paux_metadata_ocupado->bytes+=cantidad_de_paginas*TAM_PAG;
+		}
 		segmentheapmetadata *paux_seg_metadata_libre= (segmentheapmetadata*)malloc(sizeof(segmentheapmetadata));
 		heapmetadata *paux_metadata_libre = (heapmetadata*) malloc(sizeof(heapmetadata));
 		paux_metadata_libre->bytes=paux_metadata_ocupado->bytes-tam-sizeof(heapmetadata);
@@ -218,16 +223,13 @@ int musefree(t_proceso *proceso, uint32_t direccion) {
 			int cantidad_extra_de_memoria_en_pags = floor(ptr_ultimo_seg_metadata->metadata->bytes/TAM_PAG);
 
 				for(int i=1;i<=cantidad_extra_de_memoria_en_pags;i++){
-				void _liberar_pagina(void*element){
-					page*ptr_pagina = (page*)element;
-					bitarray_clean_bit(BIT_ARRAY_FRAMES,ptr_pagina->nro_frame);
-					free(ptr_pagina);
+					int ultima_pagina = list_size(ptr_segmento->tabla_de_paginas);
+					page *ptr_pag = (page*)list_get(ptr_segmento->tabla_de_paginas,ultima_pagina-1);
+					eliminar_pagina_de_segmento(ptr_segmento,ptr_pag);
 				}
 
-				list_remove_and_destroy_element(ptr_segmento->tabla_de_paginas,ptr_segmento->tabla_de_paginas->elements_count-i,_liberar_pagina);
-			}
-
 			ptr_ultimo_metadata->bytes-=(cantidad_extra_de_memoria_en_pags*TAM_PAG);
+
 			escribir_metadata_en_frame(ptr_segmento, ptr_ultimo_seg_metadata);
 
 		}
@@ -245,10 +247,10 @@ int musefree(t_proceso *proceso, uint32_t direccion) {
 
 void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 	sem_wait(&mutex_swap);
-	int cantidadDeBytes = *((int*) list_get(paqueteRecibido, 1));
+	int cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
 	uint32_t direccion = *((uint32_t*) list_get(paqueteRecibido, 2));
-	void* buffer = malloc(cantidadDeBytes);
-	log_trace(logger_trace,"el proceso #%d solicito la lectura de %d bytes de la direccion %lu",proceso->id,cantidadDeBytes,direccion);
+	void* buffer = malloc(cantidad_de_bytes);
+	log_trace(logger_trace,"el proceso #%d solicito la lectura de %d bytes de la direccion %lu",proceso->id,cantidad_de_bytes,direccion);
 
 	segment* ptr_segmento = buscar_segmento_dada_una_direccion(direccion, proceso->tablaDeSegmentos);
 
@@ -258,31 +260,38 @@ void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 		return NULL; //ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO.
 	}
 
-	if ((direccion + cantidadDeBytes) > limite_segmento(ptr_segmento)+1) {
+	if ((direccion + cantidad_de_bytes) > limite_segmento(ptr_segmento)+1) {
 		free(buffer);
 		log_error(logger_error,"la direccion %lu se pasa del limite del segmento #%d del proceso #%d",direccion,ptr_segmento->nro_segmento,proceso->id);
 		return NULL; // SEGMENTATION FAULT, si bien la direccion corresponde al segmento, se desplaza mas alla de su limite
 	}
 
-	int numeroPagina = numero_pagina(ptr_segmento, direccion);
-	int desplazamientoEnPagina = desplazamiento_en_pagina(ptr_segmento,direccion);
-	int auxiliar = 0;
-	int tamanioACopiar;
-	int desplazamientoEnBuffer = 0;
-	void *ni_idea=(char*)malloc(cantidad_de_bytes);
+	int page_number = numero_pagina(ptr_segmento, direccion);
+	int page_offset = desplazamiento_en_pagina(ptr_segmento,direccion);
+	int offset = 0;
+	int copied_bytes=0;
+	int copied_bytes_in_frame = 0;
 
+	while(copied_bytes<cantidad_de_bytes){
+		page *ptr_page = (page*)list_get(ptr_segmento->tabla_de_paginas,page_number+offset);
+		traer_pagina(ptr_page);
+		frame * ptr_frame = ptr_page->frame;
+		memcpy(buffer+copied_bytes,ptr_frame->memoria+page_offset+copied_bytes_in_frame,1);
+		log_info(logger_info,"lo que esta quedando en el buffer es:%s",buffer);
+		//log_info(logger_info,"lo que esta en el frame nro #d de la pagina nro #d es:%s",ptr_frame->nro_frame,ptr_page->nro_pagina,ptr_frame->memoria);
 
-	while (cantidadDeBytes > 0) {
-		page* pagina = (page*)list_get(ptr_segmento->tabla_de_paginas,numeroPagina + auxiliar);
-		traer_pagina(pagina);
-		frame* marco =(frame*) (pagina->frame);
-		tamanioACopiar = minimo(cantidadDeBytes,(TAM_PAG - desplazamientoEnPagina));
-		memcpy(buffer + desplazamientoEnBuffer,marco->memoria + desplazamientoEnPagina, tamanioACopiar);
-		cantidadDeBytes -= tamanioACopiar;
-		auxiliar++; //siguiente pagina
-		desplazamientoEnBuffer += tamanioACopiar;
-		desplazamientoEnPagina = 0; //Solo era valido para la primera pagina
-	  }
+		log_info(logger_info,"jeje");
+		copied_bytes++;
+		copied_bytes_in_frame++;
+		if(copied_bytes+page_offset==TAM_PAG && ptr_page->nro_pagina==page_number){
+			offset ++;
+			copied_bytes_in_frame=0;
+			page_offset=0;
+		} else if(copied_bytes_in_frame==TAM_PAG){
+			offset++;
+			copied_bytes_in_frame=0;
+		}
+	}
 	mem_hexdump(memoria,1000);
 	sem_post(&mutex_swap);
 	return (buffer);
@@ -463,7 +472,7 @@ int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {
 		memcpy(marco->memoria+page_offset+copied_bytes_frame,buffer_a_copiar+copied_bytes,1);
 		copied_bytes++;
 		copied_bytes_frame++;
-		if(copied_bytes+page_offset==TAM_PAG && pagina->nro_frame==page_number){
+		if(copied_bytes+page_offset==TAM_PAG && pagina->nro_pagina==page_number){
 			offset++;
 			page_offset=0;
 			copied_bytes_frame=0;

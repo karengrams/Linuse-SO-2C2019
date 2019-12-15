@@ -236,8 +236,7 @@ int index_del_segment_metadata(segmentheapmetadata *ptr_seg_metadata,t_list *met
 	segmentheapmetadata *ptr_seg_metadata_comparador;
 	for (int index = 0; index < metadatas->elements_count; index++) {
 		ptr_seg_metadata_comparador = list_get(metadatas, index);
-		if (!memcmp(ptr_seg_metadata, ptr_seg_metadata_comparador,
-				sizeof(segment))) { //Si son iguales devuelve 0
+		if (ptr_seg_metadata->posicion_inicial==ptr_seg_metadata_comparador->posicion_inicial) { //Si son iguales devuelve 0
 			return index;
 		}
 	}

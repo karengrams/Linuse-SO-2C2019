@@ -269,6 +269,25 @@ void agregar_paginas_extras(t_list* tabla_de_paginas, int cantidadDePaginas){
 	}
 }
 
+void eliminar_pagina_de_segmento(segment *ptr_segmento, page *ptr_pagina){
+	void _liberar_pagina(void*element){
+			eliminar_pagina(element);
+	}
+
+	list_remove_and_destroy_element(ptr_segmento->tabla_de_paginas
+									,ptr_pagina->nro_pagina
+									,_liberar_pagina);
+
+	int index = 0;
+	void _actualizar_numero_de_pagina(void*element){
+		page *otro_ptr_pagina = (page*) element;
+		(*otro_ptr_pagina).nro_pagina=index;
+		index ++;
+	}
+
+	list_iterate(ptr_segmento->tabla_de_paginas,_actualizar_numero_de_pagina);
+}
+
 void eliminar_pagina(void*element){
 	page* ptr_pagina = (page*)element;
 	if(ptr_pagina->bit_presencia)
