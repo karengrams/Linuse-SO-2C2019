@@ -54,7 +54,6 @@ typedef struct{
 	struct frame *frame; //Creo que esto no tiene sentido tenerlo
 } __attribute__((packed))page;
 
-
 typedef struct segment_t {
 	int nro_segmento;
 	segment_type tipo;
