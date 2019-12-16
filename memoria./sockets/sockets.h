@@ -38,8 +38,6 @@ int recibir_operacion(int);
 void* recibir_buffer(int*, int);
 t_list* recibir_paquete(int);
 int iniciar_socket(char*,char*);
-
-// Siguen sirviendo las de abajo? No lo se. Lo veremos en el proximo cap
 void ipCliente(int, char*);
 int crear_conexion(char *, char*);
 void crear_buffer(t_paquete*);

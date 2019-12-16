@@ -3,26 +3,26 @@ SOURCE	= muse.c segmentacion/segmentacion.c paginacion/paginacion.c paginacion/f
 HEADER	= muse.h segmentacion/segmentacion.h paginacion/paginacion.h paginacion/frames.h sockets/sockets.h virtual-memory/virtual-memory.h muse-main.h
 OUT	= muse
 CC	 = gcc
-FLAGS	 = -g -c -Wall
+FLAGS	 = -g -c -Wall -lcommons
 LFLAGS	 = -lcommons -lm -lpthread -lrt
 
 all: $(OBJS)
 	$(CC) -g $(OBJS) -o $(OUT) $(LFLAGS)
 
-muse.o: muse.c
-	$(CC) $(FLAGS) muse.c
+muse.o: muse.c 
+	$(CC) $(FLAGS) muse.c segmentacion/segmentacion.c paginacion/paginacion.c paginacion/frames.c sockets/sockets.c
 
 muse-main.o: muse-main.c
-	$(CC) $(FLAGS) muse-main.c
+	$(CC) $(FLAGS) muse-main.c -lpthread
 
 segmentacion.o: segmentacion/segmentacion.c
-	$(CC) $(FLAGS) segmentacion/segmentacion.c
+	$(CC) $(FLAGS) segmentacion/segmentacion.c paginacion/paginacion.c paginacion/frames.c
 
 paginacion.o: paginacion/paginacion.c
-	$(CC) $(FLAGS) paginacion/paginacion.c
+	$(CC) $(FLAGS) paginacion/paginacion.c paginacion/frames.c virtual-memory/virtual-memory.c
 
 frames.o: paginacion/frames.c
-	$(CC) $(FLAGS) paginacion/frames.c
+	$(CC) $(FLAGS) paginacion/frames.c paginacion/paginacion.c
 
 sockets.o: sockets/sockets.c
 	$(CC) $(FLAGS) sockets/sockets.c

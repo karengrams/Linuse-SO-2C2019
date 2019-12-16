@@ -4,9 +4,9 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <sys/mman.h>
 #include "sockets/sockets.h"
 #include "structures.h"
-#include <sys/mman.h>
 
     /**
      * Inicializa la biblioteca de MUSE.

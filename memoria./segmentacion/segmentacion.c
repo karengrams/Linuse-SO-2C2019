@@ -114,10 +114,6 @@ int desplazamiento_en_pagina(segment* segmento, uint32_t direccion) {
 	return desplazamiento;
 }
 
-int tamanio_segmento(segment* segmento) {
-	return ((list_size(segmento->tabla_de_paginas)) * (TAM_PAG));
-}
-
 segment* buscar_segmento_dada_una_direccion(uint32_t direccion,t_list*tabla_de_segmentos) {
 	bool _esta_dentro_del_limite(void *element) {
 		segment *ptr_segmento = (segment*) element;
@@ -258,65 +254,7 @@ void buddy_system(segmentheapmetadata *ptr_seg_metadata, t_list *metadatas) {
 	}
 }
 
-// Funcion para "debugger"
-void mostrar_metadatas(t_list* metadatas_random) {
-	void _mostrar_por_pantalla(void*element) {
-		segmentheapmetadata *ptr_seg_metadata = (segmentheapmetadata*) element;
-		heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
-		printf(
-				"-Metadata:\n     - Posicion inicial: %d\n     - Ocupado: %d \n     - Bytes: %d\n",
-				ptr_seg_metadata->posicion_inicial, ptr_metadata->ocupado,
-				ptr_metadata->bytes);
-	}
-
-	list_iterate(metadatas_random, &_mostrar_por_pantalla);
-}
-
-void mostrar_metadatas_mmap(t_list* metadatas_random) {
-	void _mostrar_por_pantalla(void*element) {
-	}
-
-	list_iterate(metadatas_random, &_mostrar_por_pantalla);
-}
-
-void mostrar_segmentos(t_list *tabla_de_segmentos) {
-	void _mostrar_segmentos(void *element) {
-		segment *ptr_segmento = (segment*) element;
-		printf("\n\n-Segmento nro.%d\n -Cantidad de paginas del segmento: %d\n",
-				ptr_segmento->nro_segmento,
-				ptr_segmento->tabla_de_paginas->elements_count);
-		if((*ptr_segmento).tipo==HEAP)
-			mostrar_metadatas(ptr_segmento->metadatas);
-		else
-			mostrar_metadatas_mmap(ptr_segmento->metadatas);
-	}
-	list_iterate(tabla_de_segmentos, _mostrar_segmentos);
-}
-
-void mostrar_tabla_de_segmentos(t_list *tabla_de_segmentos) {
-	void _mostrar_estructura_segmento(void *element) {
-		segment *ptr_segmento = (segment*) element;
-		printf(
-				"Segmento nro. %d\n     -Base logica:%u\n     -Limite:%u\n     -Tam.%d\n",
-				ptr_segmento->nro_segmento,
-				ptr_segmento->base_logica, limite_segmento(ptr_segmento),
-				ptr_segmento->tamanio);
-		printf("     -Paginas del segmento:\n");
-		mostrar_paginas(ptr_segmento);
-	}
-	list_iterate(tabla_de_segmentos, _mostrar_estructura_segmento);
-}
-
-void mostrar_paginas(segment*segmento){
-	void _mostrar_paginas(void*element){
-		page* pagina = (page*)element;
-		printf("Nro. de pagina %d\n    - Frame asignado:%d\n    - Bit de presencia:%d\n",pagina->nro_pagina,pagina->nro_frame,pagina->bit_presencia);
-	}
-	list_iterate(segmento->tabla_de_paginas,_mostrar_paginas);
-}
-
-bool direccion_pisa_alguna_metadata(segment *ptr_segmento,
-		uint32_t direccion_pedida, int cantidad_de_bytes) {
+bool direccion_pisa_alguna_metadata(segment *ptr_segmento,uint32_t direccion_pedida, int cantidad_de_bytes) {
 
 	bool _coincide_con_metadata(void* element) {
 		segmentheapmetadata *ptr_seg_metadata = ((segmentheapmetadata*) element);
@@ -525,3 +463,49 @@ int espacio_libre(segment*ptr_segmento){
 	}else
 		return -1;
 }
+
+
+void escribir_metadata_en_frame(segment* ptr_segmento,segmentheapmetadata* paux_metadata_ocupado) {
+	uint32_t direccionAbsoluta = paux_metadata_ocupado->posicion_inicial+ ptr_segmento->base_logica;
+	int numeroPagina = numero_pagina(ptr_segmento, direccionAbsoluta);
+	int desplazamiento = desplazamiento_en_pagina(ptr_segmento,direccionAbsoluta);
+	char *ptr_loco = malloc(TAM_PAG);
+	void *ptr_metadata = serializar_heap_metadata(paux_metadata_ocupado->metadata,sizeof(heapmetadata));
+
+	if (TAM_PAG - desplazamiento >= sizeof(heapmetadata)) { //si entra copiamos solo en esa pagina
+		page* pagina = (page*) list_get(ptr_segmento->tabla_de_paginas,numeroPagina);
+		traer_pagina(pagina);
+		frame* ptr_frame_aux = (frame*) pagina->frame; //Por alguna razon no me dejaba entrar al campo memoria si no hacia esto
+		heapmetadata *ptr_metadata = paux_metadata_ocupado->metadata;
+		sem_wait(&mutex_write_frame);
+		memcpy(ptr_frame_aux->memoria+desplazamiento,ptr_metadata,sizeof(heapmetadata));
+		sem_post(&mutex_write_frame);
+
+	} else { //si no entra lo copiamos de a pedazos
+		page* paginaUno = (page*) list_get(ptr_segmento->tabla_de_paginas,numeroPagina);
+		page* paginaDos = (page*) list_get(ptr_segmento->tabla_de_paginas,numeroPagina + 1);
+		traer_pagina(paginaUno);
+		traer_pagina(paginaDos);
+		frame* ptr_frame_aux_uno = (frame*)paginaUno->frame;
+		frame* ptr_frame_aux_dos = (frame*)paginaDos->frame;
+		int aCopiar = TAM_PAG - desplazamiento;
+		sem_wait(&mutex_write_frame);
+		memcpy(ptr_frame_aux_uno->memoria + desplazamiento,ptr_metadata, aCopiar);
+		memcpy(ptr_frame_aux_dos->memoria,ptr_metadata+aCopiar,sizeof(heapmetadata)-aCopiar);
+		sem_post(&mutex_write_frame);
+	}
+
+}
+
+void* serializar_heap_metadata(heapmetadata* metadata, int bytes){
+	void * magic = malloc(bytes);
+	int desplazamiento = 0;
+
+	memcpy(magic + desplazamiento, &(metadata->bytes), sizeof(int));
+	desplazamiento+= sizeof(int);
+	memcpy(magic + desplazamiento, &(metadata->ocupado), sizeof(bool));
+	desplazamiento+= sizeof(int);
+
+	return magic;
+}
+

@@ -14,8 +14,17 @@
 #include <commons/log.h>
 #include <stdint.h>
 
+typedef struct proceso t_proceso;
 typedef struct buffer t_buffer;
 typedef struct paquete t_paquete;
+typedef struct t_frame frame;
+typedef struct t_page page;
+typedef struct t_heapmetadata heapmetadata;
+typedef struct t_segmentheapmetadata segmentheapmetadata;
+typedef struct t_pages_in_frames pages_in_frames;
+typedef struct t_mapped_file mapped_file;
+typedef struct t_segmentmmapmetadata segmentmmapmetadata;
+typedef struct t_segment segment;
 
 sem_t mutex_process_list;
 sem_t mutex_shared;
@@ -45,49 +54,48 @@ typedef enum segment_type_t {
 	HEAP, MMAP,
 } segment_type;
 
-typedef struct{
+struct t_page{
 	bool bit_presencia;
 	bool bit_modificado;
 	bool bit_uso;
 	int nro_pagina;
-	int nro_frame; //Es necesario para buscarlo en el archivo swap si no esta cargado en memoria
-	struct frame *frame; //Creo que esto no tiene sentido tenerlo
-} __attribute__((packed))page;
+	int nro_frame;
+	frame *frame;
+} __attribute__((packed));
 
-typedef struct segment_t {
+struct t_segment {
 	int nro_segmento;
 	segment_type tipo;
 	uint32_t base_logica;
 	int tamanio; //  tam. pedido
 	t_list *metadatas; // Hay dos tipos segmentheapmetadata o mmapmetadata
 	t_list *tabla_de_paginas;
-}__attribute__((packed)) segment;
+}__attribute__((packed));
 
-typedef struct heapmetadata_t{
+struct t_heapmetadata{
 	bool ocupado;
 	int bytes;
-}__attribute__((packed)) heapmetadata;
+}__attribute__((packed));
 
-typedef struct segmentheapmetadata_t{
+struct t_segmentheapmetadata{
 	heapmetadata *metadata;
 	uint32_t posicion_inicial;
-}__attribute__((packed)) segmentheapmetadata;
+}__attribute__((packed));
 
-typedef struct segmentmmapmetadata_t{
+struct t_segmentmmapmetadata{
 	char *path;
 	int tam_mappeado;
-}__attribute__((packed)) segmentmmapmetadata;
+}__attribute__((packed));
 
-
-typedef struct proceso{
+struct proceso{
 	int id;
 	char* ip;
 	int totalMemoriaPedida;
 	int totalMemoriaLiberada;
 	t_list* tablaDeSegmentos;
-}t_proceso;
+};
 
-typedef struct mapped_file_t{
+struct t_mapped_file{
 	int nro_file;
 	void *file;
 	char *path; // Es la forma mas simple de comparar (creo)
@@ -95,17 +103,17 @@ typedef struct mapped_file_t{
 	int flag;
 	t_list *paginas_min_asignadas;
 	t_list *procesos; // Con estos sacas los opens y vas viendo que proceso lo tiene abierto
-}__attribute__((packed)) mapped_file;
+}__attribute__((packed));
 
-typedef struct frame_t{
+struct t_frame{
 	void *memoria;
 	int nro_frame;
-}__attribute__((packed))frame;
+}__attribute__((packed));
 
-typedef struct{
+struct t_pages_in_frames{
 	page* ptr_page;
 	frame *ptr_frame;
-}__attribute__((packed)) pages_in_frames;
+}__attribute__((packed));
 
 struct buffer{
 	int size;

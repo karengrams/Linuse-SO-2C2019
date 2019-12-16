@@ -28,6 +28,7 @@
 #include "paginacion/frames.h"
 #include "paginacion/paginacion.h"
 #include "virtual-memory/virtual-memory.h"
+#include "sockets/sockets.h"
 #include "structures.h"
 #include <semaphore.h>
 

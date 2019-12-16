@@ -53,7 +53,7 @@ void asignar_marco(page* pag) {
 		asignar_marco_en_swap(pag);
 	} else {
 		bitarray_set_bit(BIT_ARRAY_FRAMES, (off_t) marco_libre->nro_frame);
-		pag->frame = (frame*)marco_libre;
+		pag->frame = marco_libre;
 		pag->bit_presencia = true;
 		pag->nro_frame = marco_libre->nro_frame;
 		pag->bit_uso = true;
@@ -78,22 +78,17 @@ void swap_pages(page* victima, page* paginaPedida){
 	//datos de la victima
 	log_trace(logger_trace,"se swapea la pagina #%d con la pagina #%d",paginaPedida->nro_pagina,victima->nro_pagina);
 	int nroFrame = victima->nro_frame;
-	frame* frameVictima = ((frame*)list_get(FRAMES_TABLE, nroFrame));
+	frame* frameVictima = (frame*)list_get(FRAMES_TABLE, nroFrame);
 
 	int posicionEnSwap = paginaPedida->nro_frame*TAM_PAG;
 
-	void* frameAReemplazar = frameVictima->memoria;
-	void* bufferAux = malloc(TAM_PAG);
+	void* frameAReemplazar = (void*) frameVictima->memoria;
+	void* bufferAux = (void*)malloc(TAM_PAG);
 
 	sem_wait(&mutex_swap_file);
-	//mem_hexdump(memoria,140);
 	memcpy(bufferAux, VIRTUAL_MEMORY+posicionEnSwap, TAM_PAG); //Swap mappeado como variable global por ahora
 	memcpy(VIRTUAL_MEMORY+posicionEnSwap, frameAReemplazar, TAM_PAG);
 	memcpy(frameAReemplazar, bufferAux, TAM_PAG);
-	//printf("Luego del swap..\n");
-	//mem_hexdump(memoria,140);
-	//mem_hexdump(VIRTUAL_MEMORY,2048);
-
 	sem_post(&mutex_swap_file);
 
 	victima->bit_presencia = false;
@@ -125,7 +120,7 @@ void traer_pagina(page* pagina){
 			sem_post(&mutex_swap_file);
 			bitarray_clean_bit(BIT_ARRAY_SWAP,(off_t) pagina->nro_frame);
 			bitarray_set_bit(BIT_ARRAY_FRAMES, (off_t) marco_libre->nro_frame);
-			pagina->frame = (frame*)marco_libre;
+			pagina->frame = marco_libre;
 			pagina->bit_presencia = true;
 			pagina->nro_frame = marco_libre->nro_frame;
 			pagina->bit_uso = true;

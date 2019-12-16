@@ -6,7 +6,7 @@
  */
 #include "muse-main.h"
 
-void atender_cliente(void *element){
+void* atender_cliente(void *element){
 	t_paquete* paquete_respuesta = NULL;
 	int cod_error;
 	int id_cliente, cantidad_de_bytes, flags;
