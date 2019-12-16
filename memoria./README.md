@@ -14,6 +14,9 @@ Se coloca un nuevo `#include` con la siguiente ruta si estas desde una carpeta y
 gcc muse.c paginacion/paginacion.c segmentacion/segmentacion.c paginacion/frames.c 
 sockets/sockets.c -o muse -lcommons
 ```
+```C
+gcc otrotestcli.c libMuse.c sockets/sockets.c -o otrotestcli -lcommons
+```
 
 ### ¿Como compilar con el makefile?
 ```C
