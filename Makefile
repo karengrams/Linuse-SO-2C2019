@@ -39,7 +39,7 @@ archivo_de_swap_supermasivo:
 	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):./$(BUILD) ./$(BUILD)/archivo_de_swap_supermasivo
 
 audiencia:
-	./bin/audiencia
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):./$(BUILD) ./$(BUILD)/audiencia
 
 caballeros_de_SisOp_Afinador:
 	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):./$(BUILD) ./$(BUILD)/caballeros_de_SisOp_Afinador
