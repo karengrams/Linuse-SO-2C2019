@@ -16,15 +16,15 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <commons/log.h>
-#include <commons/collections/list.h>
 #include <string.h>
 #include <stdbool.h>
-#include <commons/bitarray.h>
-#include "../muse.h"
-#include "../libMuse.h"
-#include "../structures.h"
 #include <semaphore.h>
+#include <commons/bitarray.h>
+#include <commons/log.h>
+#include <commons/collections/list.h>
+#include <commons/string.h>
+#include "../structures.h"
+
 
 #define ERROR -1;
 

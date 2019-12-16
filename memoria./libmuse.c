@@ -1,4 +1,4 @@
-#include "libMuse.h"
+#include "libmuse.h"
 
 int SOCKET;
 int ID;

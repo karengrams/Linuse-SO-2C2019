@@ -9,7 +9,7 @@
 int esperar_cliente(int socket_servidor){
 	struct sockaddr_in dir_cliente;
 	int tam_direccion = sizeof(struct sockaddr_in);
-	int socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion);
+	int socket_cliente = accept(socket_servidor, (void*) &dir_cliente, (void*)&tam_direccion);
 	return socket_cliente;
 }
 
@@ -190,7 +190,7 @@ t_proceso* crear_proceso(int id, char* ip){
 void admitir_nuevo_cliente(fd_set *master, int* fdmax, int socketEs){
 			struct sockaddr_in remoteaddr;
             int addrlen = sizeof(remoteaddr);
-            int newfd = accept(socketEs, (void*)&remoteaddr, &addrlen);
+            int newfd = accept(socketEs, (void*)&remoteaddr, (void*)&addrlen);
          	FD_SET(newfd, master); // añadir al conjunto maestro
              *fdmax = newfd;
              printf("Nuevo cliente de la ip %s en el socket %d\n", inet_ntoa(remoteaddr.sin_addr), newfd);

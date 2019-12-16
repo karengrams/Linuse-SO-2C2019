@@ -4,8 +4,11 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <sys/mman.h>
+#include <commons/collections/list.h>
 #include "sockets/sockets.h"
+#include <commons/collections/node.h>
 #include "structures.h"
 
     /**
