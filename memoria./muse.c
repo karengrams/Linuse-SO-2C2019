@@ -277,10 +277,6 @@ void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 		traer_pagina(ptr_page);
 		frame * ptr_frame = ptr_page->frame;
 		memcpy(buffer+copied_bytes,ptr_frame->memoria+page_offset+copied_bytes_in_frame,1);
-		log_info(logger_info,"lo que esta quedando en el buffer es:%s",buffer);
-		//log_info(logger_info,"lo que esta en el frame nro #d de la pagina nro #d es:%s",ptr_frame->nro_frame,ptr_page->nro_pagina,ptr_frame->memoria);
-
-		log_info(logger_info,"jeje");
 		copied_bytes++;
 		copied_bytes_in_frame++;
 		if(copied_bytes+page_offset==TAM_PAG && ptr_page->nro_pagina==page_number){
@@ -292,7 +288,6 @@ void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 			copied_bytes_in_frame=0;
 		}
 	}
-	mem_hexdump(memoria,1000);
 	sem_post(&mutex_swap);
 	return (buffer);
 }
