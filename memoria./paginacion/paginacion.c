@@ -258,9 +258,7 @@ void agregar_paginas_extras(t_list* tabla_de_paginas, int cantidadDePaginas){
 		asignar_marco_en_swap(pagina);
 		sem_post(&mutex_swap);
 		list_add(tabla_de_paginas, pagina);
-		sem_wait(&mutex_swap_file);
 		escribir_pagina_extra_en_archivo_swap(pagina,tabla_de_paginas);
-		sem_post(&mutex_swap_file);
 	}
 }
 

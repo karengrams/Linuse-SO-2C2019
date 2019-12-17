@@ -374,6 +374,8 @@ void liberar_recursos_segmento_map(segment *ptr_segmento,t_proceso*proceso){
 		list_destroy_and_destroy_elements(ptr_mapped_metadata->paginas_min_asignadas,_eliminar_paginas);
 		list_destroy(ptr_mapped_metadata->procesos);
 		free(ptr_mapped_metadata->path);
+		printf("%d\n",MAPPED_FILES->elements_count);
+		sleep(50);
 		list_remove(MAPPED_FILES,ptr_mapped_metadata->nro_file);
 		update_file_number();
 		free(ptr_mapped_metadata);
@@ -384,7 +386,9 @@ void liberar_recursos_segmento_map(segment *ptr_segmento,t_proceso*proceso){
 		free(ptr_mapped_metadata->path);
 		list_destroy(ptr_mapped_metadata->procesos);
 		list_destroy(ptr_mapped_metadata->paginas_min_asignadas);
-
+		list_remove(MAPPED_FILES,ptr_mapped_metadata->nro_file);
+		update_file_number();
+		free(ptr_mapped_metadata);
 	}
 
 	sem_post(&mutex_shared_files);
@@ -469,7 +473,6 @@ void escribir_metadata_en_frame(segment* ptr_segmento,segmentheapmetadata* paux_
 	uint32_t direccionAbsoluta = paux_metadata_ocupado->posicion_inicial+ ptr_segmento->base_logica;
 	int numeroPagina = numero_pagina(ptr_segmento, direccionAbsoluta);
 	int desplazamiento = desplazamiento_en_pagina(ptr_segmento,direccionAbsoluta);
-	char *ptr_loco = malloc(TAM_PAG);
 	void *ptr_metadata = serializar_heap_metadata(paux_metadata_ocupado->metadata,sizeof(heapmetadata));
 
 	if (TAM_PAG - desplazamiento >= sizeof(heapmetadata)) { //si entra copiamos solo en esa pagina

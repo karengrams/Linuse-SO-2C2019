@@ -56,7 +56,7 @@ void liberacion_de_recursos(int num){
 
 	void _liberar_proceso(void*element){
 		t_proceso *ptr_proceso = (t_proceso*) element;
-		museclose(ptr_proceso);
+		liberar_proceso(ptr_proceso);
 	}
 
 	void _liberar_frame(void *elemento) {
@@ -125,7 +125,7 @@ void loggear_informacion(t_proceso *proceso){
 int museinit(t_proceso* cliente_a_atender, char* ipCliente, int id){
 	log_trace(logger_trace,"proceso #%d solicito la apertura de la libreria.",id);
 	if (cliente_a_atender != NULL) {
-		return ERROR; //YA EXISTE EN NUESTRA TABLA ERROR
+		return -1; //YA EXISTE EN NUESTRA TABLA ERROR
 	} else {
 		t_proceso* procesoNuevo = crear_proceso(id, ipCliente);
 		sem_wait(&mutex_process_list);
@@ -136,19 +136,23 @@ int museinit(t_proceso* cliente_a_atender, char* ipCliente, int id){
 	}
 }
 
+void liberar_proceso(t_proceso*proceso){
+	liberar_tabla_de_segmentos(proceso);
+		bool _mismo_id (void*element){
+			t_proceso *otroproceso = (t_proceso*)element;
+			return (otroproceso->id == proceso->id);
+		}
+
+		list_remove_by_condition(PROCESS_TABLE,_mismo_id);
+		free(proceso->ip);
+		free(proceso);
+}
 
 void museclose(t_proceso* proceso){
 	log_trace(logger_trace,"proceso #%d solicito el cierre de la libreria.",proceso->id);
 	loggear_informacion(proceso);
-	liberar_tabla_de_segmentos(proceso);
-	bool _mismo_id (void*element){
-		t_proceso *otroproceso = (t_proceso*)element;
-		return (otroproceso->id == proceso->id);
-	}
+	liberar_proceso(proceso);
 
-	list_remove_by_condition(PROCESS_TABLE,_mismo_id);
-	free(proceso->ip);
-	free(proceso);
 }
 
 
@@ -210,7 +214,7 @@ int musefree(t_proceso *proceso, uint32_t direccion) {
 	if(ptr_segmento && ptr_segmento->tipo==HEAP){
 		segmentheapmetadata *ptr_seg_metadata = buscar_metadata_para_liberar(direccion - ptr_segmento->base_logica, ptr_segmento);
 		if (ptr_seg_metadata) {
-			proceso->totalMemoriaLiberada =+ ptr_seg_metadata->metadata->bytes; //sumo la cant de bytes liberados
+			proceso->totalMemoriaLiberada += ptr_seg_metadata->metadata->bytes; //sumo la cant de bytes liberados
 			heapmetadata *ptr_metadata = ptr_seg_metadata->metadata;
 			ptr_metadata->ocupado = false;
 			buddy_system(ptr_seg_metadata, ptr_segmento->metadatas);
@@ -257,6 +261,8 @@ void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 	if (!ptr_segmento) {
 		free(buffer);
 		log_error(logger_error,"la direccion %lu no corresponde a un segmento del proceso #%d",direccion,proceso->id);
+		sem_post(&mutex_swap);
+		liberar_proceso(proceso);
 		return NULL; //ERROR DIRECCION NO CORRESPONDE A UN SEGMENTO.
 	}
 
@@ -275,6 +281,7 @@ void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 	while(copied_bytes<cantidad_de_bytes){
 		page *ptr_page = (page*)list_get(ptr_segmento->tabla_de_paginas,page_number+offset);
 		traer_pagina(ptr_page);
+		ptr_page->bit_uso=true;
 		frame * ptr_frame = ptr_page->frame;
 		memcpy(buffer+copied_bytes,ptr_frame->memoria+page_offset+copied_bytes_in_frame,1);
 		copied_bytes++;
@@ -303,10 +310,11 @@ uint32_t musemap(t_proceso*proceso, char*path, size_t length, int flags){
 	segment *segmento_mmap=crear_segmento(MMAP,length,proceso->tablaDeSegmentos);
 	mapped_file *ptr_mapped_file_metadata = buscar_archivo_abierto(path);
 	segmentmmapmetadata *ptr_metadata=(segmentmmapmetadata*)malloc(sizeof(segmentmmapmetadata));
-	int fd = open(path, O_RDWR | O_CREAT, S_IRUSR); // Lo abre para lectura si existe, sino lo crea
+	int fd = open(path, O_RDWR , S_IRUSR | S_IWUSR); // Lo abre para lectura si existe, sino lo crea
+
 	struct stat statfile;
 	if(fstat(fd,&statfile)==-1)
-			return -1;
+		return -1; // TODO: agregar signal
 
 	if(flags==MAP_PRIVATE)
 		tam_a_mappear=length;
@@ -333,9 +341,7 @@ uint32_t musemap(t_proceso*proceso, char*path, size_t length, int flags){
 		sem_wait(&mutex_swap);
 		asignar_marcos_swap(ptr_mapped_file_metadata->paginas_min_asignadas);
 		sem_post(&mutex_swap);
-		sem_wait(&mutex_swap_file);
 		escribir_en_archivo_swap(file_mmap,ptr_mapped_file_metadata->paginas_min_asignadas,tam_a_mappear,statfile.st_size);
-		sem_post(&mutex_swap_file);
 
 		paginas_de_seg=ceil(((float)length)/TAM_PAG);
 
@@ -366,7 +372,6 @@ uint32_t musemap(t_proceso*proceso, char*path, size_t length, int flags){
 			segmento_mmap->tabla_de_paginas=ptr_mapped_file_metadata->paginas_min_asignadas;
 	}
 
-	// TODO: cubrir la situacion que se abre un archivo privado, aunque dijo adro que no se fijaban en eso, lo vquiero poner igual
 	log_trace(logger_trace,"se le otorgo la direccion %lu del archivo mappeado a memoria al proceso #%d.",segmento_mmap->base_logica,proceso->id);
 
 	close(fd);
@@ -464,6 +469,7 @@ int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {
 		traer_pagina(pagina);
 		frame*marco=pagina->frame;
 		pagina->bit_modificado=true;
+		pagina->bit_uso=true;
 		memcpy(marco->memoria+page_offset+copied_bytes_frame,buffer_a_copiar+copied_bytes,1);
 		copied_bytes++;
 		copied_bytes_frame++;
@@ -484,7 +490,6 @@ int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {
 segment* ultimo_segmento_heap(t_proceso* proceso){
 
 	segment*ptr_seg;
-	bool encontrado = false;
 
 	void _buscar_ultimo_segmento_tipo_heap(void*element){
 		segment *otro_ptr_seg = (segment*)element;

@@ -12,8 +12,7 @@ int muse_init(int id, char* ip, int puerto){
 	free(puertoChar);
 
 	if(socketCli == -1)
-		return socketCli; //si falla tiene que retornar -1
-
+		raise(SIGABRT); //si falla tiene que retornar -1
 
 	SOCKET = socketCli;
 	ID = id; //Me guardo los datos del proceso que llama a libMuse
@@ -23,6 +22,7 @@ int muse_init(int id, char* ip, int puerto){
 	enviar_paquete(paquete, SOCKET);
 	eliminar_paquete(paquete);
 	recv(SOCKET, &error, sizeof(int), 0);
+
 	return error;
 }
 
@@ -68,7 +68,7 @@ int muse_get(void* dst, uint32_t src, size_t n){
 	eliminar_paquete(paquete);
 
 	error = recibir_operacion(SOCKET);
-
+	printf("error=%d\n",error);
 	if (error == -1)
 		return error;
 

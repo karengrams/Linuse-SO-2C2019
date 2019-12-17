@@ -1,5 +1,6 @@
 OBJS	= muse.o segmentacion.o paginacion.o frames.o sockets.o virtual-memory.o muse-main.o
-OBJSTEST= libmuse.o archivo_de_swap_supermasivo.o recursiva.o 
+OBJSTEST= libmuse.o sockets.o
+TEST = recursiva.o archivo_de_swap_supermasivo.o revolucion_compartida_de_mentiritas.o
 SOURCE	= muse.c segmentacion/segmentacion.c paginacion/paginacion.c paginacion/frames.c sockets/sockets.c virtual-memory/virtual-memory.c muse-main.c
 HEADER	= muse.h segmentacion/segmentacion.h paginacion/paginacion.h paginacion/frames.h sockets/sockets.h virtual-memory/virtual-memory.h muse-main.h
 OUT	= muse
@@ -7,12 +8,22 @@ CC	 = gcc
 FLAGS	 = -g -c -Wall
 LFLAGS	 = -lcommons -lm -lpthread -lrt
 
-tests:
-	$(CC) -Wall recursiva.c libmuse.o sockets.o -o recursiva -lcommons
-	$(CC) -Wall archivo_de_swap_supermasivo.c libmuse.o sockets.o -o archivo_de_swap_supermasivo -lcommons 
+tests: $(OBJSTEST) $(TEST)
+	$(CC) -g -Wall $(OBJSTEST) recursiva.o -o recursiva -lcommons
+	$(CC) -g -Wall $(OBJSTEST) archivo_de_swap_supermasivo.o -o archivo_de_swap_supermasivo -lcommons 
+	$(CC) -g -Wall $(OBJSTEST) revolucion_compartida_de_mentiritas.o -o revolucion_compartida_de_mentiritas -lcommons 
+
+revolucion_compartida_de_mentiritas.o : revolucion_compartida_de_mentiritas.c
+	$(CC) $(FLAGS) revolucion_compartida_de_mentiritas.c libmuse.c sockets/sockets.c -lcommons
+
+archivo_de_swap_supermasivo.o : archivo_de_swap_supermasivo.c
+	$(CC) $(FLAGS) archivo_de_swap_supermasivo.c libmuse.c sockets/sockets.c -lcommons
+
+recursiva.o: recursiva.c
+	$(CC) $(FLAGS) recursiva.c libmuse.c sockets/sockets.c -lcommons
 
 all: $(OBJS)
-	$(CC) -g $(OBJS) -o $(OUT) $(LFLAGS)
+	$(CC) -g -Wall $(OBJS) -o $(OUT) $(LFLAGS)
 
 libmuse.o: libmuse.c
 	$(CC) $(FLAGS) libmuse.c sockets/sockets.h -lcommons
@@ -44,8 +55,11 @@ recursiva-test:
 archivo_de_swap_supermasivo-test:
 	./archivo_de_swap_supermasivo
 
+revolucion_compartida_de_mentiritas-test:
+	./revolucion_compartida_de_mentiritas
+
 clean:
-	rm -f $(OBJS) $(OBJSTEST)
+	rm -f $(OBJS) $(OBJSTEST) $(TEST)
 
 valgrind_leakcheck: $(OUT)
 	valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-leak-kinds=all $(OUT)
