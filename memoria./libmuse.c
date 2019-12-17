@@ -68,9 +68,8 @@ int muse_get(void* dst, uint32_t src, size_t n){
 	eliminar_paquete(paquete);
 
 	error = recibir_operacion(SOCKET);
-	printf("error=%d\n",error);
 	if (error == -1)
-		return error;
+		raise(SIGSEGV);
 
 	t_list* lista = recibir_paquete(SOCKET);
 

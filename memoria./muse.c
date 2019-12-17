@@ -489,7 +489,7 @@ int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {
 
 segment* ultimo_segmento_heap(t_proceso* proceso){
 
-	segment*ptr_seg;
+	segment*ptr_seg = NULL;
 
 	void _buscar_ultimo_segmento_tipo_heap(void*element){
 		segment *otro_ptr_seg = (segment*)element;
