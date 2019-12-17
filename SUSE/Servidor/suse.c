@@ -385,29 +385,12 @@ void agregar_a_ready(int fd, t_thread* hilo){
 
 //FUNCIONES AUXILIARES DE SUSE_SCHEDULE
 
-int swap_threads(t_execute* nodoExec, t_thread* nuevoHilo, t_list* cola){
-	t_thread* victima = nodoExec->thread;
-
-	if(victima!=NULL){ //si victima == NULL no habia procesos ejecutando en ese momento
-		sem_wait(&sem_ready);
-		victima->tiempo_total_en_exec = victima->tiempo_total_en_exec + tiempo_que_paso_desde_colaActual(victima->tiempo_en_cola_actual);
-		victima->ultima_rafaga =  tiempo_que_paso_desde_colaActual(victima->tiempo_en_cola_actual);
-		gettimeofday(&victima->tiempo_en_cola_actual,NULL); //seteamos el tiempo en que entra a ready
-		list_add(cola, victima);//desplazamos a la victima
-		sem_post(&sem_ready);
+void swap_threads(t_execute* nodoExec, t_thread* nuevoHilo){
 		sem_wait(&sem_execute);
 		nodoExec->thread = nuevoHilo; //agregamos el nuevo hilo a exec
 		nuevoHilo->tiempo_total_en_ready =	nuevoHilo->tiempo_total_en_ready + tiempo_que_paso_desde_colaActual(nuevoHilo->tiempo_en_cola_actual); //sumamos el tiempo que estuvo en ready
 		gettimeofday(&nuevoHilo->tiempo_en_cola_actual,NULL); //seteamos el tiempo en que entra a exe
 		sem_post(&sem_execute);
-		return 0;
-		}
-		sem_wait(&sem_execute);
-		nodoExec->thread = nuevoHilo; //agregamos el nuevo hilo a exec
-		nuevoHilo->tiempo_total_en_ready =	nuevoHilo->tiempo_total_en_ready + tiempo_que_paso_desde_colaActual(nuevoHilo->tiempo_en_cola_actual); //sumamos el tiempo que estuvo en ready
-		gettimeofday(&nuevoHilo->tiempo_en_cola_actual,NULL); //seteamos el tiempo en que entra a exe
-		sem_post(&sem_execute);
-		return 1;
 }
 
 long double rafaga_estimada(void* elem){
@@ -635,23 +618,40 @@ void atenderCliente(void* elemento){
 			sem_wait(&sem_ready);
 			colaAAplicarSJF = ((t_cola_ready*)list_find(colaREADY, &_mismo_fd))->lista_threads; //buscamos la lista ready de este proceso
 			sem_post(&sem_ready);
+			sem_wait(&sem_execute);
 			nodoEnEjecucion = (t_execute*)list_find(listaEXEC, &_mismo_fd); //buscamos el hilo en ejecucion de este proceso
+			sem_post(&sem_execute);
+			nuevoThread = nodoEnEjecucion->thread;
 
-			if((nodoEnEjecucion->thread != NULL) && (list_size(colaAAplicarSJF) == 0)){
-				tid = nodoEnEjecucion->thread->tid;
-			} else {
-				sem_wait(&semaforoLoco);
-				colaAAplicarSJF = ((t_cola_ready*)list_find(colaREADY, &_mismo_fd))->lista_threads;
-				hiloAEjecutar = algoritmo_SJF(colaAAplicarSJF); //Que esta funcion haga el remove de la cola de ready y lo retorne
-				error = swap_threads(nodoEnEjecucion, hiloAEjecutar, colaAAplicarSJF); //mueve el hiloEnEjecucion a ready y el hiloAEjecutar a execute
-
-				if(error == 0)
-					sem_post(&semaforoLoco);
-
-				tid = hiloAEjecutar->tid;
+			if(nuevoThread != NULL){
+				nuevoThread->tiempo_total_en_exec = nuevoThread->tiempo_total_en_exec + tiempo_que_paso_desde_colaActual(nuevoThread->tiempo_en_cola_actual);
+				nuevoThread->ultima_rafaga =  tiempo_que_paso_desde_colaActual(nuevoThread->tiempo_en_cola_actual);
+				gettimeofday(&nuevoThread->tiempo_en_cola_actual,NULL); //seteamos el tiempo en que entra a ready
+				list_add(colaAAplicarSJF, nuevoThread);//desplazamos a la victima
+				sem_post(&semaforoLoco); //Agregamos una instancia a la cola ready
 			}
 
-			printf("Se elije al hilo %d para ejecutar \n", tid);
+			sem_wait(&semaforoLoco);
+			colaAAplicarSJF = ((t_cola_ready*)list_find(colaREADY, &_mismo_fd))->lista_threads;
+			hiloAEjecutar = algoritmo_SJF(colaAAplicarSJF); //Que esta funcion haga el remove de la cola de ready y lo retorne
+			swap_threads(nodoEnEjecucion, hiloAEjecutar); //mueve el hiloEnEjecucion a ready y el hiloAEjecutar a execute
+
+			tid = hiloAEjecutar->tid;
+
+//			if((nodoEnEjecucion->thread != NULL) && (list_size(colaAAplicarSJF) == 0)){
+//				tid = nodoEnEjecucion->thread->tid;
+//			} else {
+//				sem_wait(&semaforoLoco);
+//				colaAAplicarSJF = ((t_cola_ready*)list_find(colaREADY, &_mismo_fd))->lista_threads;
+//				hiloAEjecutar = algoritmo_SJF(colaAAplicarSJF); //Que esta funcion haga el remove de la cola de ready y lo retorne
+//				error = swap_threads(nodoEnEjecucion, hiloAEjecutar, colaAAplicarSJF); //mueve el hiloEnEjecucion a ready y el hiloAEjecutar a execute
+//
+//				if(error == 0)
+//					sem_post(&semaforoLoco);
+//
+//				tid = hiloAEjecutar->tid;
+//			}
+
 			send(socketCli, &tid, sizeof(int), 0); //mandamos el tid del hilo que pusimos a ejecutar
 			break;
 

@@ -40,11 +40,6 @@ int suse_wait(int tid, char* idSemaforo){
 
 	recv(SOCKET, &exito, sizeof(int), 0);
 
-	if(exito)
-		printf("Semaforo %s tomado\n", idSemaforo);
-
-	if(!exito)
-		printf("Me bloqueo por semaforo %s\n", idSemaforo);
 	return exito;
 }
 
@@ -64,7 +59,7 @@ int suse_close(int tid){
 	eliminar_paquete(paquete);
 	int error;
 	recv(SOCKET, &error, sizeof(int),0);
-	//return 0;
+	return 0;
 }
 
 static struct hilolay_operations hiloops = {
