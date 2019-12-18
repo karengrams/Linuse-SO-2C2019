@@ -7,8 +7,8 @@
 
 #ifndef MUSE_MAIN_H_
 #define MUSE_MAIN_H_
-#include "muse.h"
-#include "sockets/sockets.h"
+#include "muse-server.h"
+#include <sockets.h>
 #include "virtual-memory/virtual-memory.h"
 #include "structures.h"
 #include <signal.h>

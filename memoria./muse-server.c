@@ -1,4 +1,4 @@
-#include "muse.h"
+#include "muse-server.h"
 
 #define ERROR -1;
 

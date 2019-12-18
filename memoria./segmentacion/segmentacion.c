@@ -1,6 +1,5 @@
 #include "segmentacion.h"
 
-
 int minimo(int a, int b) {
 	if (a < b)
 		return a;
@@ -312,8 +311,6 @@ void recalcular_bases_logicas_de_segmentos(t_list *tabla_de_segmentos){
 
 
 void liberar_recursos_segmento_heap(segment*ptr_segmento,t_proceso* proceso){
-
-	int index =0;
 
 	void _eliminar_metadatas(void*element){
 		eliminar_metadatas(element,ptr_segmento);

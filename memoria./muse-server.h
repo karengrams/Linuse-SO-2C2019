@@ -19,6 +19,7 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/types.h>
+#include <semaphore.h>
 #include <commons/config.h>
 #include <commons/collections/list.h>
 #include <commons/collections/node.h>
@@ -28,9 +29,8 @@
 #include "paginacion/frames.h"
 #include "paginacion/paginacion.h"
 #include "virtual-memory/virtual-memory.h"
-#include "sockets/sockets.h"
+#include <sockets.h>
 #include "structures.h"
-#include <semaphore.h>
 
 int CANTIDAD_DE_MEMORIA_DISPONIBLE;
 t_list* PROCESS_TABLE;

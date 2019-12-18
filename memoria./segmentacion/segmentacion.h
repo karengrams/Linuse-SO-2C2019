@@ -1,6 +1,7 @@
 #ifndef SEGMENTACION_H
 #define SEGMENTACION_H
 #include <commons/collections/list.h>
+#include <commons/collections/node.h>
 #include "../paginacion/frames.h"
 #include "../paginacion/paginacion.h"
 #include "../structures.h"
