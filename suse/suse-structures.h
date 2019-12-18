@@ -12,7 +12,6 @@
 #include <time.h>
 #include <pthread.h>
 #include <stdbool.h>
-#include <sockets.h>
 
 t_list* colaNEW;
 t_list* colaREADY;
@@ -28,6 +27,8 @@ t_log* LOG;
 int* SEM_VALOR;
 int* SEM_MAX;
 char** SEM_IDS;
+int FUNCIONAR;
+int SOCKET_ESCUCHA;
 
 sem_t sem_new;
 sem_t sem_ready;
@@ -38,9 +39,6 @@ sem_t sem_execute;
 sem_t semaforos_suse; //deberia ser un array de semaforos para ser mas precisos, despues veo
 
 struct timeval TIEMPO_INICIO_PROGRAMA;
-
-int FUNCIONAR = 1;
-int SOCKET_ESCUCHA;
 
 typedef enum {
 	DESCONEXION = -1,

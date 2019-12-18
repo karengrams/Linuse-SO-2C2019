@@ -10,11 +10,13 @@
 
 #include "suse-structures.h"
 #include "suse-server.h"
+#include "suse-logs.h"
+#include "suse-config.h"
 #include "suse-planificador-largo-plazo.h"
 #include <sockets.h>
 #include <signal.h>
 #include <semaphore.h>
 
-void atenderCliente(void*);
+void *atenderCliente(void*);
 
 #endif /* SUSE_MAIN_H_ */

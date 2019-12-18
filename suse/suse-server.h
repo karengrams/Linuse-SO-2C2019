@@ -9,6 +9,8 @@
 #define SUSE_SERVER_H_
 
 #include "suse-structures.h"
+#include "suse-config.h"
+#include "suse-main.h"
 
 void crear_entrada_en_cola_ready(int );
 t_execute* crear_entrada_en_lista_execute(int);

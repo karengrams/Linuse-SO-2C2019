@@ -8,6 +8,11 @@
 #include "suse-logs.h"
 
 //FUNCIONES DE LOS LOGS
+bool _not_null(void* elem){
+	t_execute* elemento = (t_execute*) elem;
+	return (elemento->thread != NULL);
+}
+
 double diferencia_entre_timevals(struct timeval tf, struct timeval ti){
 	return (((tf.tv_sec*1000)+(tf.tv_usec/1000))-((ti.tv_sec*1000)+(ti.tv_usec/1000)));
 }
@@ -47,9 +52,7 @@ int total_hilos_en_ready_y_exec(){
 	return ready+exec;
 }
 
-bool podemos_agregar_hilos_a_ready(){
-	return total_hilos_en_ready_y_exec() < grado_de_multiprogramacion_maximo();
-}
+
 
 
 void loggear_semaforos(void){

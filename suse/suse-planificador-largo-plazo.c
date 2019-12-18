@@ -47,8 +47,13 @@ void* hay_blocked_ready(){
 	return respuesta;
 }
 
+bool podemos_agregar_hilos_a_ready(){
+	return total_hilos_en_ready_y_exec() < grado_de_multiprogramacion_maximo();
+}
+
+
 //ESTE HILO VA A MOVER LOS HILOS DESDE NEW O BLOCKED A READY
-void planificador_largo_plazo(){
+void* planificador_largo_plazo(){
 	while(FUNCIONAR){
 
 		if(podemos_agregar_hilos_a_ready()){
@@ -79,7 +84,6 @@ void planificador_largo_plazo(){
 				sem_post(&semaforos_suse);
 
 			} else {
-
 				move_de_new_a_ready();
 			}
 

@@ -2,7 +2,7 @@
 
 //HILO DE ATENCION A CLIENTES, UN HILO POR CADA SOCKET CONECTADO
 
-void atenderCliente(void* elemento){
+void *atenderCliente(void* elemento){
 	int socketCli = *((int*)elemento);
 
 	sem_t semaforoLoco;
@@ -130,7 +130,6 @@ void atenderCliente(void* elemento){
 				list_destroy_and_destroy_elements(paqueteRecibido, &_destruir_paquete);
 				close(socketCli);
 				pthread_exit(NULL);
-				return;
 			} //Fin del hilo
 
 
@@ -145,7 +144,7 @@ void atenderCliente(void* elemento){
 
 int main(){
 	inicializar_recursos_de_planificador();
-
+	FUNCIONAR = 1;
 	//CREAMOS HILOS DE PLANIF Y ATENCION
 	pthread_t hiloAtencion, hiloPlanif;
 	int cliente;
@@ -164,7 +163,7 @@ int main(){
 	intervalo.it_interval = tiempoInicial;
 	setitimer(ITIMER_REAL, &intervalo, NULL);
 
-	SOCKET_ESCUCHA = iniciar_servidor("127.0.0.1", puerto_listen());
+	SOCKET_ESCUCHA = iniciar_socket("127.0.0.1", puerto_listen());
 
 	pthread_create(&hiloPlanif, NULL, &planificador_largo_plazo, NULL);
 
