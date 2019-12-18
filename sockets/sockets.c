@@ -55,16 +55,6 @@ t_list* recibir_paquete(int socket_cliente){
 
 int iniciar_socket(char* ip, char* port){
 	int server_socket;
-//	SA_IN server_addr;
-//
-//	server_socket = socket(AF_INET,SOCK_STREAM,0);
-//	server_addr.sin_family=AF_INET;
-//	server_addr.sin_addr.s_addr=INADDR_ANY;
-//	server_addr.sin_port=htons(port);
-//
-//	bind(server_socket,(SA*)&server_addr,sizeof(server_addr));
-//	listen(server_socket,SOMAXCONN);
-
     struct addrinfo hints, *servinfo, *p;
 
     memset(&hints, 0, sizeof(hints));
@@ -195,4 +185,9 @@ void admitir_nuevo_cliente(fd_set *master, int* fdmax, int socketEs){
              *fdmax = newfd;
              printf("Nuevo cliente de la ip %s en el socket %d\n", inet_ntoa(remoteaddr.sin_addr), newfd);
 }
+
+void liberar_conexion(int socket_cliente) {
+	close(socket_cliente);
+}
+
 

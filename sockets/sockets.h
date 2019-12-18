@@ -23,15 +23,12 @@
 #include <commons/log.h>
 #include <commons/collections/list.h>
 #include <commons/string.h>
-#include "../memoria./structures.h"
-
+#include "sockets-structures.h"
 
 #define ERROR -1;
 
-
 typedef struct sockaddr_in SA_IN;
 typedef struct sockaddr SA;
-
 
 int esperar_cliente(int);
 int recibir_operacion(int);
@@ -49,5 +46,6 @@ void eliminar_paquete(t_paquete*);
 t_proceso* crear_proceso(int, char*);
 void liberar_proceso(t_proceso*);
 void admitir_nuevo_cliente(fd_set*, int*, int);
+void liberar_conexion(int);
 
 #endif /* SOCKETS_SOCKETS_H_ */
