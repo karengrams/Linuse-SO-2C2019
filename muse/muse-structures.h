@@ -14,8 +14,6 @@
 #include <commons/log.h>
 #include <stdint.h>
 
-t_list* PAGINAS_EN_FRAMES; //vector con paginas que estan presentes en frames para clock modificado
-
 typedef struct t_frame frame;
 typedef struct t_page page;
 typedef struct t_heapmetadata heapmetadata;
@@ -25,10 +23,6 @@ typedef struct t_mapped_file mapped_file;
 typedef struct t_segmentmmapmetadata segmentmmapmetadata;
 typedef struct t_segment segment;
 
-sem_t mutex_write_frame;
-sem_t mutex_clock_mod;
-sem_t mutex_frames;
-sem_t binary_swap_pages;
 sem_t mutex_process_list;
 sem_t mutex_shared;
 sem_t mutex_write_shared_files;
@@ -39,7 +33,6 @@ sem_t binary_free_frame;
 t_log *logger_info;
 t_log *logger_trace;
 t_log *logger_error;
-t_log *logger_clock_mod;
 
 typedef enum {
 	DESCONEXION = 0,

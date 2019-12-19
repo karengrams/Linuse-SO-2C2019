@@ -17,7 +17,6 @@
 #include "muse-structures.h"
 #include "../sockets/sockets-structures.h"
 
-void _destruir_paquete(void*);
 void atender_cliente_select(fd_set* master, int socketCli);
 void* atender_cliente(void *);
 

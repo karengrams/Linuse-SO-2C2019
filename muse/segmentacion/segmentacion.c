@@ -497,8 +497,6 @@ void escribir_metadata_en_frame(segment* ptr_segmento,segmentheapmetadata* paux_
 		sem_post(&mutex_write_frame);
 	}
 
-	free(ptr_metadata);
-
 }
 
 void* serializar_heap_metadata(heapmetadata* metadata, int bytes){

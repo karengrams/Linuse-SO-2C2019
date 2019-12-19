@@ -8,8 +8,6 @@ gcc suse.c utils.c -lcommons -lpthread
 gcc otrotestcli.c libMuse.c sockets/sockets.c -o otrotestcli -lcommons
 ```
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH: path
-
 ### En la consola de las pruebas para que tome el puerto como variable de entorno:
 
 ```C

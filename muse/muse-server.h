@@ -48,7 +48,7 @@ int museinit(t_proceso*, char*, int);
 void museclose(t_proceso*);
 uint32_t musealloc(t_proceso*, int);
 int musefree(t_proceso *, uint32_t);
-void* museget(t_proceso*,int, uint32_t);
+void* museget(t_proceso*, t_list*);
 int musecpy(t_proceso* , t_list*);
 mapped_file* buscar_archivo_abierto(char*);
 uint32_t musemap(t_proceso*,char*, size_t, int);

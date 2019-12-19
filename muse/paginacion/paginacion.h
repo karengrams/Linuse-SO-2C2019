@@ -11,6 +11,13 @@
 #include <stdint.h>
 #include <semaphore.h>
 
+sem_t mutex_write_frame;
+sem_t mutex_clock_mod;
+sem_t mutex_frames;
+sem_t binary_swap_pages;
+
+
+t_list* PAGINAS_EN_FRAMES; //vector con paginas que estan presentes en frames para clock modificado
 int TAM_PAG;
 
 page* crear_pagina();

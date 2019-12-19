@@ -26,12 +26,10 @@ void inicializar_recursos_de_memoria(){
 	config = leer_config();
 	TAM_PAG = leer_del_config("PAGE_SIZE", config);
 	inicilizar_tabla_de_frames();
-	int memoria_disp= leer_del_config("MEMORY_SIZE",config);
-	memoria = malloc(memoria_disp);
-	memset(memoria,'\0',memoria_disp);
-	inicializar_tabla_de_clock();
-	dividir_memoria_en_frames(memoria, TAM_PAG, memoria_disp);
-	inicializar_tabla_para_clock(div(memoria_disp,TAM_PAG).quot);
+	memoria = malloc(leer_del_config("MEMORY_SIZE", config));
+	CANTIDAD_DE_MEMORIA_DISPONIBLE= leer_del_config("MEMORY_SIZE",config);
+	memset(memoria,'\0',CANTIDAD_DE_MEMORIA_DISPONIBLE);
+	dividir_memoria_en_frames(memoria, TAM_PAG, leer_del_config("MEMORY_SIZE", config));
 	inicializar_bitmap();
 	inicializar_tabla_procesos();
 	inicializar_tabla_archivos_compartidos();
@@ -75,17 +73,13 @@ void liberacion_de_recursos(int num){
 		free(file);
 	}
 
-	void _liberar_paginas_en_frames(void*element){
-		free(element);
-	}
-	//list_destroy(PAGINAS_EN_FRAMES);
-	//list_destroy_and_destroy_elements(PAGINAS_EN_FRAMES,_liberar_paginas_en_frames);
 	list_destroy_and_destroy_elements(PROCESS_TABLE,&_liberar_proceso);
 	list_destroy_and_destroy_elements(FRAMES_TABLE, &_liberar_frame);
 	list_destroy_and_destroy_elements(MAPPED_FILES, &_liberar_archivos_mappeados);
 	munmap(VIRTUAL_MEMORY,leer_del_config("SWAP_SIZE",config));
 	free(BIT_ARRAY_FRAMES->bitarray);
 	free(BIT_ARRAY_SWAP->bitarray);
+	free(PAGINAS_EN_FRAMES);
 	free(memoria);
 	bitarray_destroy(BIT_ARRAY_FRAMES);
 	bitarray_destroy(BIT_ARRAY_SWAP);
@@ -255,8 +249,10 @@ int musefree(t_proceso *proceso, uint32_t direccion) {
 	}
 }
 
-void* museget(t_proceso* proceso, int cantidad_de_bytes, uint32_t direccion){
+void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 	sem_wait(&mutex_swap);
+	int cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
+	uint32_t direccion = *((uint32_t*) list_get(paqueteRecibido, 2));
 	void* buffer = malloc(cantidad_de_bytes);
 	log_trace(logger_trace,"el proceso #%d solicito la lectura de %d bytes de la direccion %lu",proceso->id,cantidad_de_bytes,direccion);
 
@@ -487,7 +483,7 @@ int musecpy(t_proceso* proceso, t_list* paqueteRecibido) {
 		}
 	}
 	sem_post(&mutex_frames);
-	free(buffer_a_copiar);
+
 	return 0;
 }
 
