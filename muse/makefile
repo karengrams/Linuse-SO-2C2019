@@ -8,7 +8,7 @@ BUILD:=../linuse-tests-programs/bin
 
 tests: libmuse.o
 #	$(CC) -L../$(BUILD)/  -I../sockets/ -g -Wall -fpic ../$(BUILD)/$(OBJSTEST) recursiva.c -o ../$(BUILD)/recursiva -lcommons -lsockets -lmuse
-	$(CC) -L../$(BUILD)/ -I../sockets/  -g -Wall  ../$(BUILD)/$(OBJSTEST) archivo_de_swap_supermasivo.c -o ../$(BUILD)/archivo_de_swap_supermasivo -lcommons -lsockets -lmuse
+	$(CC) -L../$(BUILD)/ -I../sockets/  -g -Wall  ../$(BUILD)/$(OBJSTEST) archivo_de_swap_supermasivo.c -o ../$(BUILD)/archivo_de_swap_supermasivo -lcommons -lsockets
 
 muse: $(OBJS)
 	$(CC) -L../$(BUILD)/ -g -Wall ../$(BUILD)/muse-server.o ../$(BUILD)/segmentacion.o ../$(BUILD)/paginacion.o ../$(BUILD)/frames.o ../$(BUILD)/virtual-memory.o ../$(BUILD)/muse-main.o -o ../$(BUILD)/$(OUT) $(LFLAGS) -lcommons -lsockets
