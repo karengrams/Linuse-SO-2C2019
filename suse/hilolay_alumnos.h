@@ -3,6 +3,7 @@
 #define hilolay_alumnos_h__
 
 #include <sockets.h>
+#include "suse-structures.h"
 
 	typedef struct hilolay_operations {
 		int (*suse_create) (int);
