@@ -78,11 +78,11 @@ void liberacion_de_recursos(int num){
 	void _liberar_paginas_en_frames(void*element){
 		free(element);
 	}
-
+	//list_destroy(PAGINAS_EN_FRAMES);
+	//list_destroy_and_destroy_elements(PAGINAS_EN_FRAMES,_liberar_paginas_en_frames);
 	list_destroy_and_destroy_elements(PROCESS_TABLE,&_liberar_proceso);
 	list_destroy_and_destroy_elements(FRAMES_TABLE, &_liberar_frame);
 	list_destroy_and_destroy_elements(MAPPED_FILES, &_liberar_archivos_mappeados);
-	list_destroy_and_destroy_elements(PAGINAS_EN_FRAMES,_liberar_paginas_en_frames);
 	munmap(VIRTUAL_MEMORY,leer_del_config("SWAP_SIZE",config));
 	free(BIT_ARRAY_FRAMES->bitarray);
 	free(BIT_ARRAY_SWAP->bitarray);
