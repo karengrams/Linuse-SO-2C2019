@@ -17,11 +17,11 @@ clean:
 
 $(NAME).o:
 	$(CC) -c $(CFLAGS) -fpic /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/suse/hilolay_alumnos.c -o $(BUILD)/$(NAME).o
-	$(CC) -c $(CFLAGS) -fpic /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/sockets.c -o $(BUILD)/$(NAME).o
+#	$(CC) -c $(CFLAGS) -fpic /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/sockets.c -o $(BUILD)/$(NAME).o
 
 $(NAME).so: $(NAME).o
 	$(CC) -shared -o $(BUILD)/lib$(NAME).so $(BUILD)/$(NAME).o $(BUILD)/$(NAME).o -lhilolay
-	$(CC) -shared -o $(BUILD)/libsockets.so $(BUILD)/$(NAME).o $(BUILD)/sockets.o -lhilolay	
+#	$(CC) -shared -o $(BUILD)/libsockets.so $(BUILD)/$(NAME).o $(BUILD)/sockets.o -lhilolay	
 
 entrega:
 	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/archivo_de_swap_supermasivo archivo_de_swap_supermasivo.c -l$(NAME) -lsockets
