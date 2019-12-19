@@ -1,9 +1,8 @@
 
 #ifndef hilolay_alumnos_h__
 #define hilolay_alumnos_h__
-#include "suse-structures.h"
 #include <sockets.h>
-
+#include "suse-structures.h"
 	typedef struct hilolay_operations {
 		int (*suse_create) (int);
 		int (*suse_schedule_next) (void);
