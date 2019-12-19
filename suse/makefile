@@ -3,7 +3,7 @@ OUT:= suse
 CC:= gcc
 FLAGS:= -g -Wall
 LFLAGS:= -lcommons -lm -lpthread -lrt
-BUILD:=bin
+BUILD:=../linuse-tests-programs/bin
 
 suse: $(OBJS)
 	$(CC) -L../$(BUILD) -g -Wall ../$(BUILD)/suse-server.o ../$(BUILD)/suse-config.o  ../$(BUILD)/suse-main.o ../$(BUILD)/suse-planificador-largo-plazo.o ../$(BUILD)/suse-logs.o -o ../$(BUILD)/$(OUT) $(LFLAGS) -lcommons -lsockets
