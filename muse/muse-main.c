@@ -10,7 +10,6 @@ void _destruir_paquete(void* elem){
 	free(elem);
 }
 
-
 void* atender_cliente(void *element){
 	t_paquete* paquete_respuesta = NULL;
 	int cod_error;
@@ -57,12 +56,12 @@ void* atender_cliente(void *element){
     			cod_error = musefree(cliente_a_atender,direccion_pedida);
     			send(socketCli, &cod_error, sizeof(int), 0);
     			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
-
     		break;
     		case MUSE_GET:
     			cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
     			cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
-    			buffer = museget(cliente_a_atender, paqueteRecibido);
+    			direccion_pedida = *((uint32_t*) list_get(paqueteRecibido, 2));
+    			buffer = museget(cliente_a_atender,cantidad_de_bytes, direccion_pedida);
     			if (buffer == NULL){
     				cod_error = -1;
     				send(socketCli, &cod_error, sizeof(int), 0);
@@ -72,6 +71,7 @@ void* atender_cliente(void *element){
     				enviar_paquete(paquete_respuesta, socketCli);
     				eliminar_paquete(paquete_respuesta);
     			}
+    			free(buffer);
     			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
 
     		break;
@@ -109,6 +109,7 @@ void* atender_cliente(void *element){
     			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
     		break;
     		}
+    		free(ipCli);
     	}
 
 	}
@@ -130,6 +131,7 @@ int main(void) {
 	while(true){
 		client_socket=esperar_cliente(server_socket);
 		pthread_create(&hilo_de_atencion, NULL, &atender_cliente, &client_socket);
+		pthread_detach(hilo_de_atencion);
 	}
 	return 0;
 }
