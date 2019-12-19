@@ -163,7 +163,7 @@ int main(){
 	intervalo.it_interval = tiempoInicial;
 	setitimer(ITIMER_REAL, &intervalo, NULL);
 
-	SOCKET_ESCUCHA = iniciar_socket("127.0.0.1", puerto_listen());
+	SOCKET_ESCUCHA = iniciar_socket(getenv("IP"), puerto_listen());
 
 	pthread_create(&hiloPlanif, NULL, &planificador_largo_plazo, NULL);
 

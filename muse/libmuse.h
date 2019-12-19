@@ -9,7 +9,6 @@
 #include <commons/collections/list.h>
 #include <commons/collections/node.h>
 #include <sockets.h>
-
 #include "muse-structures.h"
 
     /**

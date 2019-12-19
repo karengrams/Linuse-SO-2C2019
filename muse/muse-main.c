@@ -6,6 +6,10 @@
  */
 #include "muse-main.h"
 
+void _destruir_paquete(void* elem){
+	free(elem);
+}
+
 void* atender_cliente(void *element){
 	t_paquete* paquete_respuesta = NULL;
 	int cod_error;
@@ -28,6 +32,7 @@ void* atender_cliente(void *element){
     			id_cliente = *((int*)list_get(paqueteRecibido, 0));
     			cod_error = museinit(cliente_a_atender, ipCli, id_cliente);
     			send(socketCli, &cod_error, sizeof(int), 0);
+    			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
     		break;
     		case MUSE_CLOSE:
     	    	cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
@@ -36,15 +41,14 @@ void* atender_cliente(void *element){
 				pthread_exit(NULL);
 				free(ipCli);
 				free(buffer);
-			  	void _eliminar_elementos_paquete(void*element){
-			   		free(element);
-				}
-			  	list_destroy_and_destroy_elements(paqueteRecibido,_eliminar_elementos_paquete);
+    			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
     			break;
     		case MUSE_ALLOC:
     	    	cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
     			direccion = musealloc(cliente_a_atender, *((int*)list_get(paqueteRecibido,1)));
     			send(socketCli, &direccion, sizeof(uint32_t), 0);
+    			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
+    			free(paqueteRecibido);
     		break;
     		case MUSE_FREE:
     			cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
@@ -52,11 +56,13 @@ void* atender_cliente(void *element){
     			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
     			cod_error = musefree(cliente_a_atender,direccion_pedida);
     			send(socketCli, &cod_error, sizeof(int), 0);
+    			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
     		break;
     		case MUSE_GET:
     			cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
     			cantidad_de_bytes = *((int*) list_get(paqueteRecibido, 1));
-    			buffer = museget(cliente_a_atender, paqueteRecibido);
+    			direccion_pedida = *((uint32_t*) list_get(paqueteRecibido, 2));
+    			buffer = museget(cliente_a_atender,cantidad_de_bytes, direccion_pedida);
     			if (buffer == NULL){
     				cod_error = -1;
     				send(socketCli, &cod_error, sizeof(int), 0);
@@ -66,11 +72,15 @@ void* atender_cliente(void *element){
     				enviar_paquete(paquete_respuesta, socketCli);
     				eliminar_paquete(paquete_respuesta);
     			}
+    			free(buffer);
+    			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
+
     		break;
     		case MUSE_CPY:
     	    	cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
     			cod_error = musecpy(cliente_a_atender, paqueteRecibido);
     			send(socketCli, &cod_error, sizeof(int), 0);
+    			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
     		break;
     		case MUSE_MAP:
     	    	cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
@@ -80,6 +90,7 @@ void* atender_cliente(void *element){
     			flags = *((int*)list_get(paqueteRecibido, 3));
     			direccion = musemap(cliente_a_atender,path,cantidad_de_bytes,flags);
     			send(socketCli, &direccion, sizeof(uint32_t), 0);
+    			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
     		break;
     		case MUSE_SYNC:
     	    	cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
@@ -87,8 +98,8 @@ void* atender_cliente(void *element){
     			cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 1)); //cantidad de bytes a guardar en el archivo
     			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 2)); //direccion a partir de la cual hacer el sync
     			musesync(cliente_a_atender,direccion_pedida,(size_t)cantidad_de_bytes);
-
     			send(socketCli, &cod_error, sizeof(int), 0);
+    			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
     		break;
     		case MUSE_UNMAP:
     	    	cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
@@ -96,8 +107,10 @@ void* atender_cliente(void *element){
     			direccion_pedida = *((uint32_t*)list_get(paqueteRecibido, 1));
     			museunmap(cliente_a_atender,direccion_pedida);
     			send(socketCli, &cod_error, sizeof(int), 0);
+    			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
     		break;
     		}
+    		free(ipCli);
     	}
 
 	}
@@ -114,11 +127,12 @@ int main(void) {
 	int server_socket,client_socket;
 	pthread_t hilo_de_atencion;
 
-	server_socket=iniciar_socket("127.0.0.1",config_get_string_value(config,"LISTEN_PORT"));
+	server_socket=iniciar_socket(getenv("IP"),config_get_string_value(config,"LISTEN_PORT"));
 
 	while(true){
 		client_socket=esperar_cliente(server_socket);
 		pthread_create(&hilo_de_atencion, NULL, &atender_cliente, &client_socket);
+		pthread_detach(hilo_de_atencion);
 	}
 	return 0;
 }

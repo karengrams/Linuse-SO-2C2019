@@ -140,7 +140,7 @@ page* buscar_cero_cero(){
 
 		page* pagina = obtener_pagina_en_frames_segun(index); //PAGINAS_EN_FRAMES[INDICE_ALGORITMO_CLOCK];
 //
-		if(pagina && index == INDICE_ALGORITMO_CLOCK){
+		if(pagina && index == INDICE_ALGORITMO_CLOCK && bitarray_test_bit(BIT_ARRAY_FRAMES,index)){
 
 				if((pagina->bit_uso == 0) && (pagina->bit_modificado == 0)){
 				incrementar_indice();
@@ -159,7 +159,7 @@ page* buscar_cero_uno(){
 
 		page* pagina = obtener_pagina_en_frames_segun(index);//PAGINAS_EN_FRAMES[INDICE_ALGORITMO_CLOCK];
 
-		if(pagina && index == INDICE_ALGORITMO_CLOCK){
+		if(pagina && index == INDICE_ALGORITMO_CLOCK && bitarray_test_bit(BIT_ARRAY_FRAMES,index)){
 			if(pagina->bit_uso == 0){
 				incrementar_indice();
 				return pagina;
