@@ -2,6 +2,7 @@
 #define SEGMENTACION_H
 #include <commons/collections/list.h>
 #include <commons/collections/node.h>
+#include "../../sockets/sockets-structures.h"
 #include "../paginacion/frames.h"
 #include "../paginacion/paginacion.h"
 #include "../muse-structures.h"

@@ -38,7 +38,7 @@ int iniciar_socket(char*,char*);
 void ipCliente(int, char*);
 int crear_conexion(char *, char*);
 void crear_buffer(t_paquete*);
-t_paquete* crear_paquete(op_code);
+t_paquete* crear_paquete(int);
 void agregar_a_paquete(t_paquete*, void*, int);
 void* serializar_paquete(t_paquete* , int);
 void enviar_paquete(t_paquete*, int);

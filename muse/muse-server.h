@@ -25,12 +25,12 @@
 #include <commons/collections/node.h>
 #include <commons/bitarray.h>
 #include <commons/string.h>
+#include "../sockets/sockets-structures.h"
 #include "segmentacion/segmentacion.h"
 #include "paginacion/frames.h"
 #include "paginacion/paginacion.h"
 #include "virtual-memory/virtual-memory.h"
 #include <sockets.h>
-#include "../sockets/sockets-structures.h"
 #include "muse-structures.h"
 
 int CANTIDAD_DE_MEMORIA_DISPONIBLE;

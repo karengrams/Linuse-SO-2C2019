@@ -18,7 +18,7 @@ struct buffer{
 };
 
 struct paquete{
-	op_code codigo_operacion;
+	int codigo_operacion;
 	t_buffer* buffer;
 };
 

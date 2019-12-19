@@ -22,3 +22,6 @@ suse-config.o:
 
 suse-main.o:
 	$(CC) -L ../$(BUILD)/  -I../sockets/ $(FLAGS) -c  suse-main.c -o ../$(BUILD)/suse-main.o -lcommons -lsockets -lpthread
+
+clean:
+	rm -f ../$(BUILD)/suse-logs.o ../$(BUILD)/suse-config.o ../$(BUILD)/suse-main.o ../$(BUILD)/suse-planificador-largo-plazo.o ../$(BUILD)/suse-server.o ../$(BUILD)/suse-config.o

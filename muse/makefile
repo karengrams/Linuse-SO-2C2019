@@ -10,11 +10,8 @@ tests: sockets.so $(OBJSTEST) $(TEST)
 	$(CC) -L..$(BUILD) -g -Wall -fpic ..$(BUILD)$(OBJSTEST) recursiva.c -o ..$(BUILD)recursiva -lcommons -lsockets
 	$(CC) -L..$(BUILD) -g -Wall -fpic ..$(BUILD)$(OBJSTEST) archivo_de_swap_supermasivo.c -o ..$(BUILD)archivo_de_swap_supermasivo -lcommons -lsockets 
 
-all: $(OBJS) sockets.so
+muse: $(OBJS) sockets.so
 	$(CC) -L../$(BUILD) -g -Wall ../$(BUILD)/muse-server.o ../$(BUILD)/segmentacion.o ../$(BUILD)/paginacion.o ../$(BUILD)/frames.o ../$(BUILD)/virtual-memory.o ../$(BUILD)/muse-main.o -o ../$(BUILD)/$(OUT) $(LFLAGS) -lcommons -lsockets
-
-muse:
-	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BUILD) ../$(BUILD)/muse
 
 libmuse.o:
 	$(CC) -L..$(BUILD) $(FLAGS) -c libmuse.c -o ..$(BUILD)libmuse.o -lcommons
@@ -45,10 +42,3 @@ virtual-memory.o:
 
 clean:
 	rm -f ../bin/muse-server.o ../bin/segmentacion.o ../bin/paginacion.o ../bin/frames.o ../bin/sockets.o ../bin/virtual-memory.o ../bin/muse-main.o ../$(BUILD)/$(OBJSTEST)
-
-
-valgrind_leakcheck: $(BUILD)/$(OUT)
-	valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-leak-kinds=all $(OUT)
-
-valgrind_extreme: $(BUILD)/$(OUT)
-	valgrind --leak-check=full --show-leak-kinds=all --leak-resolution=high --track-origins=yes --vgdb=yes $(OUT)
