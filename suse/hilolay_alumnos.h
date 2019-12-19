@@ -1,7 +1,7 @@
 
 #ifndef hilolay_alumnos_h__
 #define hilolay_alumnos_h__
-
+#include "suse-structures.h"
 #include <sockets.h>
 
 	typedef struct hilolay_operations {

@@ -48,6 +48,7 @@ void* atender_cliente(void *element){
     			direccion = musealloc(cliente_a_atender, *((int*)list_get(paqueteRecibido,1)));
     			send(socketCli, &direccion, sizeof(uint32_t), 0);
     			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
+    			free(paqueteRecibido);
     		break;
     		case MUSE_FREE:
     			cliente_a_atender=buscar_proceso(paqueteRecibido, ipCli);
