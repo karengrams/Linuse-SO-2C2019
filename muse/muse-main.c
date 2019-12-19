@@ -114,7 +114,7 @@ int main(void) {
 	int server_socket,client_socket;
 	pthread_t hilo_de_atencion;
 
-	server_socket=iniciar_socket("127.0.0.1",config_get_string_value(config,"LISTEN_PORT"));
+	server_socket=iniciar_socket(getenv("IP"),config_get_string_value(config,"LISTEN_PORT"));
 
 	while(true){
 		client_socket=esperar_cliente(server_socket);

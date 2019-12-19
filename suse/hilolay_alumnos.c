@@ -78,7 +78,7 @@ static struct hilolay_operations hiloops = {
 void hilolay_init(){
 
 	//iniciar conexion con suse
-	SOCKET = crear_conexion("127.0.0.1", getenv("PUERTO")); 
+	SOCKET = crear_conexion(getenv("IP"), getenv("PUERTO"));
 	init_internal(&hiloops);
 
 }
