@@ -16,24 +16,23 @@ clean:
 	mkdir -p bin
 
 $(NAME).o:
-	$(CC) -c $(CFLAGS) -fpic /home/utnso/git/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/SUSE/hilolay_alumnos.c -o $(BUILD)/$(NAME).o
+	$(CC) -c $(CFLAGS) -fpic /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/suse/hilolay_alumnos.c -o $(BUILD)/$(NAME).o
+	$(CC) -c $(CFLAGS) -fpic /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/sockets.c -o $(BUILD)/$(NAME).o
 
-sockets.o:
-	$(CC) -c $(CFLAGS) -fpic /home/utnso/git/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/SUSE/utils-cli.c -o $(BUILD)/sockets.o
-
-$(NAME).so: $(NAME).o sockets.o
-	$(CC) -shared -o $(BUILD)/lib$(NAME).so $(BUILD)/$(NAME).o $(BUILD)/sockets.o -lhilolay
+$(NAME).so: $(NAME).o
+	$(CC) -shared -o $(BUILD)/lib$(NAME).so $(BUILD)/$(NAME).o $(BUILD)/$(NAME).o -lhilolay
+	$(CC) -shared -o $(BUILD)/libsockets.so $(BUILD)/$(NAME).o $(BUILD)/sockets.o -lhilolay	
 
 entrega:
-	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/archivo_de_swap_supermasivo archivo_de_swap_supermasivo.c -l$(NAME)
-	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/audiencia audiencia.c -l$(NAME) -lhilolay
-	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/caballeros_de_SisOp_Afinador caballeros_de_SisOp_Afinador.c -l$(NAME) -lhilolay
-	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/caballeros_de_SisOp_Solo caballeros_de_SisOp_Solo.c -l$(NAME) -lhilolay
-	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/estres_compartido estres_compartido.c -l$(NAME) -lhilolay
-	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/estres_privado estres_privado.c -l$(NAME) -lhilolay
-	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/recursiva recursiva.c -l$(NAME) -lhilolay
-	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/revolucion_compartida revolucion_compartida.c -l$(NAME) -lhilolay
-	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/revolucion_privada revolucion_privada.c -l$(NAME) -lhilolay
+	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/archivo_de_swap_supermasivo archivo_de_swap_supermasivo.c -l$(NAME) -lsockets
+	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/audiencia audiencia.c -l$(NAME) -lhilolay -lsockets
+	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/caballeros_de_SisOp_Afinador caballeros_de_SisOp_Afinador.c -l$(NAME) -lhilolay -lsockets
+	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/caballeros_de_SisOp_Solo caballeros_de_SisOp_Solo.c -l$(NAME) -lhilolay -lsockets
+	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/estres_compartido estres_compartido.c -l$(NAME) -lhilolay -lsockets
+	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/estres_privado estres_privado.c -l$(NAME) -lhilolay -lsockets
+	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/recursiva recursiva.c -l$(NAME) -lhilolay -lsockets
+	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/revolucion_compartida revolucion_compartida.c -l$(NAME) -lhilolay -lsockets
+	$(CC) -L./$(BUILD)/ -Wall $(CFLAGS) -o $(BUILD)/revolucion_privada revolucion_privada.c -l$(NAME) -lhilolay -lsockets
 
 archivo_de_swap_supermasivo:
 	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):./$(BUILD) ./$(BUILD)/archivo_de_swap_supermasivo
