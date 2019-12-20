@@ -1,0 +1,407 @@
+[INFO] 16:09:55:373 suse.c/(4436:4436): Timer log 
+[INFO] 16:09:55:375 suse.c/(4436:4436): Grado actual de multiprogramacion: 0
+[INFO] 16:09:55:375 suse.c/(4436:4436): Valor del semaforo afinado: 0
+[INFO] 16:09:55:375 suse.c/(4436:4436): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 16:10:45:372 suse.c/(4436:4436): Timer log 
+[INFO] 16:10:45:372 suse.c/(4436:4436): Grado actual de multiprogramacion: 0
+[INFO] 16:10:45:372 suse.c/(4436:4436): Valor del semaforo afinado: 0
+[INFO] 16:10:45:372 suse.c/(4436:4436): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 16:11:35:371 suse.c/(4436:4436): Timer log 
+[INFO] 16:11:35:372 suse.c/(4436:4436): Grado actual de multiprogramacion: 0
+[INFO] 16:11:35:372 suse.c/(4436:4436): Valor del semaforo afinado: 0
+[INFO] 16:11:35:372 suse.c/(4436:4436): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 16:12:49:452 suse.c/(4581:4605): Finalizo el hilo 1 del socket 5
+[INFO] 16:12:49:452 suse.c/(4581:4605): Grado actual de multiprogramacion: 0
+[INFO] 16:12:49:452 suse.c/(4581:4605): Valor del semaforo presion_emitida: 0
+[INFO] 16:12:49:452 suse.c/(4581:4605): Valor del semaforo presion_recibida: 1
+[INFO] 16:12:49:452 suse.c/(4581:4605): Valor del semaforo revolucion_emitida: 1
+[INFO] 16:12:49:452 suse.c/(4581:4605): Valor del semaforo revolucion_recibida: 0
+[INFO] 16:12:49:452 suse.c/(4581:4605): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 16:12:49:452 suse.c/(4581:4605): Valor del semaforo afinado: 0
+[INFO] 16:12:49:452 suse.c/(4581:4605): Socket 5:
+[INFO] 16:12:49:452 suse.c/(4581:4605): Hilos en cola NEW: 0
+[INFO] 16:12:49:452 suse.c/(4581:4605): Hilos en cola READY: 0
+[INFO] 16:12:49:452 suse.c/(4581:4605): Hilos en cola BLOCKED: 1
+[INFO] 16:12:49:452 suse.c/(4581:4605): Hilos en cola RUN: 0
+[INFO] 16:12:49:452 suse.c/(4581:4605): Hilos en cola EXIT: 1
+
+
+[INFO] 16:12:49:452 suse.c/(4581:4605): 
+Hilo 1: 
+Tiempo de ejecucion: 2.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 1.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:12:49:452 suse.c/(4581:4605): 
+Hilo 0: 
+Tiempo de ejecucion: 2.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 0.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+
+
+
+[INFO] 16:12:49:452 suse.c/(4581:4605): Finalizo el hilo 0 del socket 5
+[INFO] 16:12:49:452 suse.c/(4581:4605): Grado actual de multiprogramacion: 0
+[INFO] 16:12:49:452 suse.c/(4581:4605): Valor del semaforo presion_emitida: 0
+[INFO] 16:12:49:452 suse.c/(4581:4605): Valor del semaforo presion_recibida: 1
+[INFO] 16:12:49:452 suse.c/(4581:4605): Valor del semaforo revolucion_emitida: 1
+[INFO] 16:12:49:452 suse.c/(4581:4605): Valor del semaforo revolucion_recibida: 0
+[INFO] 16:12:49:452 suse.c/(4581:4605): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 16:12:49:452 suse.c/(4581:4605): Valor del semaforo afinado: 0
+[INFO] 16:12:49:452 suse.c/(4581:4605): Socket 5:
+[INFO] 16:12:49:452 suse.c/(4581:4605): Hilos en cola NEW: 0
+[INFO] 16:12:49:452 suse.c/(4581:4605): Hilos en cola READY: 0
+[INFO] 16:12:49:453 suse.c/(4581:4605): Hilos en cola BLOCKED: 0
+[INFO] 16:12:49:453 suse.c/(4581:4605): Hilos en cola RUN: 0
+[INFO] 16:12:49:453 suse.c/(4581:4605): Hilos en cola EXIT: 2
+
+
+[INFO] 16:12:49:453 suse.c/(4581:4605): 
+Hilo 1: 
+Tiempo de ejecucion: 2.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 1.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:12:49:453 suse.c/(4581:4605): 
+Hilo 0: 
+Tiempo de ejecucion: 2.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 0.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:13:12:761 suse.c/(4581:4581): Timer log 
+[INFO] 16:13:12:761 suse.c/(4581:4581): Grado actual de multiprogramacion: 0
+[INFO] 16:13:12:761 suse.c/(4581:4581): Valor del semaforo presion_emitida: 0
+[INFO] 16:13:12:761 suse.c/(4581:4581): Valor del semaforo presion_recibida: 1
+[INFO] 16:13:12:761 suse.c/(4581:4581): Valor del semaforo revolucion_emitida: 1
+[INFO] 16:13:12:761 suse.c/(4581:4581): Valor del semaforo revolucion_recibida: 0
+[INFO] 16:13:12:761 suse.c/(4581:4581): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 16:13:12:761 suse.c/(4581:4581): Valor del semaforo afinado: 0
+[INFO] 16:13:12:761 suse.c/(4581:4581): Socket 5:
+[INFO] 16:13:12:761 suse.c/(4581:4581): Hilos en cola NEW: 0
+[INFO] 16:13:12:761 suse.c/(4581:4581): Hilos en cola READY: 0
+[INFO] 16:13:12:761 suse.c/(4581:4581): Hilos en cola BLOCKED: 0
+[INFO] 16:13:12:761 suse.c/(4581:4581): Hilos en cola RUN: 0
+[INFO] 16:13:12:761 suse.c/(4581:4581): Hilos en cola EXIT: 2
+
+
+[INFO] 16:13:12:762 suse.c/(4581:4581): 
+Hilo 1: 
+Tiempo de ejecucion: 23311.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 1.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:13:12:762 suse.c/(4581:4581): 
+Hilo 0: 
+Tiempo de ejecucion: 23311.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 0.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:14:02:761 suse.c/(4581:4581): Timer log 
+[INFO] 16:14:02:762 suse.c/(4581:4581): Grado actual de multiprogramacion: 0
+[INFO] 16:14:02:762 suse.c/(4581:4581): Valor del semaforo presion_emitida: 0
+[INFO] 16:14:02:762 suse.c/(4581:4581): Valor del semaforo presion_recibida: 1
+[INFO] 16:14:02:762 suse.c/(4581:4581): Valor del semaforo revolucion_emitida: 1
+[INFO] 16:14:02:762 suse.c/(4581:4581): Valor del semaforo revolucion_recibida: 0
+[INFO] 16:14:02:762 suse.c/(4581:4581): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 16:14:02:762 suse.c/(4581:4581): Valor del semaforo afinado: 0
+[INFO] 16:14:02:762 suse.c/(4581:4581): Socket 5:
+[INFO] 16:14:02:762 suse.c/(4581:4581): Hilos en cola NEW: 0
+[INFO] 16:14:02:762 suse.c/(4581:4581): Hilos en cola READY: 0
+[INFO] 16:14:02:762 suse.c/(4581:4581): Hilos en cola BLOCKED: 0
+[INFO] 16:14:02:762 suse.c/(4581:4581): Hilos en cola RUN: 0
+[INFO] 16:14:02:762 suse.c/(4581:4581): Hilos en cola EXIT: 2
+
+
+[INFO] 16:14:02:762 suse.c/(4581:4581): 
+Hilo 1: 
+Tiempo de ejecucion: 73311.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 1.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:14:02:762 suse.c/(4581:4581): 
+Hilo 0: 
+Tiempo de ejecucion: 73311.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 0.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:14:52:762 suse.c/(4581:4581): Timer log 
+[INFO] 16:14:52:762 suse.c/(4581:4581): Grado actual de multiprogramacion: 0
+[INFO] 16:14:52:762 suse.c/(4581:4581): Valor del semaforo presion_emitida: 0
+[INFO] 16:14:52:762 suse.c/(4581:4581): Valor del semaforo presion_recibida: 1
+[INFO] 16:14:52:762 suse.c/(4581:4581): Valor del semaforo revolucion_emitida: 1
+[INFO] 16:14:52:762 suse.c/(4581:4581): Valor del semaforo revolucion_recibida: 0
+[INFO] 16:14:52:762 suse.c/(4581:4581): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 16:14:52:762 suse.c/(4581:4581): Valor del semaforo afinado: 0
+[INFO] 16:14:52:762 suse.c/(4581:4581): Socket 5:
+[INFO] 16:14:52:762 suse.c/(4581:4581): Hilos en cola NEW: 0
+[INFO] 16:14:52:762 suse.c/(4581:4581): Hilos en cola READY: 0
+[INFO] 16:14:52:762 suse.c/(4581:4581): Hilos en cola BLOCKED: 0
+[INFO] 16:14:52:762 suse.c/(4581:4581): Hilos en cola RUN: 0
+[INFO] 16:14:52:762 suse.c/(4581:4581): Hilos en cola EXIT: 2
+
+
+[INFO] 16:14:52:762 suse.c/(4581:4581): 
+Hilo 1: 
+Tiempo de ejecucion: 123312.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 1.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:14:52:762 suse.c/(4581:4581): 
+Hilo 0: 
+Tiempo de ejecucion: 123312.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 0.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:15:42:762 suse.c/(4581:4581): Timer log 
+[INFO] 16:15:42:762 suse.c/(4581:4581): Grado actual de multiprogramacion: 0
+[INFO] 16:15:42:762 suse.c/(4581:4581): Valor del semaforo presion_emitida: 0
+[INFO] 16:15:42:762 suse.c/(4581:4581): Valor del semaforo presion_recibida: 1
+[INFO] 16:15:42:762 suse.c/(4581:4581): Valor del semaforo revolucion_emitida: 1
+[INFO] 16:15:42:762 suse.c/(4581:4581): Valor del semaforo revolucion_recibida: 0
+[INFO] 16:15:42:762 suse.c/(4581:4581): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 16:15:42:762 suse.c/(4581:4581): Valor del semaforo afinado: 0
+[INFO] 16:15:42:762 suse.c/(4581:4581): Socket 5:
+[INFO] 16:15:42:762 suse.c/(4581:4581): Hilos en cola NEW: 0
+[INFO] 16:15:42:762 suse.c/(4581:4581): Hilos en cola READY: 0
+[INFO] 16:15:42:762 suse.c/(4581:4581): Hilos en cola BLOCKED: 0
+[INFO] 16:15:42:762 suse.c/(4581:4581): Hilos en cola RUN: 0
+[INFO] 16:15:42:762 suse.c/(4581:4581): Hilos en cola EXIT: 2
+
+
+[INFO] 16:15:42:762 suse.c/(4581:4581): 
+Hilo 1: 
+Tiempo de ejecucion: 173312.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 1.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:15:42:762 suse.c/(4581:4581): 
+Hilo 0: 
+Tiempo de ejecucion: 173312.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 0.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:16:32:760 suse.c/(4581:4581): Timer log 
+[INFO] 16:16:32:760 suse.c/(4581:4581): Grado actual de multiprogramacion: 0
+[INFO] 16:16:32:760 suse.c/(4581:4581): Valor del semaforo presion_emitida: 0
+[INFO] 16:16:32:760 suse.c/(4581:4581): Valor del semaforo presion_recibida: 1
+[INFO] 16:16:32:760 suse.c/(4581:4581): Valor del semaforo revolucion_emitida: 1
+[INFO] 16:16:32:760 suse.c/(4581:4581): Valor del semaforo revolucion_recibida: 0
+[INFO] 16:16:32:760 suse.c/(4581:4581): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 16:16:32:760 suse.c/(4581:4581): Valor del semaforo afinado: 0
+[INFO] 16:16:32:760 suse.c/(4581:4581): Socket 5:
+[INFO] 16:16:32:760 suse.c/(4581:4581): Hilos en cola NEW: 0
+[INFO] 16:16:32:760 suse.c/(4581:4581): Hilos en cola READY: 0
+[INFO] 16:16:32:760 suse.c/(4581:4581): Hilos en cola BLOCKED: 0
+[INFO] 16:16:32:760 suse.c/(4581:4581): Hilos en cola RUN: 0
+[INFO] 16:16:32:760 suse.c/(4581:4581): Hilos en cola EXIT: 2
+
+
+[INFO] 16:16:32:760 suse.c/(4581:4581): 
+Hilo 1: 
+Tiempo de ejecucion: 223310.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 1.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:16:32:760 suse.c/(4581:4581): 
+Hilo 0: 
+Tiempo de ejecucion: 223310.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 0.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:17:22:764 suse.c/(4581:4581): Timer log 
+[INFO] 16:17:22:764 suse.c/(4581:4581): Grado actual de multiprogramacion: 0
+[INFO] 16:17:22:764 suse.c/(4581:4581): Valor del semaforo presion_emitida: 0
+[INFO] 16:17:22:764 suse.c/(4581:4581): Valor del semaforo presion_recibida: 1
+[INFO] 16:17:22:764 suse.c/(4581:4581): Valor del semaforo revolucion_emitida: 1
+[INFO] 16:17:22:764 suse.c/(4581:4581): Valor del semaforo revolucion_recibida: 0
+[INFO] 16:17:22:764 suse.c/(4581:4581): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 16:17:22:764 suse.c/(4581:4581): Valor del semaforo afinado: 0
+[INFO] 16:17:22:764 suse.c/(4581:4581): Socket 5:
+[INFO] 16:17:22:764 suse.c/(4581:4581): Hilos en cola NEW: 0
+[INFO] 16:17:22:764 suse.c/(4581:4581): Hilos en cola READY: 0
+[INFO] 16:17:22:764 suse.c/(4581:4581): Hilos en cola BLOCKED: 0
+[INFO] 16:17:22:764 suse.c/(4581:4581): Hilos en cola RUN: 0
+[INFO] 16:17:22:764 suse.c/(4581:4581): Hilos en cola EXIT: 2
+
+
+[INFO] 16:17:22:764 suse.c/(4581:4581): 
+Hilo 1: 
+Tiempo de ejecucion: 273313.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 1.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:17:22:764 suse.c/(4581:4581): 
+Hilo 0: 
+Tiempo de ejecucion: 273313.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 0.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:18:12:764 suse.c/(4581:4581): Timer log 
+[INFO] 16:18:12:764 suse.c/(4581:4581): Grado actual de multiprogramacion: 0
+[INFO] 16:18:12:764 suse.c/(4581:4581): Valor del semaforo presion_emitida: 0
+[INFO] 16:18:12:764 suse.c/(4581:4581): Valor del semaforo presion_recibida: 1
+[INFO] 16:18:12:764 suse.c/(4581:4581): Valor del semaforo revolucion_emitida: 1
+[INFO] 16:18:12:764 suse.c/(4581:4581): Valor del semaforo revolucion_recibida: 0
+[INFO] 16:18:12:764 suse.c/(4581:4581): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 16:18:12:764 suse.c/(4581:4581): Valor del semaforo afinado: 0
+[INFO] 16:18:12:764 suse.c/(4581:4581): Socket 5:
+[INFO] 16:18:12:764 suse.c/(4581:4581): Hilos en cola NEW: 0
+[INFO] 16:18:12:764 suse.c/(4581:4581): Hilos en cola READY: 0
+[INFO] 16:18:12:764 suse.c/(4581:4581): Hilos en cola BLOCKED: 0
+[INFO] 16:18:12:764 suse.c/(4581:4581): Hilos en cola RUN: 0
+[INFO] 16:18:12:764 suse.c/(4581:4581): Hilos en cola EXIT: 2
+
+
+[INFO] 16:18:12:764 suse.c/(4581:4581): 
+Hilo 1: 
+Tiempo de ejecucion: 323314.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 1.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:18:12:764 suse.c/(4581:4581): 
+Hilo 0: 
+Tiempo de ejecucion: 323314.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 0.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:19:02:760 suse.c/(4581:4581): Timer log 
+[INFO] 16:19:02:761 suse.c/(4581:4581): Grado actual de multiprogramacion: 0
+[INFO] 16:19:02:761 suse.c/(4581:4581): Valor del semaforo presion_emitida: 0
+[INFO] 16:19:02:761 suse.c/(4581:4581): Valor del semaforo presion_recibida: 1
+[INFO] 16:19:02:761 suse.c/(4581:4581): Valor del semaforo revolucion_emitida: 1
+[INFO] 16:19:02:761 suse.c/(4581:4581): Valor del semaforo revolucion_recibida: 0
+[INFO] 16:19:02:761 suse.c/(4581:4581): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 16:19:02:761 suse.c/(4581:4581): Valor del semaforo afinado: 0
+[INFO] 16:19:02:761 suse.c/(4581:4581): Socket 5:
+[INFO] 16:19:02:761 suse.c/(4581:4581): Hilos en cola NEW: 0
+[INFO] 16:19:02:761 suse.c/(4581:4581): Hilos en cola READY: 0
+[INFO] 16:19:02:761 suse.c/(4581:4581): Hilos en cola BLOCKED: 0
+[INFO] 16:19:02:761 suse.c/(4581:4581): Hilos en cola RUN: 0
+[INFO] 16:19:02:761 suse.c/(4581:4581): Hilos en cola EXIT: 2
+
+
+[INFO] 16:19:02:761 suse.c/(4581:4581): 
+Hilo 1: 
+Tiempo de ejecucion: 373310.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 1.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:19:02:761 suse.c/(4581:4581): 
+Hilo 0: 
+Tiempo de ejecucion: 373310.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 0.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:19:52:761 suse.c/(4581:4581): Timer log 
+[INFO] 16:19:52:761 suse.c/(4581:4581): Grado actual de multiprogramacion: 0
+[INFO] 16:19:52:761 suse.c/(4581:4581): Valor del semaforo presion_emitida: 0
+[INFO] 16:19:52:761 suse.c/(4581:4581): Valor del semaforo presion_recibida: 1
+[INFO] 16:19:52:761 suse.c/(4581:4581): Valor del semaforo revolucion_emitida: 1
+[INFO] 16:19:52:761 suse.c/(4581:4581): Valor del semaforo revolucion_recibida: 0
+[INFO] 16:19:52:761 suse.c/(4581:4581): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 16:19:52:761 suse.c/(4581:4581): Valor del semaforo afinado: 0
+[INFO] 16:19:52:761 suse.c/(4581:4581): Socket 5:
+[INFO] 16:19:52:761 suse.c/(4581:4581): Hilos en cola NEW: 0
+[INFO] 16:19:52:761 suse.c/(4581:4581): Hilos en cola READY: 0
+[INFO] 16:19:52:761 suse.c/(4581:4581): Hilos en cola BLOCKED: 0
+[INFO] 16:19:52:761 suse.c/(4581:4581): Hilos en cola RUN: 0
+[INFO] 16:19:52:761 suse.c/(4581:4581): Hilos en cola EXIT: 2
+
+
+[INFO] 16:19:52:761 suse.c/(4581:4581): 
+Hilo 1: 
+Tiempo de ejecucion: 423310.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 1.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:19:52:761 suse.c/(4581:4581): 
+Hilo 0: 
+Tiempo de ejecucion: 423310.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 0.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:20:42:761 suse.c/(4581:4581): Timer log 
+[INFO] 16:20:42:764 suse.c/(4581:4581): Grado actual de multiprogramacion: 0
+[INFO] 16:20:42:764 suse.c/(4581:4581): Valor del semaforo presion_emitida: 0
+[INFO] 16:20:42:765 suse.c/(4581:4581): Valor del semaforo presion_recibida: 1
+[INFO] 16:20:42:765 suse.c/(4581:4581): Valor del semaforo revolucion_emitida: 1
+[INFO] 16:20:42:765 suse.c/(4581:4581): Valor del semaforo revolucion_recibida: 0
+[INFO] 16:20:42:765 suse.c/(4581:4581): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 16:20:42:765 suse.c/(4581:4581): Valor del semaforo afinado: 0
+[INFO] 16:20:42:765 suse.c/(4581:4581): Socket 5:
+[INFO] 16:20:42:765 suse.c/(4581:4581): Hilos en cola NEW: 0
+[INFO] 16:20:42:765 suse.c/(4581:4581): Hilos en cola READY: 0
+[INFO] 16:20:42:765 suse.c/(4581:4581): Hilos en cola BLOCKED: 0
+[INFO] 16:20:42:766 suse.c/(4581:4581): Hilos en cola RUN: 0
+[INFO] 16:20:42:766 suse.c/(4581:4581): Hilos en cola EXIT: 2
+
+
+[INFO] 16:20:42:766 suse.c/(4581:4581): 
+Hilo 1: 
+Tiempo de ejecucion: 473315.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 1.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:20:42:766 suse.c/(4581:4581): 
+Hilo 0: 
+Tiempo de ejecucion: 473315.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 0.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:21:32:762 suse.c/(4581:4581): Timer log 
+[INFO] 16:21:32:762 suse.c/(4581:4581): Grado actual de multiprogramacion: 0
+[INFO] 16:21:32:762 suse.c/(4581:4581): Valor del semaforo presion_emitida: 0
+[INFO] 16:21:32:762 suse.c/(4581:4581): Valor del semaforo presion_recibida: 1
+[INFO] 16:21:32:762 suse.c/(4581:4581): Valor del semaforo revolucion_emitida: 1
+[INFO] 16:21:32:762 suse.c/(4581:4581): Valor del semaforo revolucion_recibida: 0
+[INFO] 16:21:32:762 suse.c/(4581:4581): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 16:21:32:762 suse.c/(4581:4581): Valor del semaforo afinado: 0
+[INFO] 16:21:32:762 suse.c/(4581:4581): Socket 5:
+[INFO] 16:21:32:763 suse.c/(4581:4581): Hilos en cola NEW: 0
+[INFO] 16:21:32:763 suse.c/(4581:4581): Hilos en cola READY: 0
+[INFO] 16:21:32:763 suse.c/(4581:4581): Hilos en cola BLOCKED: 0
+[INFO] 16:21:32:763 suse.c/(4581:4581): Hilos en cola RUN: 0
+[INFO] 16:21:32:763 suse.c/(4581:4581): Hilos en cola EXIT: 2
+
+
+[INFO] 16:21:32:763 suse.c/(4581:4581): 
+Hilo 1: 
+Tiempo de ejecucion: 523312.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 1.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:21:32:763 suse.c/(4581:4581): 
+Hilo 0: 
+Tiempo de ejecucion: 523312.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 0.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:22:22:766 suse.c/(4581:4581): Timer log 
+[INFO] 16:22:22:766 suse.c/(4581:4581): Grado actual de multiprogramacion: 0
+[INFO] 16:22:22:766 suse.c/(4581:4581): Valor del semaforo presion_emitida: 0
+[INFO] 16:22:22:766 suse.c/(4581:4581): Valor del semaforo presion_recibida: 1
+[INFO] 16:22:22:766 suse.c/(4581:4581): Valor del semaforo revolucion_emitida: 1
+[INFO] 16:22:22:766 suse.c/(4581:4581): Valor del semaforo revolucion_recibida: 0
+[INFO] 16:22:22:766 suse.c/(4581:4581): Valor del semaforo solo_hiper_mega_piola: 1
+[INFO] 16:22:22:766 suse.c/(4581:4581): Valor del semaforo afinado: 0
+[INFO] 16:22:22:766 suse.c/(4581:4581): Socket 5:
+[INFO] 16:22:22:766 suse.c/(4581:4581): Hilos en cola NEW: 0
+[INFO] 16:22:22:766 suse.c/(4581:4581): Hilos en cola READY: 0
+[INFO] 16:22:22:766 suse.c/(4581:4581): Hilos en cola BLOCKED: 0
+[INFO] 16:22:22:766 suse.c/(4581:4581): Hilos en cola RUN: 0
+[INFO] 16:22:22:766 suse.c/(4581:4581): Hilos en cola EXIT: 2
+
+
+[INFO] 16:22:22:766 suse.c/(4581:4581): 
+Hilo 1: 
+Tiempo de ejecucion: 573316.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 1.000000 
+Porcentaje tiempo de ejecucion: 0.500000
+[INFO] 16:22:22:766 suse.c/(4581:4581): 
+Hilo 0: 
+Tiempo de ejecucion: 573316.000000 
+Tiempo de espera: 0.000000 
+Tiempo de uso de CPU: 0.000000 
+Porcentaje tiempo de ejecucion: 0.500000

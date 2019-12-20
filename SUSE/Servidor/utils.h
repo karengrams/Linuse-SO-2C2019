@@ -21,8 +21,8 @@ typedef enum {
 } op_code;
 
 	void* recibir_buffer(int*, int);
-
-	int iniciar_servidor(char*, char*);
+	int iniciar_socket(int);
+	//int iniciar_servidor(char*, char*);
 	int esperar_cliente(int);
 	t_list* recibir_paquete(int);
 	void recibir_mensaje(int);

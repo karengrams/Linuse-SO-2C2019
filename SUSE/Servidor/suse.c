@@ -76,8 +76,8 @@ char** ids_semaforos(){
 int timerLog(){
 	return config_get_int_value(CONFIG, "METRICS_TIMER");
 }
-char* puerto_listen(){
-	return config_get_string_value(CONFIG, "LISTEN_PORT");
+int* puerto_listen(){
+	return config_get_int_value(CONFIG, "LISTEN_PORT");
 }
 
 int grado_de_multiprogramacion_maximo(){
@@ -916,7 +916,7 @@ int main(){
 	pthread_t hiloAtencion, hiloPlanif;
 
 
-	SOCKET_ESCUCHA = iniciar_servidor("127.0.0.1", puerto_listen());
+	SOCKET_ESCUCHA = iniciar_socket(puerto_listen());
 	int cliente;
 
 	pthread_create(&hiloPlanif, NULL, &planificador_largo_plazo, NULL);
