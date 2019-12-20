@@ -125,7 +125,7 @@ void loggear_informacion(t_proceso *proceso){
 				,proceso->totalMemoriaLiberada
 				,memory_leaks_proceso(proceso)
 				,espacio_libre_ultimo_metadata);
-	sem_wait(&mutex_log);
+	sem_post(&mutex_log);
 }
 
 int museinit(t_proceso* cliente_a_atender, char* ipCliente, int id){
