@@ -16,7 +16,7 @@ void crear_entrada_en_cola_ready(int );
 t_execute* crear_entrada_en_lista_execute(int);
 t_thread* crear_thread(int, int );
 void agregar_a_ready(int , t_thread* );
-int swap_threads(t_execute* , t_thread*, t_list*);
+void swap_threads(t_execute* , t_thread* );
 long double rafaga_estimada(void* );
 bool _menor_rafaga_estimada(void* , void* );
 t_thread* algoritmo_SJF(t_list*);

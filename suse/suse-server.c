@@ -52,7 +52,7 @@ void agregar_a_ready(int fd, t_thread* hilo){
 
 //FUNCIONES AUXILIARES DE SUSE_SCHEDULE
 
-void swap_threads(t_execute* nodoExec, t_thread* nuevoHilo, t_list* cola){
+void swap_threads(t_execute* nodoExec, t_thread* nuevoHilo){
 	t_thread* victima = nodoExec->thread;
 
 
