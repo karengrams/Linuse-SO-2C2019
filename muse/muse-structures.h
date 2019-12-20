@@ -29,6 +29,7 @@ sem_t mutex_write_shared_files;
 sem_t mutex_write_frame;
 sem_t mutex_process_list;
 sem_t binary_free_frame;
+sem_t mutex_free;
 
 t_log *logger_info;
 t_log *logger_trace;

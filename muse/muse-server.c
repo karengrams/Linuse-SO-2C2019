@@ -45,6 +45,7 @@ void inicializar_recursos_de_memoria(){
 	sem_init(&mutex_write_frame,0,1);
 	sem_init(&mutex_process_list,0,1);
 	sem_init(&binary_free_frame,0,0);
+	sem_init(&mutex_free,0,1);
 	logger_info = log_create("MUSE.log","MUSE",true,LOG_LEVEL_INFO);
 	logger_error = log_create("MUSE.log","MUSE",true,LOG_LEVEL_ERROR);
 	logger_trace = log_create("MUSE.log","MUSE",true,LOG_LEVEL_TRACE);
@@ -93,6 +94,7 @@ void liberacion_de_recursos(int num){
 	sem_destroy(&mutex_write_frame);
 	sem_destroy(&mutex_process_list);
 	sem_destroy(&binary_free_frame);
+	sem_destroy(&mutex_free);
 	log_trace(logger_trace,"se liberaron correctamente todos los recursos.");
 	log_destroy(logger_error);
 	log_destroy(logger_info);
@@ -208,6 +210,7 @@ uint32_t musealloc(t_proceso* proceso,int tam){
 }
 
 int musefree(t_proceso *proceso, uint32_t direccion) {
+	sem_wait(&mutex_free);
 	log_trace(logger_trace,"el proceso #%d solicito la liberacion de la direccion de memoria %lu.",proceso->id,direccion);
 
 	segment *ptr_segmento = buscar_segmento_dada_una_direccion(direccion,proceso->tablaDeSegmentos);
@@ -241,10 +244,12 @@ int musefree(t_proceso *proceso, uint32_t direccion) {
 			eliminar_segmento_de_tabla(proceso,ptr_segmento);
 		}
 		log_trace(logger_trace,"se libero correctamente la direccion %lu del proceso #%d",direccion,proceso->id);
+		sem_post(&mutex_free);
 		return 0;
 	}
 	else{
 		log_error(logger_error,"error al liberar la memoria de la direccion %lu.",direccion);
+		sem_post(&mutex_free);
 		return -1;
 	}
 }
