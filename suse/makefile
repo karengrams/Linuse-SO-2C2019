@@ -6,10 +6,10 @@ LFLAGS:= -lcommons -lm -lpthread -lrt
 BUILD:=../linuse-tests-programs/bin
 
 suse: $(OBJS)
-	$(CC) -L../$(BUILD) -g -Wall ../$(BUILD)/suse-server.o ../$(BUILD)/suse-config.o  ../$(BUILD)/suse-main.o ../$(BUILD)/suse-planificador-largo-plazo.o ../$(BUILD)/suse-logs.o -o ../$(BUILD)/$(OUT) $(LFLAGS) -lcommons -lsockets
+	$(CC) -L../$(BUILD) -g -Wall ../$(BUILD)/suse-server.o ../$(BUILD)/suse-config.o  ../$(BUILD)/suse-main.o ../$(BUILD)/suse-planificador-largo-plazo.o ../$(BUILD)/suse-logs.o -o ../$(BUILD)/$(OUT) $(LFLAGS) -lcommons -lsocketssuse
 
 suse-server.o:
-	$(CC) -L ../$(BUILD)/  -I../sockets/ $(FLAGS) -c  suse-server.c -o ../$(BUILD)/suse-server.o -lcommons -lsockets
+	$(CC) -L ../$(BUILD)/  -I../sockets/ $(FLAGS) -c  suse-server.c -o ../$(BUILD)/suse-server.o -lcommons -lsocketssuse
 
 suse-planificador-largo-plazo.o:
 	$(CC) -c $(FLAGS) suse-planificador-largo-plazo.c -o ../$(BUILD)/suse-planificador-largo-plazo.o -lcommons -lpthread
@@ -21,7 +21,7 @@ suse-config.o:
 	$(CC) -c $(FLAGS)  suse-config.c -o ../$(BUILD)/suse-config.o -lcommons
 
 suse-main.o:
-	$(CC) -L ../$(BUILD)/  -I../sockets/ $(FLAGS) -c  suse-main.c -o ../$(BUILD)/suse-main.o -lcommons -lsockets -lpthread
+	$(CC) -L ../$(BUILD)/  -I../sockets/ $(FLAGS) -c  suse-main.c -o ../$(BUILD)/suse-main.o -lcommons -lsocketssuse -lpthread
 
 clean:
 	rm -f ../$(BUILD)/suse-logs.o ../$(BUILD)/suse-config.o ../$(BUILD)/suse-main.o ../$(BUILD)/suse-planificador-largo-plazo.o ../$(BUILD)/suse-server.o ../$(BUILD)/suse-config.o

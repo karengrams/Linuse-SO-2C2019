@@ -28,14 +28,14 @@ $(NAME).so: $(NAME).o
 
 entrega:
 	$(CC) -L./$(BUILD)/ -I /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/  -Wall $(CFLAGS) -o $(BUILD)/archivo_de_swap_supermasivo archivo_de_swap_supermasivo.c libmuse.c -l$(NAME) -lcommons -lsocketsmuse
-	$(CC) -L./$(BUILD)/ -I /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/ -Wall $(CFLAGS) -o $(BUILD)/audiencia audiencia.c -l$(NAME) -lhilolay - lsocketssuse 
-	$(CC) -L./$(BUILD)/ -I /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/ -Wall $(CFLAGS) -o $(BUILD)/caballeros_de_SisOp_Afinador caballeros_de_SisOp_Afinador.c -l$(NAME) -lhilolay - lsocketssuse
-	$(CC) -L./$(BUILD)/ -I /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/ -Wall $(CFLAGS) -o $(BUILD)/caballeros_de_SisOp_Solo caballeros_de_SisOp_Solo.c -l$(NAME) -lhilolay - lsocketssuse 
-	$(CC) -L./$(BUILD)/ -I /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/  -Wall $(CFLAGS) -o $(BUILD)/estres_compartido estres_compartido.c libmuse.c -l$(NAME) -lcommons  -lhilolay - lsocketssuse -lsocketsmuse
-	$(CC) -L./$(BUILD)/ -I /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/ -Wall $(CFLAGS) -o $(BUILD)/estres_privado estres_privado.c libmuse.c -l$(NAME) -lhilolay - lsocketssuse -lcommons -lsocketsmuse
+	$(CC) -L./$(BUILD)/ -I /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/ -Wall $(CFLAGS) -o $(BUILD)/audiencia audiencia.c -l$(NAME) -lhilolay -lsocketssuse
+	$(CC) -L./$(BUILD)/ -I /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/ -Wall $(CFLAGS) -o $(BUILD)/caballeros_de_SisOp_Afinador caballeros_de_SisOp_Afinador.c -l$(NAME) -lhilolay -lsocketssuse
+	$(CC) -L./$(BUILD)/ -I /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/ -Wall $(CFLAGS) -o $(BUILD)/caballeros_de_SisOp_Solo caballeros_de_SisOp_Solo.c -l$(NAME) -lhilolay -lsocketssuse
+	$(CC) -L./$(BUILD)/ -I /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/  -Wall $(CFLAGS) -o $(BUILD)/estres_compartido estres_compartido.c libmuse.c -l$(NAME) -lcommons  -lhilolay -lsocketssuse -lsocketsmuse
+	$(CC) -L./$(BUILD)/ -I /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/ -Wall $(CFLAGS) -o $(BUILD)/estres_privado estres_privado.c libmuse.c -l$(NAME) -lhilolay -lsocketssuse -lcommons -lsocketsmuse
 	$(CC) -L./$(BUILD)/ -I /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/ -Wall $(CFLAGS) -o $(BUILD)/recursiva recursiva.c libmuse.c -l$(NAME) -lhilolay -lcommons -lsocketsmuse
-	$(CC) -L./$(BUILD)/ -I /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/ -Wall $(CFLAGS) -o $(BUILD)/revolucion_compartida revolucion_compartida.c libmuse.c -l$(NAME) -lcommons  -lhilolay - lsocketssuse -lsocketsmuse
-	$(CC) -L./$(BUILD)/ -I /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/ -Wall $(CFLAGS) -o $(BUILD)/revolucion_privada revolucion_privada.c libmuse.c -l$(NAME) -lhilolay - lsocketssuse -lcommons -lsocketsmuse
+	$(CC) -L./$(BUILD)/ -I /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/ -Wall $(CFLAGS) -o $(BUILD)/revolucion_compartida revolucion_compartida.c libmuse.c -l$(NAME) -lcommons  -lhilolay -lsocketssuse -lsocketsmuse
+	$(CC) -L./$(BUILD)/ -I /home/utnso/tp-2019-2c-Lo-dejaria-todo-porque-funcionara/sockets/ -Wall $(CFLAGS) -o $(BUILD)/revolucion_privada revolucion_privada.c libmuse.c -l$(NAME) -lhilolay -lsocketssuse -lcommons -lsocketsmuse
 
 archivo_de_swap_supermasivo:
 	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):./$(BUILD) ./$(BUILD)/archivo_de_swap_supermasivo
