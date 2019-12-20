@@ -52,29 +52,16 @@ void agregar_a_ready(int fd, t_thread* hilo){
 
 //FUNCIONES AUXILIARES DE SUSE_SCHEDULE
 
-int swap_threads(t_execute* nodoExec, t_thread* nuevoHilo, t_list* cola){
+void swap_threads(t_execute* nodoExec, t_thread* nuevoHilo, t_list* cola){
 	t_thread* victima = nodoExec->thread;
 
-	if(victima!=NULL){ //si victima == NULL no habia procesos ejecutando en ese momento
-		sem_wait(&sem_ready);
-		victima->tiempo_total_en_exec = victima->tiempo_total_en_exec + tiempo_que_paso_desde_colaActual(victima->tiempo_en_cola_actual);
-		victima->ultima_rafaga =  tiempo_que_paso_desde_colaActual(victima->tiempo_en_cola_actual);
-		gettimeofday(&victima->tiempo_en_cola_actual,NULL); //seteamos el tiempo en que entra a ready
-		list_add(cola, victima);//desplazamos a la victima
-		sem_post(&sem_ready);
+
 		sem_wait(&sem_execute);
 		nodoExec->thread = nuevoHilo; //agregamos el nuevo hilo a exec
 		nuevoHilo->tiempo_total_en_ready =	nuevoHilo->tiempo_total_en_ready + tiempo_que_paso_desde_colaActual(nuevoHilo->tiempo_en_cola_actual); //sumamos el tiempo que estuvo en ready
 		gettimeofday(&nuevoHilo->tiempo_en_cola_actual,NULL); //seteamos el tiempo en que entra a exe
 		sem_post(&sem_execute);
-		return 0;
-		}
-		sem_wait(&sem_execute);
-		nodoExec->thread = nuevoHilo; //agregamos el nuevo hilo a exec
-		nuevoHilo->tiempo_total_en_ready =	nuevoHilo->tiempo_total_en_ready + tiempo_que_paso_desde_colaActual(nuevoHilo->tiempo_en_cola_actual); //sumamos el tiempo que estuvo en ready
-		gettimeofday(&nuevoHilo->tiempo_en_cola_actual,NULL); //seteamos el tiempo en que entra a exe
-		sem_post(&sem_execute);
-		return 1;
+
 }
 
 long double rafaga_estimada(void* elem){
