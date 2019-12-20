@@ -5,11 +5,15 @@
  *      Author: utnso
  */
 #include "sockets.h"
+#include <netinet/in.h>
+#include <arpa/inet.h>
+typedef struct sockaddr_in SA_IN;
+typedef struct sockaddr SA;
 
 int esperar_cliente(int socket_servidor){
 	struct sockaddr_in dir_cliente;
 	int tam_direccion = sizeof(struct sockaddr_in);
-	int socket_cliente = accept(socket_servidor, (void*) &dir_cliente, (void*)&tam_direccion);
+	int socket_cliente = accept(socket_servidor, (SA*) &dir_cliente, (socklen_t*)&tam_direccion);
 	return socket_cliente;
 }
 
@@ -53,34 +57,30 @@ t_list* recibir_paquete(int socket_cliente){
 
 }
 
-int iniciar_socket(char* ip, char* port){
+
+int iniciar_socket_muse(int port){
 	int server_socket;
-    struct addrinfo hints, *servinfo, *p;
+	SA_IN server_addr,client_addr;
+	server_socket=socket(AF_INET,SOCK_STREAM,0);
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_addr.s_addr=INADDR_ANY;
+	server_addr.sin_port=htons(port);
+	bind(server_socket,(SA*)&server_addr,sizeof(server_addr));
+	listen(server_socket,1);
+	return server_socket;
+}
 
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
 
-    getaddrinfo(ip, port, &hints, &servinfo);
-
-    for (p=servinfo; p != NULL; p = p->ai_next)
-    {
-        if ((server_socket = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1)
-            continue;
-
-        if (bind(server_socket, p->ai_addr, p->ai_addrlen) == -1){
-            close(server_socket);
-            continue;
-        }
-        break;
-    }
-
-	listen(server_socket, SOMAXCONN);
-
-    freeaddrinfo(servinfo);
-
-    return server_socket;
+int iniciar_socket(/*char* ip, char* port*/int port){
+	int server_socket;
+	SA_IN server_addr;
+	server_socket=socket(AF_INET,SOCK_STREAM,0);
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_addr.s_addr=INADDR_ANY;
+	server_addr.sin_port=htons(port);
+	bind(server_socket,(SA*)&server_addr,sizeof(server_addr));
+	listen(server_socket,1);
+	return server_socket;
 }
 
 
@@ -105,10 +105,8 @@ int crear_conexion(char *ip, char* puerto){
 
 	int socket_cliente = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
 
-	if(connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen) == -1){
+	if(connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen) == -1)
 		printf("error");
-		return -1;
-	}
 
 	freeaddrinfo(server_info);
 
