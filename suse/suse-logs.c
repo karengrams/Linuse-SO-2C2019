@@ -90,15 +90,15 @@ void loggear_procesos(void){
 		return seed;
 	}
 
-	//sem_wait(&sem_ready);
+	sem_wait(&sem_ready);
 	int tamanio = list_size(colaREADY);
-	//sem_post(&sem_ready);
+	sem_post(&sem_ready);
 
 	for(int i=0; i<tamanio; i++){
 
-		//sem_wait(&sem_ready);
+		sem_wait(&sem_ready);
 		t_cola_ready* ready = list_get(colaREADY, i);
-		//sem_post(&sem_ready);
+		sem_post(&sem_ready);
 
 		int hiloEjecutando = 0;
 		int fd = ready->socket_fd;
@@ -117,21 +117,21 @@ void loggear_procesos(void){
 					return hilo->socket_fd == fd;
 				}
 
-		//sem_wait(&sem_new);
+		sem_wait(&sem_new);
 		t_list* listaNew = list_filter(colaNEW, &_mismo_fd_en_new);
-		//sem_post(&sem_new);
+		sem_post(&sem_new);
 
-		//sem_wait(&sem_blocked);
+		sem_wait(&sem_blocked);
 		t_list* listaBlocked = list_filter(listaBLOCKED, &_mismo_fd_en_blocked);
-		//sem_post(&sem_blocked);
+		sem_post(&sem_blocked);
 
-		//sem_wait(&sem_execute);
+		sem_wait(&sem_execute);
 		t_execute* execute = list_find(listaEXEC, &_mismo_fd_en_exec);
-		//sem_post(&sem_execute);
+		sem_post(&sem_execute);
 
-		//sem_wait(&sem_exit);
+		sem_wait(&sem_exit);
 		t_list* listaExit = list_filter(listaEXIT, &_mismo_fd_en_new);
-		//sem_post(&sem_exit);
+		sem_post(&sem_exit);
 
 		if(execute->thread != NULL)
 			 hiloEjecutando = 1;
@@ -206,21 +206,21 @@ void escribir_logs(int motivo, int socket){
 	log_info(LOG, "Grado actual de multiprogramacion: %d", total_hilos_en_ready_y_exec());
 	loggear_semaforos();
 
-	sem_wait(&sem_blocked);
-	sem_wait(&sem_execute);
-	sem_wait(&sem_exit);
-	sem_wait(&sem_new);
-	sem_wait(&sem_ready);
-	sem_wait(&sem_run);
+//	sem_wait(&sem_blocked);
+//	sem_wait(&sem_execute);
+//	sem_wait(&sem_exit);
+//	sem_wait(&sem_new);
+//	sem_wait(&sem_ready);
+//	sem_wait(&sem_run);
 
 	loggear_procesos();
 
-	sem_post(&sem_run);
-	sem_post(&sem_ready);
-	sem_post(&sem_new);
-	sem_post(&sem_exit);
-	sem_post(&sem_execute);
-	sem_post(&sem_blocked);
+//	sem_post(&sem_run);
+//	sem_post(&sem_ready);
+//	sem_post(&sem_new);
+//	sem_post(&sem_exit);
+//	sem_post(&sem_execute);
+//	sem_post(&sem_blocked);
 
 }
 void escribirLog(int signal){
