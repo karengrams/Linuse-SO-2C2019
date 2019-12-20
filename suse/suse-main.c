@@ -37,6 +37,9 @@ void *atenderCliente(void* elemento){
 			tid = *((int*)paqueteRecibido->head->data);
 			nuevoThread = crear_thread(socketCli, tid);
 
+			printf("Se conecto el hilo %d del socket %d \n", tid, socketCli);
+
+
 			if(!tid){ //si el tid es 0 es el programa principal
 				crear_entrada_en_cola_ready(socketCli);
 				nodoEnEjecucion = crear_entrada_en_lista_execute(socketCli);
