@@ -110,7 +110,6 @@ int main(void) {
 
 	signal(SIGINT,liberacion_de_recursos);
 
-
 	int server_socket,client_socket;
 	pthread_t hilo_de_atencion;
 
@@ -119,6 +118,8 @@ int main(void) {
 	while(true){
 		client_socket=esperar_cliente(server_socket);
 		pthread_create(&hilo_de_atencion, NULL, &atender_cliente, &client_socket);
+		pthread_detach(hilo_de_atencion);
+
 	}
 	return 0;
 }

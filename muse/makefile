@@ -4,7 +4,7 @@ OUT:= muse
 CC:= gcc
 FLAGS:= -g -Wall
 LFLAGS:= -lcommons -lm -lpthread -lrt
-BUILD:=../linuse-tests-programs/bin
+BUILD:=bin
 
 tests: libmuse.o
 #	$(CC) -L../$(BUILD)/  -I../sockets/ -g -Wall -fpic ../$(BUILD)/$(OBJSTEST) recursiva.c -o ../$(BUILD)/recursiva -lcommons -lsockets -lmuse
