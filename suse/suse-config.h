@@ -17,7 +17,7 @@ int* valores_iniciales_semaforos();
 int* valores_maximos_semaforos();
 char** ids_semaforos();
 int timerLog();
-char* puerto_listen();
+int puerto_listen();
 int grado_de_multiprogramacion_maximo();
 double alpha_sjf();
 

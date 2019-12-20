@@ -46,8 +46,8 @@ char** ids_semaforos(){
 int timerLog(){
 	return config_get_int_value(CONFIG, "METRICS_TIMER");
 }
-char* puerto_listen(){
-	return config_get_string_value(CONFIG, "LISTEN_PORT");
+int  puerto_listen(){
+	return config_get_int_value(CONFIG, "LISTEN_PORT");
 }
 
 int grado_de_multiprogramacion_maximo(){
