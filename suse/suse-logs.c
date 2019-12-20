@@ -70,7 +70,6 @@ void loggear_semaforos(void){
 }
 
 void loggear_procesos(void){
-	log_info(LOG,"holi peerri entras en deadlock");
 	sem_wait(&mutex_logs);
 	long double momentoLog = tiempo_que_paso_desde_inicio();
 
