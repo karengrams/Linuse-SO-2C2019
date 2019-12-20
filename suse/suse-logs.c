@@ -70,7 +70,7 @@ void loggear_semaforos(void){
 }
 
 void loggear_procesos(void){
-
+	sem_wait(&mutex_logs);
 	long double momentoLog = tiempo_que_paso_desde_inicio();
 
 	void* _suma_tiempos_ejecucion(void* seed, void*elem){
@@ -193,6 +193,7 @@ void loggear_procesos(void){
 		list_destroy(listaExit);
 		list_destroy(listaBlocked);
 	}
+	sem_post(&mutex_logs);
 }
 
 

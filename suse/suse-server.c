@@ -274,6 +274,7 @@ void liberar_recursos(int sig){
 	sem_close(&sem_ready);
 	sem_close(&sem_run);
 	sem_close(&semaforos_suse);
+	sem_close(&mutex_logs);
 	close(SOCKET_ESCUCHA);
 	FUNCIONAR = 0;
 }
@@ -288,6 +289,7 @@ void iniciar_semaforos(){
 	sem_init(&sem_exit,0,1);
 	sem_init(&semaforos_suse,0,1);
 	sem_init(&sem_execute, 0, 1);
+	sem_init(&mutex_logs,0,1);
 }
 
 void inicializar_recursos_de_planificador(){

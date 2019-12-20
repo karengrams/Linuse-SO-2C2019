@@ -37,6 +37,7 @@ sem_t sem_run;
 sem_t sem_blocked;
 sem_t sem_execute;
 sem_t semaforos_suse; //deberia ser un array de semaforos para ser mas precisos, despues veo
+sem_t mutex_logs;
 
 struct timeval TIEMPO_INICIO_PROGRAMA;
 
