@@ -23,6 +23,8 @@ typedef struct t_mapped_file mapped_file;
 typedef struct t_segmentmmapmetadata segmentmmapmetadata;
 typedef struct t_segment segment;
 
+
+sem_t mutex_log;
 sem_t mutex_process_list;
 sem_t mutex_shared;
 sem_t mutex_write_shared_files;

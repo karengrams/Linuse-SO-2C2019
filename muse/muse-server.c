@@ -46,6 +46,7 @@ void inicializar_recursos_de_memoria(){
 	sem_init(&mutex_process_list,0,1);
 	sem_init(&binary_free_frame,0,0);
 	sem_init(&mutex_free,0,1);
+	sem_init(&mutex_log,0,1);
 	logger_info = log_create("MUSE.log","MUSE",true,LOG_LEVEL_INFO);
 	logger_error = log_create("MUSE.log","MUSE",true,LOG_LEVEL_ERROR);
 	logger_trace = log_create("MUSE.log","MUSE",true,LOG_LEVEL_TRACE);
@@ -86,6 +87,7 @@ void liberacion_de_recursos(int num){
 	bitarray_destroy(BIT_ARRAY_SWAP);
 	config_destroy(config);
 	sem_destroy(&mutex_frames);
+	sem_destroy(&mutex_log);
 	sem_destroy(&mutex_swap);
 	sem_destroy(&mutex_clock_mod);
 	sem_destroy(&mutex_swap_file);
@@ -103,6 +105,7 @@ void liberacion_de_recursos(int num){
 }
 
 void loggear_informacion(t_proceso *proceso){
+	sem_wait(&mutex_log);
 	int cantidad_seg_tot = cantidad_total_de_segmentos_en_sistema();
 	int porcentaje_de_memoria,espacio_libre_ultimo_metadata;
 	if(!cantidad_seg_tot)
@@ -122,6 +125,7 @@ void loggear_informacion(t_proceso *proceso){
 				,proceso->totalMemoriaLiberada
 				,memory_leaks_proceso(proceso)
 				,espacio_libre_ultimo_metadata);
+	sem_wait(&mutex_log);
 }
 
 int museinit(t_proceso* cliente_a_atender, char* ipCliente, int id){
