@@ -46,11 +46,8 @@ char** ids_semaforos(){
 int timerLog(){
 	return config_get_int_value(CONFIG, "METRICS_TIMER");
 }
-<<<<<<< HEAD
-int  puerto_listen(){
-=======
+
 int puerto_listen(){
->>>>>>> 63bab53c66c8757a7058fe10a4836ce4f5830f25
 	return config_get_int_value(CONFIG, "LISTEN_PORT");
 }
 
