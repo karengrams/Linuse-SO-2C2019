@@ -424,7 +424,7 @@ int musesync(t_proceso* proceso,uint32_t direccion, size_t length){
 
 		file = ptr_mapped_file->file;
 		sem_wait(&mutex_write_shared_files);
-		for(int i=nro_pag;paginas_copiadas<=cantidad_de_paginas;i++){
+		for(int i=nro_pag;paginas_copiadas<cantidad_de_paginas;i++){
 			page *ptr_pagina = (page*)list_get(ptr_segmento->tabla_de_paginas,i);
 			traer_pagina(ptr_pagina);
 			frame *ptr_frame = (frame*) ptr_pagina->frame;
