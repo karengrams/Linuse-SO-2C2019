@@ -13,7 +13,7 @@
 #include "suse-logs.h"
 #include "suse-config.h"
 #include "suse-planificador-largo-plazo.h"
-#include <sockets-suse.h>
+#include <sockets.h>
 #include <signal.h>
 #include <semaphore.h>
 

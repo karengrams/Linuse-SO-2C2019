@@ -8,7 +8,7 @@
 #include <sys/mman.h>
 #include <commons/collections/list.h>
 #include <commons/collections/node.h>
-#include <sockets-muse.h>
+#include <sockets.h>
 
 #include "muse-structures.h"
 
