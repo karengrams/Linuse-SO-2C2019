@@ -24,7 +24,11 @@ void* atender_cliente(void *element){
 	while(1){
 
     	int cod_op = recibir_operacion(socketCli);
-
+		if(cod_op == -1){
+			close(socketCli);
+			//send(socketCli, &tid, sizeof(int), 0);
+			pthread_exit(NULL);
+		}
     	if(cod_op>=10 && cod_op<=18 ){
     	paqueteRecibido = recibir_paquete(socketCli);
     		switch(cod_op){
