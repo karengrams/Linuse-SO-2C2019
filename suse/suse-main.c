@@ -30,7 +30,6 @@ void *atenderCliente(void* elemento){
 		int cod_op = recibir_operacion(socketCli);
 
 		if(cod_op == -1){
-			list_destroy_and_destroy_elements(paqueteRecibido, &_destruir_paquete);
 			//close(socketCli);
 			//send(socketCli, &tid, sizeof(int), 0);
 			pthread_exit(NULL);
