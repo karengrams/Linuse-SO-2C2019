@@ -105,6 +105,8 @@ uint32_t muse_map(char *path, size_t length, int flags){
 	eliminar_paquete(paquete);
 
 	recv(SOCKET, &direccion, sizeof(uint32_t), 0);
+	if(direccion==-1)
+		raise(SIGSEGV);
 	return direccion;
 }
 

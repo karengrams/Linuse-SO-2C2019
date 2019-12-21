@@ -1,6 +1,6 @@
 CC:= gcc
 FLAGS:= -g -Wall
-BUILD:=bin
+BUILD:=../bin
 
 sockets.o:
 	$(CC) -c -Wall ../sockets/sockets.c -o ../$(BUILD)/sockets.o -lcommons

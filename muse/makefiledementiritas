@@ -43,9 +43,6 @@ paginacion.o: paginacion/paginacion.c
 frames.o: paginacion/frames.c
 	$(CC) $(FLAGS) paginacion/frames.c paginacion/paginacion.c -lcommons
 
-sockets.o: ../sockets/sockets.c
-	$(CC) $(FLAGS) ../sockets/sockets.c -lcommons
-
 virtual-memory.o: virtual-memory/virtual-memory.c
 	$(CC) $(FLAGS) virtual-memory/virtual-memory.c -lcommons
 	

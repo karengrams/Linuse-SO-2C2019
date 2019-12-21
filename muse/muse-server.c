@@ -308,7 +308,7 @@ void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 	return (buffer);
 }
 
-uint32_t musemap(t_proceso*proceso, char*path, size_t length, int flags){
+int musemap(t_proceso*proceso, char*path, size_t length, int flags){
 	if(flags==MAP_SHARED)
 		log_trace(logger_trace,"el proceso #%d solicito el mappeo de %d bytes del archivo '%s' de forma compartida.",proceso->id,(int)length,path);
 	else
@@ -320,10 +320,24 @@ uint32_t musemap(t_proceso*proceso, char*path, size_t length, int flags){
 	mapped_file *ptr_mapped_file_metadata = buscar_archivo_abierto(path);
 	segmentmmapmetadata *ptr_metadata=(segmentmmapmetadata*)malloc(sizeof(segmentmmapmetadata));
 	int fd = open(path, O_RDWR , S_IRUSR | S_IWUSR); // Lo abre para lectura si existe, sino lo crea
+	if(fd ==-1){
+		bool _mismo_id (void*element){
+			t_proceso *otroproceso = (t_proceso*)element;
+			return (otroproceso->id == proceso->id);
+		}
+
+		list_remove_by_condition(PROCESS_TABLE,_mismo_id);
+		free(proceso->ip);
+		free(proceso);
+		log_error(logger_error,"el archivo solicitado no existe.");
+		return -1; // TODO: agregar signal
+	}
 
 	struct stat statfile;
-	if(fstat(fd,&statfile)==-1)
+	if(fstat(fd,&statfile)==-1){
+		log_error(logger_error,"el archivo solicitado no existe.");
 		return -1; // TODO: agregar signal
+	}
 
 	if(flags==MAP_PRIVATE)
 		tam_a_mappear=length;
@@ -384,7 +398,7 @@ uint32_t musemap(t_proceso*proceso, char*path, size_t length, int flags){
 	log_trace(logger_trace,"se le otorgo la direccion %lu del archivo mappeado a memoria al proceso #%d.",segmento_mmap->base_logica,proceso->id);
 
 	close(fd);
-    return segmento_mmap->base_logica;
+    return (int)segmento_mmap->base_logica;
 }
 
 int musesync(t_proceso* proceso,uint32_t direccion, size_t length){

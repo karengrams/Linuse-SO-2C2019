@@ -51,7 +51,7 @@ int musefree(t_proceso *, uint32_t);
 void* museget(t_proceso*, t_list*);
 int musecpy(t_proceso* , t_list*);
 mapped_file* buscar_archivo_abierto(char*);
-uint32_t musemap(t_proceso*,char*, size_t, int);
+int musemap(t_proceso*,char*, size_t, int);
 int musesync(t_proceso* ,uint32_t , size_t );
 int museunmap(t_proceso*,uint32_t);
 segment* ultimo_segmento_heap(t_proceso*);
