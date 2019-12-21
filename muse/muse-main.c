@@ -64,6 +64,10 @@ void* atender_cliente(void *element){
     			if (buffer == NULL){
     				cod_error = -1;
     				send(socketCli, &cod_error, sizeof(int), 0);
+        			close(socketCli);
+    				pthread_exit(NULL);
+    				free(ipCli);
+    				free(buffer);
     			} else {
     				paquete_respuesta = crear_paquete(10);
     				agregar_a_paquete(paquete_respuesta, buffer, cantidad_de_bytes);
