@@ -25,8 +25,7 @@
 #include <commons/collections/node.h>
 #include <commons/bitarray.h>
 #include <commons/string.h>
-//#include <sockets.h>
-#include "../sockets/sockets.h"
+#include <sockets.h>
 #include "../sockets/sockets-structures.h"
 #include "segmentacion/segmentacion.h"
 #include "paginacion/frames.h"
@@ -52,7 +51,7 @@ int musefree(t_proceso *, uint32_t);
 void* museget(t_proceso*, t_list*);
 int musecpy(t_proceso* , t_list*);
 mapped_file* buscar_archivo_abierto(char*);
-int musemap(t_proceso*,char*, size_t, int);
+uint32_t  musemap(t_proceso*,char*, size_t, int);
 int musesync(t_proceso* ,uint32_t , size_t );
 int museunmap(t_proceso*,uint32_t);
 segment* ultimo_segmento_heap(t_proceso*);

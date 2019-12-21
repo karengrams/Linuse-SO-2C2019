@@ -8,10 +8,8 @@
 #include <sys/mman.h>
 #include <commons/collections/list.h>
 #include <commons/collections/node.h>
-//#include <sockets.h>
-#include "../sockets/sockets.h"
-
-#include "muse-structures.h"
+#include <sockets.h>
+#include "../tp-2019-2c-Lo-dejaria-todo-porque-funcionara/muse/muse-structures.h"
 
     /**
      * Inicializa la biblioteca de MUSE.

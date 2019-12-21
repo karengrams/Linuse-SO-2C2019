@@ -8,8 +8,7 @@
 #ifndef MUSE_MAIN_H_
 #define MUSE_MAIN_H_
 #include "muse-server.h"
-//#include <sockets.h>
-#include "../sockets/sockets.h"
+#include <sockets.h>
 #include "virtual-memory/virtual-memory.h"
 #include <signal.h>
 #include <sys/socket.h>
@@ -17,6 +16,7 @@
 #include <pthread.h>
 #include "muse-structures.h"
 #include "../sockets/sockets-structures.h"
+
 void _eliminar_elementos_paquete(void*);
 void atender_cliente_select(fd_set* master, int socketCli);
 void* atender_cliente(void *);

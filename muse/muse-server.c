@@ -308,7 +308,7 @@ void* museget(t_proceso* proceso, t_list* paqueteRecibido){
 	return (buffer);
 }
 
-int musemap(t_proceso*proceso, char*path, size_t length, int flags){
+uint32_t musemap(t_proceso*proceso, char*path, size_t length, int flags){
 	if(flags==MAP_SHARED)
 		log_trace(logger_trace,"el proceso #%d solicito el mappeo de %d bytes del archivo '%s' de forma compartida.",proceso->id,(int)length,path);
 	else
@@ -330,13 +330,13 @@ int musemap(t_proceso*proceso, char*path, size_t length, int flags){
 		free(proceso->ip);
 		free(proceso);
 		log_error(logger_error,"el archivo solicitado no existe.");
-		return -1; // TODO: agregar signal
+		return -1;
 	}
 
 	struct stat statfile;
 	if(fstat(fd,&statfile)==-1){
 		log_error(logger_error,"el archivo solicitado no existe.");
-		return -1; // TODO: agregar signal
+		return -1;
 	}
 
 	if(flags==MAP_PRIVATE)

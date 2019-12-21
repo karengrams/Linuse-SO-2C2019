@@ -84,14 +84,9 @@ void* atender_cliente(void *element){
     			char *path = string_duplicate((char*)list_get(paqueteRecibido,1));
     			cantidad_de_bytes = *((int*)list_get(paqueteRecibido, 2)); //este seria el length a mappear
     			flags = *((int*)list_get(paqueteRecibido, 3));
-    			int direccion_loca = musemap(cliente_a_atender,path,cantidad_de_bytes,flags);
-    			if(direccion_loca==-1){
-    				cod_error = -1;
-    		    	send(socketCli, &cod_error, sizeof(int), 0);
-    			}else{
-    			direccion = direccion_loca;
+    			direccion = musemap(cliente_a_atender,path,cantidad_de_bytes,flags);
     			send(socketCli, &direccion, sizeof(uint32_t), 0);
-    			}
+
 			  	list_destroy_and_destroy_elements(paqueteRecibido,_eliminar_elementos_paquete);
     		break;
     		case MUSE_SYNC:
