@@ -39,11 +39,6 @@ int suse_wait(int tid, char* idSemaforo){
 
 	recv(SOCKET, &exito, sizeof(int), 0);
 
-	if(exito)
-		printf("Semaforo %s tomado\n", idSemaforo);
-
-	if(!exito)
-		printf("Me bloqueo por semaforo %s\n", idSemaforo);
 	return exito;
 }
 

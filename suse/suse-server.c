@@ -97,6 +97,7 @@ void buscar_hilos_blockeados_por_este(int tid, int fd){ //probablemente no haya 
 	void _cambiar_a_blocked_ready(void* elem){
 		t_blocked* elemento = (t_blocked*) elem;
 		elemento->estado = BLOCKED_READY;
+		sem_post(&hilos_para_agregar);
 	}
 
 	list_iterate(listaBloqueados, &_cambiar_a_blocked_ready);
@@ -200,7 +201,8 @@ int hacer_signal(int posicion){
 
 			if(hilo!=NULL)
 				hilo->estado = BLOCKED_READY; // y lo ponemos como blocked ready
-			sem_post(&sem_blocked);
+				sem_post(&sem_blocked);
+				sem_post(&hilos_para_agregar);
 	}
 
 	return 0;
@@ -215,6 +217,7 @@ int hacer_wait(int posicion, int fd){
 		sem_wait(&sem_execute);
 		buscar_y_pasarlo_a_blocked(fd, posicion, SEMAPHORE);
 		sem_post(&sem_execute);
+		sem_post(&multiprogramacion);
 		return 0;
 	}
 }
@@ -290,6 +293,9 @@ void iniciar_semaforos(){
 	sem_init(&semaforos_suse,0,1);
 	sem_init(&sem_execute, 0, 1);
 	sem_init(&mutex_logs,0,1);
+
+	sem_init(&multiprogramacion, 0, MULTIPROGRAMACION_MAXIMA);
+	sem_init(&hilos_para_agregar, 0, 0);
 }
 
 void inicializar_recursos_de_planificador(){
@@ -306,7 +312,7 @@ void inicializar_recursos_de_planificador(){
 	colaREADY = list_create();
 	listaEXEC = list_create();
 	LISTA_SEMAFOROS = list_create();
-
+	MULTIPROGRAMACION_MAXIMA = config_get_int_value(CONFIG, "MAX_MULTIPROG");
 	SEM_IDS = ids_semaforos();
 	SEM_VALOR = valores_iniciales_semaforos();
 	SEM_MAX = valores_maximos_semaforos();

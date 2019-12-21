@@ -37,9 +37,6 @@ void *atenderCliente(void* elemento){
 			tid = *((int*)paqueteRecibido->head->data);
 			nuevoThread = crear_thread(socketCli, tid);
 
-			printf("Se conecto el hilo %d del socket %d \n", tid, socketCli);
-
-
 			if(!tid){ //si el tid es 0 es el programa principal
 				crear_entrada_en_cola_ready(socketCli);
 				nodoEnEjecucion = crear_entrada_en_lista_execute(socketCli);
@@ -50,6 +47,7 @@ void *atenderCliente(void* elemento){
 				sem_wait(&sem_new);
 				list_add(colaNEW, nuevoThread);
 				sem_post(&sem_new);
+				sem_post(&hilos_para_agregar);
 				}
 			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
 			break;
@@ -103,7 +101,9 @@ void *atenderCliente(void* elemento){
 
 			if(!tid_ya_esta_en_exit(tid, socketCli)){ //puede pasar que el thread al cual le hacen join ya termino
 				buscar_y_pasarlo_a_blocked(socketCli, tid, JOIN);//Agarra el ult que esta en la cola exe de el socket y lo pasa a blocked por join con ese tid
+				sem_post(&multiprogramacion);
 			}
+
 
 			list_destroy_and_destroy_elements(paqueteRecibido, _destruir_paquete);
 			break;
@@ -145,6 +145,8 @@ void *atenderCliente(void* elemento){
 			sem_post(&sem_execute);
 			buscar_hilos_blockeados_por_este(tid, socketCli);
 			escribir_logs(tid, socketCli);
+
+			sem_post(&multiprogramacion);
 
 			if(!tid){
 				list_destroy_and_destroy_elements(paqueteRecibido, &_destruir_paquete);

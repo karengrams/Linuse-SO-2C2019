@@ -56,10 +56,16 @@ bool podemos_agregar_hilos_a_ready(){
 void* planificador_largo_plazo(){
 	while(FUNCIONAR){
 
-		if(podemos_agregar_hilos_a_ready()){
-			sem_wait(&sem_blocked);
-			t_blocked* hilo = (t_blocked*)hay_blocked_ready();
-			sem_post(&sem_blocked);
+
+
+		sem_wait(&hilos_para_agregar);
+
+		sem_wait(&multiprogramacion);
+
+		sem_wait(&sem_blocked);
+		t_blocked* hilo = (t_blocked*)hay_blocked_ready();
+		sem_post(&sem_blocked);
+
 			if(hilo != NULL){
 
 				int socket = hilo->thread->socket_fd;
@@ -87,7 +93,7 @@ void* planificador_largo_plazo(){
 				move_de_new_a_ready();
 			}
 
-		}
+
 	}
 	pthread_exit(NULL);
 }

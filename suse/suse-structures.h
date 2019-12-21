@@ -29,6 +29,7 @@ int* SEM_MAX;
 char** SEM_IDS;
 int FUNCIONAR;
 int SOCKET_ESCUCHA;
+int MULTIPROGRAMACION_MAXIMA;
 
 sem_t sem_new;
 sem_t sem_ready;
@@ -36,8 +37,11 @@ sem_t sem_exit;
 sem_t sem_run;
 sem_t sem_blocked;
 sem_t sem_execute;
-sem_t semaforos_suse; //deberia ser un array de semaforos para ser mas precisos, despues veo
+sem_t semaforos_suse;
 sem_t mutex_logs;
+
+sem_t multiprogramacion;
+sem_t hilos_para_agregar;
 
 struct timeval TIEMPO_INICIO_PROGRAMA;
 
