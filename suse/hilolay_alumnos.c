@@ -73,7 +73,7 @@ static struct hilolay_operations hiloops = {
 void hilolay_init(){
 
 	//iniciar conexion con suse
-	SOCKETSUSE = crear_conexion("127.0.0.1", getenv("PUERTO"));
+	SOCKETSUSE = crear_conexion("192.168.0.21", getenv("PUERTO"));
 	init_internal(&hiloops);
 
 }

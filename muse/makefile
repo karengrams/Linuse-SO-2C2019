@@ -1,4 +1,4 @@
-
+OBJS:= muse-server.o segmentacion.o paginacion.o frames.o virtual-memory.o muse-main.o
 OBJSTEST:= libmuse.o
 OUT:= muse
 CC:= gcc
