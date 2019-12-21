@@ -1,6 +1,6 @@
 OBJS	= muse-server.o segmentacion.o paginacion.o frames.o sockets.o virtual-memory.o muse-main.o
 OBJSTEST= libmuse.o sockets.o
-TEST =  archivo_de_swap_supermasivo.o
+TEST =  archivo_de_swap_supermasivo.o testcli.o
 SOURCE	= muse.c segmentacion/segmentacion.c paginacion/paginacion.c paginacion/frames.c ../sockets/sockets.c virtual-memory/virtual-memory.c muse-main.c
 HEADER	= muse.h segmentacion/segmentacion.h paginacion/paginacion.h paginacion/frames.h ../sockets/sockets.h virtual-memory/virtual-memory.h muse-main.h
 OUT	= muse
@@ -11,6 +11,7 @@ LFLAGS	 = -lcommons -lm -lpthread -lrt
 tests: $(OBJSTEST) $(TEST)
 #	$(CC) -g -Wall $(OBJSTEST) recursiva.o -o recursiva -lcommons
 	$(CC) -g -Wall $(OBJSTEST) archivo_de_swap_supermasivo.o -o archivo_de_swap_supermasivo -lcommons 
+	$(CC) -g -Wall $(OBJSTEST) testcli.o -o testcli -lcommons 
 #	$(CC) -g -Wall $(OBJSTEST) revolucion_compartida_de_mentiritas.o -o revolucion_compartida_de_mentiritas -lcommons 
 
 revolucion_compartida_de_mentiritas.o : revolucion_compartida_de_mentiritas.c
@@ -18,6 +19,10 @@ revolucion_compartida_de_mentiritas.o : revolucion_compartida_de_mentiritas.c
 
 archivo_de_swap_supermasivo.o : archivo_de_swap_supermasivo.c
 	$(CC) $(FLAGS) archivo_de_swap_supermasivo.c libmuse.c ../sockets/sockets.c -lcommons
+
+testcli.o : testcli.c
+	$(CC) $(FLAGS) testcli.c libmuse.c ../sockets/sockets.c -lcommons
+
 
 recursiva.o: recursiva.c
 	$(CC) $(FLAGS) recursiva.c libmuse.c ../sockets/sockets.c -lcommons

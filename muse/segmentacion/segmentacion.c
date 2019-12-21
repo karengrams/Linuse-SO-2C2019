@@ -373,8 +373,6 @@ void liberar_recursos_segmento_map(segment *ptr_segmento,t_proceso*proceso){
 		list_destroy_and_destroy_elements(ptr_mapped_metadata->paginas_min_asignadas,_eliminar_paginas);
 		list_destroy(ptr_mapped_metadata->procesos);
 		free(ptr_mapped_metadata->path);
-		printf("%d\n",MAPPED_FILES->elements_count);
-		sleep(50);
 		list_remove(MAPPED_FILES,ptr_mapped_metadata->nro_file);
 		update_file_number();
 		free(ptr_mapped_metadata);
