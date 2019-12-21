@@ -131,7 +131,7 @@ int main(void) {
 	pthread_t hilo_de_atencion;
 
 	server_socket=iniciar_socket(config_get_int_value(config,"LISTEN_PORT"));
-
+	printf("Connected!\nWaiting for connections...\n");
 	while(true){
 		client_socket=esperar_cliente(server_socket);
 		if(client_socket!=-1){
