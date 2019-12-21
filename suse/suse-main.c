@@ -150,7 +150,8 @@ void *atenderCliente(void* elemento){
 
 			if(!tid){
 				list_destroy_and_destroy_elements(paqueteRecibido, &_destruir_paquete);
-				close(socketCli);
+				//close(socketCli);
+				send(socketCli, &tid, sizeof(int), 0);
 				pthread_exit(NULL);
 			} //Fin del hilo
 

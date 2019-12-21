@@ -243,6 +243,7 @@ void _liberar_ready(void* elem){
 void _liberar_execute(void* elem){
 	t_execute* cola = (t_execute*)elem;
 	free(cola->thread);
+	close(cola->socket_fd);
 	free(elem);
 }
 
